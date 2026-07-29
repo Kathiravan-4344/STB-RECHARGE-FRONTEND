@@ -51,7 +51,7 @@ function Plans() {
               </div>
             )}
             <div className="text-xs uppercase tracking-widest text-muted-foreground">{p.category}</div>
-            <div className="mt-1 font-display text-2xl font-bold">{p.name}</div>
+            <div className="mt-1 font-sans text-xl font-semibold">{p.name}</div>
             <div className="mt-3 flex items-baseline gap-1">
               <span className="text-4xl font-bold text-gradient">₹{p.price}</span>
               <span className="text-sm text-muted-foreground">/ {p.validityDays} days</span>

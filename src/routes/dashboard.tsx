@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { fetchStb, useStore, PLANS } from "@/lib/store";
-import { Tv, Search, QrCode, Zap, Gift, MessageCircle, CreditCard, ChevronRight, Sparkles, Clock } from "lucide-react";
+import { fetchStb, useStore, PLANS, formatName } from "@/lib/store";
+import { Tv, Search, QrCode, Zap, Gift, MessageCircle, CreditCard, ChevronRight, Sparkles, Clock, Package, ShoppingBag, ArrowRight, Wrench, PhoneCall, Headphones } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -51,18 +51,20 @@ function Dashboard() {
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Welcome back</p>
-            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">
-              Hi <span className="text-gradient">+91 {user?.mobile}</span>
+            <h1 className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+              Hi <span className="font-normal text-foreground/90">{formatName(user?.name || "there")}</span>
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">Enter your STB ID to view live status and recharge.</p>
+            <p className="mt-1 text-sm font-extrabold text-foreground sm:text-base">Enter your STB ID to view live status and recharge.</p>
           </div>
           <form onSubmit={handleFetch} className="flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-2 md:w-auto">
             <Search className="ml-2 h-4 w-4 text-muted-foreground" />
             <input
               value={stbId}
-              onChange={(e) => setStbId(e.target.value)}
-              placeholder="Enter STB ID (try 1234567890)"
-              className="w-full min-w-56 bg-transparent px-2 py-2 text-sm outline-none"
+              onChange={(e) => setStbId(e.target.value.replace(/\D/g, "").slice(0, 12))}
+              placeholder="ENTER YOUR STB ID"
+              inputMode="numeric"
+              maxLength={12}
+              className="w-full min-w-56 bg-transparent px-2 py-2 text-sm font-bold placeholder:font-bold outline-none"
             />
             <button className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5" type="button" aria-label="Scan QR">
               <QrCode className="h-4 w-4" />
@@ -117,16 +119,140 @@ function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="mt-6 rounded-2xl border border-dashed border-white/15 p-6 text-center text-sm text-muted-foreground">
-            Enter your STB ID above to see live status. Try <span className="text-foreground">1234567890</span> (active) or <span className="text-foreground">9999999999</span> (inactive).
+          <div className="mt-6 rounded-2xl border border-dashed border-primary/40 bg-primary/10 p-6 text-center text-base font-black text-foreground shadow-sm">
+            ⚡ ENTER YOUR STB ID ABOVE TO SEE LIVE STATUS
           </div>
         )}
       </section>
 
+      {/* 3D Product & Accessories Request Card */}
+      <section className="mt-6">
+        <div className="card-3d group relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-r from-cyan-950/40 via-purple-950/40 to-slate-900/60 p-6 md:p-8 backdrop-blur-2xl shadow-2xl transition-all duration-300 hover:border-[color:var(--neon-cyan)]/50 hover:shadow-[0_0_30px_rgba(0,210,255,0.2)]">
+          <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[color:var(--neon-cyan)]/20 blur-3xl transition-transform duration-500 group-hover:scale-125" />
+          <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-[color:var(--neon-purple)]/20 blur-3xl transition-transform duration-500 group-hover:scale-125" />
+          
+          <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--neon-cyan)]/30 bg-[color:var(--neon-cyan)]/10 px-3.5 py-1 text-xs font-extrabold uppercase tracking-widest text-[color:var(--neon-cyan)]">
+                <ShoppingBag className="h-3.5 w-3.5" /> 🛒 Request Products
+              </div>
+              <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                “Need STB Accessories?”
+              </h2>
+              <p className="mt-2 text-sm text-slate-300 sm:text-base">
+                Customer can request STB-related products and services such as HDMI cables, replacement remotes, adapters, dish cabling, or book professional technician installation.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-white">HDMI Cable</span>
+                <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-white">Remote Control</span>
+                <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-white">STB Adapter</span>
+                <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-white">🔧 Installation Services</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row md:flex-col lg:flex-row">
+              <Link
+                to="/products"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl gradient-primary px-6 py-3.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition-all hover:scale-[1.03] active:scale-[0.98]"
+              >
+                <Package className="h-4 w-4" /> Request Products <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3D Complaint Card & Emergency Support Section */}
+      <section className="mt-6 grid gap-6 md:grid-cols-12">
+        {/* 3D Complaint Card (7 cols) */}
+        <div className="md:col-span-7 card-3d group relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-r from-purple-950/40 via-slate-900/60 to-amber-950/30 p-6 backdrop-blur-2xl shadow-2xl transition-all duration-300 hover:border-amber-500/50 hover:shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-500/20 blur-3xl transition-transform duration-500 group-hover:scale-125" />
+          <div className="relative z-10 flex flex-col justify-between h-full space-y-4">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3.5 py-1 text-xs font-extrabold uppercase tracking-widest text-amber-400">
+                <Wrench className="h-3.5 w-3.5" /> 🛠️ Complaint & Service Request
+              </div>
+              <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                “Facing TV, STB or Signal Issues?”
+              </h2>
+              <p className="mt-2 text-sm text-slate-300">
+                Raise complaints for TV signal loss, STB power failures, cable cuts, or recharge activation issues with live 📍 Technician Tracking & resolution status.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2 text-xs">
+              <span className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-white">📺 No Signal</span>
+              <span className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-white">📡 STB Error</span>
+              <span className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-white">🔌 Cable Cut</span>
+              <span className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-white">💳 Recharge Issues</span>
+            </div>
+
+            <div className="pt-2">
+              <Link
+                to="/complaints"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-6 py-3 text-sm font-extrabold text-black shadow-[0_0_20px_rgba(245,158,11,0.4)] transition hover:bg-amber-400 active:scale-95"
+              >
+                <Wrench className="h-4 w-4" /> Raise Service Complaint <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* 📞 Emergency Support Card (5 cols) */}
+        <div className="md:col-span-5 card-3d relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-br from-emerald-950/30 via-slate-900/60 to-slate-900/80 p-6 backdrop-blur-2xl shadow-2xl flex flex-col justify-between space-y-4">
+          <div className="absolute -right-12 -bottom-12 h-40 w-40 rounded-full bg-emerald-500/20 blur-3xl" />
+          
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-emerald-400">
+              <PhoneCall className="h-3.5 w-3.5" /> 📞 Emergency Support
+            </div>
+            <h3 className="mt-3 font-display text-xl font-bold text-white">Quick Operator Contact</h3>
+            <p className="mt-1 text-xs text-slate-300">
+              Instant one-click phone line and WhatsApp chat support for urgent TV transmission breakdowns.
+            </p>
+          </div>
+
+          <div className="space-y-2.5">
+            <a
+              href="tel:9876543210"
+              className="w-full flex items-center justify-between rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition"
+            >
+              <span className="flex items-center gap-2">
+                <PhoneCall className="h-4 w-4 text-emerald-400" /> Call Local Operator
+              </span>
+              <span className="font-mono text-white">+91 98765 43210</span>
+            </a>
+
+            <a
+              href="https://wa.me/919876543210?text=Hello%20STB%20Support,%20I%20need%20urgent%20service%20assistance..."
+              target="_blank"
+              rel="noreferrer"
+              className="w-full flex items-center justify-between rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition"
+            >
+              <span className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-emerald-400" /> WhatsApp Support Chat
+              </span>
+              <span className="font-mono text-emerald-400 font-extrabold">Online 💬</span>
+            </a>
+
+            <a
+              href="tel:18001234567"
+              className="w-full flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-bold text-slate-300 hover:bg-white/10 transition"
+            >
+              <span className="flex items-center gap-2">
+                <Headphones className="h-4 w-4 text-muted-foreground" /> Customer Care Toll-Free
+              </span>
+              <span className="font-mono text-white">1800-123-4567</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Quick actions */}
-      <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
         <QuickAction to="/plans" icon={CreditCard} label="Recharge" />
         <QuickAction to="/plans" icon={Zap} label="View Plans" />
+        <QuickAction to="/products" icon={Package} label="Accessories" />
         <QuickAction to="/offers" icon={Gift} label="Offers" />
         <QuickAction to="/history" icon={MessageCircle} label="History" />
       </section>

@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Home, CreditCard, Gift, Receipt, LogOut, Tv, MessageCircle } from "lucide-react";
+import { Home, CreditCard, Gift, Receipt, LogOut, Tv, MessageCircle, Shield, Package, Wrench } from "lucide-react";
 import { useStore, logout } from "@/lib/store";
 import { useState, type ReactNode } from "react";
 import { ChatWidget } from "./ChatWidget";
@@ -7,6 +7,8 @@ import { ChatWidget } from "./ChatWidget";
 const nav = [
   { to: "/dashboard", label: "Home", icon: Home },
   { to: "/plans", label: "Plans", icon: CreditCard },
+  { to: "/products", label: "Accessories", icon: Package },
+  { to: "/complaints", label: "Complaints", icon: Wrench },
   { to: "/offers", label: "Offers", icon: Gift },
   { to: "/history", label: "History", icon: Receipt },
 ];
@@ -44,10 +46,19 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </Link>
               );
             })}
+            {user?.role === "operator" && (
+              <Link
+                to="/operator"
+                className="flex items-center gap-1.5 rounded-lg border border-[color:var(--neon-cyan)]/40 bg-[color:var(--neon-cyan)]/10 px-3 py-1.5 text-xs font-bold text-[color:var(--neon-cyan)] transition hover:bg-[color:var(--neon-cyan)] hover:text-black"
+              >
+                <Shield className="h-3.5 w-3.5" /> Operator Panel
+              </Link>
+            )}
           </nav>
           <div className="flex items-center gap-2">
             {user && (
-              <span className="hidden rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-muted-foreground sm:inline">
+              <span className="hidden rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-muted-foreground sm:inline flex items-center gap-1.5">
+                {user.role === "operator" && <Shield className="h-3 w-3 text-[color:var(--neon-cyan)]" />}
                 +91 {user.mobile}
               </span>
             )}

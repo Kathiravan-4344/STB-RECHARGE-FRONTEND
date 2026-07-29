@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { Gift, Copy, Sparkles, Percent } from "lucide-react";
-import { useState } from "react";
+import { Gift } from "lucide-react";
 
 export const Route = createFileRoute("/offers")({
   head: () => ({ meta: [{ title: "Offers & Cashback — STB RECHARGE" }, { name: "description", content: "Exclusive coupons, cashback and promo codes for your recharge." }] }),
@@ -9,21 +8,17 @@ export const Route = createFileRoute("/offers")({
 });
 
 const OFFERS = [
-  { code: "STB50", title: "Flat ₹50 off", desc: "On any plan above ₹199", tag: "Best", grad: "gradient-primary" },
-  { code: "NEW10", title: "₹10 welcome bonus", desc: "For your first recharge", tag: "New user", grad: "gradient-cyan" },
-  { code: "WELCOME", title: "Flat ₹25 off", desc: "On any Monthly pack", tag: "Trending", grad: "gradient-primary" },
+  { code: "STB50", title: "Flat ₹50 off", desc: "FOR 4 MONTHS PLAN ABOVE ₹240", tag: "Best", grad: "gradient-primary" },
+  { code: "NEW10", title: "₹10 welcome bonus", desc: "FOR YOUR FIRST RECHARGE", tag: "New user", grad: "gradient-cyan" },
+  { code: "WELCOME", title: "Flat ₹25 off", desc: "FOR 2 MONTHS PLAN ABOVE ₹200", tag: "Trending", grad: "gradient-primary" },
 ];
 
 function Offers() {
-  const [copied, setCopied] = useState<string | null>(null);
   return (
     <AppShell>
-      <div className="mb-6 flex items-end justify-between">
-        <div>
-          <h1 className="font-display text-3xl font-bold">Offers & cashback</h1>
-          <p className="text-sm text-muted-foreground">Save more on every recharge.</p>
-        </div>
-        <Sparkles className="h-6 w-6 text-[color:var(--neon-purple)]" />
+      <div className="mb-6">
+        <h1 className="font-display text-3xl font-bold">Offers & cashback</h1>
+        <p className="text-sm text-muted-foreground">Save more on every recharge.</p>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -34,18 +29,7 @@ function Offers() {
               <Gift className="h-3.5 w-3.5" /> {o.tag}
             </div>
             <div className="mt-2 font-display text-2xl font-bold">{o.title}</div>
-            <p className="mt-1 text-sm text-muted-foreground">{o.desc}</p>
-            <div className="mt-5 flex items-center justify-between rounded-2xl border border-dashed border-white/20 bg-white/5 px-4 py-3">
-              <div className="flex items-center gap-2 font-mono font-semibold">
-                <Percent className="h-4 w-4 text-[color:var(--neon-cyan)]" /> {o.code}
-              </div>
-              <button
-                onClick={() => { navigator.clipboard.writeText(o.code); setCopied(o.code); setTimeout(() => setCopied(null), 1500); }}
-                className="inline-flex items-center gap-1 rounded-lg gradient-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
-              >
-                <Copy className="h-3.5 w-3.5" /> {copied === o.code ? "Copied" : "Copy"}
-              </button>
-            </div>
+            <p className="mt-1 text-sm leading-5 text-muted-foreground">{o.desc}</p>
           </div>
         ))}
       </div>
