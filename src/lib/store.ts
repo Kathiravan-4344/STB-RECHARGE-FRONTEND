@@ -467,9 +467,8 @@ export function toggleOperatorStatus(id: string) {
 }
 
 export function removeApprovedOperator(id: string) {
-  setState((s) => ({
-    approvedOperators: s.approvedOperators.filter((op) => op.id !== id),
-  }));
+  console.warn("Operator numbers cannot be deleted once added.");
+  return { success: false, message: "Operator numbers are permanent and cannot be deleted." };
 }
 
 export function toggleBlockCustomer(identifier: string) {

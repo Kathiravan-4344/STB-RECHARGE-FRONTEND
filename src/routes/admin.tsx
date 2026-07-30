@@ -356,8 +356,7 @@ function AdminPage() {
               <UserCheck className="h-5 w-5 text-amber-400" /> Add Operator Number (Whitelist)
             </h2>
             <p className="text-xs text-muted-foreground mt-1">
-              ONLY mobile numbers added here by Admin can access the Operator Panel. Unauthorized
-              logins are blocked automatically.
+              ONLY mobile numbers added here by Admin can access the Operator Panel. Added operator numbers are permanent records and cannot be deleted.
             </p>
             <form
               onSubmit={handleAddOperator}
@@ -457,12 +456,9 @@ function AdminPage() {
                         >
                           {op.active ? "Deactivate" : "Activate"}
                         </button>
-                        <button
-                          onClick={() => removeApprovedOperator(op.id)}
-                          className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-400 hover:bg-red-500/20"
-                        >
-                          Remove Access
-                        </button>
+                        <span className="rounded-xl border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-muted-foreground">
+                          🔒 Permanent
+                        </span>
                       </td>
                     </tr>
                   ))}
