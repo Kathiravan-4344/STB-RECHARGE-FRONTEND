@@ -78,7 +78,9 @@ function LoginPage() {
     (isOperatorValidEmail || isOperatorValidMobile || operatorContact.trim() === "9080864542");
 
   const isCustomerValid =
-    name.trim().length > 0 && /^\d{10}$/.test(mobile.trim()) && stbId.trim().length > 0;
+    name.trim().length > 0 &&
+    /^\d{10}$/.test(mobile.trim()) &&
+    /^\d{12}$/.test(stbId.trim());
 
   const isFormValid = role === "operator" ? isOperatorValid : isCustomerValid;
 
@@ -140,6 +142,12 @@ function LoginPage() {
         setErr("Enter a valid 10-digit mobile number");
         return;
       }
+
+      if (!/^\d{12}$/.test(stbId.trim())) {
+        setErr("Enter a valid 12-digit STB ID / Smart Card Number");
+        return;
+      }
+
       setLoading(true);
       await sendOtp(mobile);
       setLoading(false);
@@ -375,9 +383,14 @@ function LoginPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs uppercase tracking-widest text-muted-foreground">
-                      STB ID / Smart Card Number
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+                        12-Digit STB ID / Smart Card Number *
+                      </label>
+                      <span className={`text-[11px] font-mono font-bold ${stbId.length === 12 ? "text-emerald-400" : "text-amber-400"}`}>
+                        {stbId.length}/12
+                      </span>
+                    </div>
                     <input
                       inputMode="numeric"
                       maxLength={12}
@@ -386,9 +399,14 @@ function LoginPage() {
                         setStbId(e.target.value.replace(/\D/g, ""));
                         setErr(null);
                       }}
-                      placeholder="ENTER YOUR STB ID"
-                      className="mt-1.5 w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 px-4 text-sm outline-none focus:border-primary/60 focus:shadow-[var(--shadow-glow)] font-medium placeholder:font-normal"
+                      placeholder="ENTER 12-DIGIT STB ID"
+                      className="mt-1.5 w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 px-4 text-sm outline-none focus:border-primary/60 focus:shadow-[var(--shadow-glow)] font-mono font-bold placeholder:font-sans placeholder:font-normal"
                     />
+                    {stbId.length > 0 && stbId.length < 12 && (
+                      <p className="mt-1.5 text-xs text-amber-400/90 font-medium">
+                        ⚠️ Enter remaining {12 - stbId.length} digits to unlock OTP verification.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
