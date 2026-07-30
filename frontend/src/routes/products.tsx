@@ -33,7 +33,11 @@ export const Route = createFileRoute("/products")({
   head: () => ({
     meta: [
       { title: "STB Accessories & Services — STB RECHARGE" },
-      { name: "description", content: "Request STB accessories, cables, replacement remotes and book installation services." },
+      {
+        name: "description",
+        content:
+          "Request STB accessories, cables, replacement remotes and book installation services.",
+      },
     ],
   }),
   component: ProductsPage,
@@ -134,7 +138,7 @@ function ProductsPage() {
     (r) =>
       (user?.mobile && r.customerMobile === user.mobile) ||
       (stb?.id && r.stbId === stb.id) ||
-      r.customerMobile === mobileInput
+      r.customerMobile === mobileInput,
   );
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -177,7 +181,9 @@ function ProductsPage() {
       imageUrl: imagePreview || undefined,
     });
 
-    setSuccessMsg(`Your request for "${selectedProduct.name}" has been sent to the operator successfully!`);
+    setSuccessMsg(
+      `Your request for "${selectedProduct.name}" has been sent to the operator successfully!`,
+    );
     setDescription("");
     setImagePreview(null);
     setQuantity(1);
@@ -200,7 +206,9 @@ function ProductsPage() {
               🛒 Product & Service Request
             </h1>
             <p className="mt-1.5 text-sm text-slate-300 max-w-xl">
-              Need replacement cables, STB remotes, power adapters, or installation setup? Select your product, review real-time pricing, and send requests directly to your local operator.
+              Need replacement cables, STB remotes, power adapters, or installation setup? Select
+              your product, review real-time pricing, and send requests directly to your local
+              operator.
             </p>
           </div>
 
@@ -253,7 +261,8 @@ function ProductsPage() {
             {/* Category Switcher */}
             <div className="flex items-center justify-between flex-wrap gap-3">
               <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-[color:var(--neon-cyan)]" /> Choose Product or Service
+                <Sparkles className="h-5 w-5 text-[color:var(--neon-cyan)]" /> Choose Product or
+                Service
               </h2>
               <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1 text-xs">
                 <button
@@ -296,7 +305,8 @@ function ProductsPage() {
             <div className="grid gap-3.5 sm:grid-cols-2">
               {filteredProducts.map((p) => {
                 const isSelected = p.id === selectedProductId;
-                const isLowStock = p.category === "accessory" && p.availableStock <= 5 && p.availableStock > 0;
+                const isLowStock =
+                  p.category === "accessory" && p.availableStock <= 5 && p.availableStock > 0;
                 const isOutOfStock = p.category === "accessory" && p.availableStock === 0;
 
                 return (
@@ -370,8 +380,12 @@ function ProductsPage() {
             <div className="sticky top-24 rounded-3xl glass-strong border border-white/15 p-6 shadow-2xl">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div>
-                  <h3 className="font-display text-xl font-bold text-white">📝 Product Request Form</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Submit request to your operator</p>
+                  <h3 className="font-display text-xl font-bold text-white">
+                    📝 Product Request Form
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Submit request to your operator
+                  </p>
                 </div>
                 <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-bold text-[color:var(--neon-cyan)]">
                   {selectedProduct?.category === "service" ? "Service" : "Accessory"}
@@ -390,7 +404,9 @@ function ProductsPage() {
                       type="text"
                       required
                       value={stbIdInput}
-                      onChange={(e) => setStbIdInput(e.target.value.replace(/\D/g, "").slice(0, 12))}
+                      onChange={(e) =>
+                        setStbIdInput(e.target.value.replace(/\D/g, "").slice(0, 12))
+                      }
                       placeholder="ENTER STB ID"
                       className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-3 text-sm font-bold text-white outline-none focus:border-[color:var(--neon-cyan)]"
                     />
@@ -427,7 +443,9 @@ function ProductsPage() {
                       required
                       maxLength={10}
                       value={mobileInput}
-                      onChange={(e) => setMobileInput(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      onChange={(e) =>
+                        setMobileInput(e.target.value.replace(/\D/g, "").slice(0, 10))
+                      }
                       placeholder="10-digit mobile number"
                       className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-3 text-sm font-bold text-white outline-none focus:border-[color:var(--neon-cyan)]"
                     />
@@ -505,7 +523,11 @@ function ProductsPage() {
                     </label>
                     {imagePreview && (
                       <div className="relative h-12 w-12 rounded-xl overflow-hidden border border-white/20">
-                        <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="h-full w-full object-cover"
+                        />
                         <button
                           type="button"
                           onClick={() => setImagePreview(null)}
@@ -602,7 +624,9 @@ function ProductsPage() {
 
                   <div className="grid grid-cols-3 gap-2 text-xs rounded-xl bg-white/5 p-3">
                     <div>
-                      <span className="text-muted-foreground block text-[10px] uppercase">Unit Price</span>
+                      <span className="text-muted-foreground block text-[10px] uppercase">
+                        Unit Price
+                      </span>
                       <strong className="text-white font-mono">₹{req.unitPrice}</strong>
                     </div>
                     <div>
@@ -610,8 +634,12 @@ function ProductsPage() {
                       <strong className="text-white font-mono">{req.quantity}</strong>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block text-[10px] uppercase">Total</span>
-                      <strong className="text-[color:var(--neon-cyan)] font-mono">₹{req.totalAmount}</strong>
+                      <span className="text-muted-foreground block text-[10px] uppercase">
+                        Total
+                      </span>
+                      <strong className="text-[color:var(--neon-cyan)] font-mono">
+                        ₹{req.totalAmount}
+                      </strong>
                     </div>
                   </div>
 
@@ -629,7 +657,9 @@ function ProductsPage() {
                         alt="Attached photo"
                         className="h-16 w-16 rounded-xl object-cover border border-white/20"
                       />
-                      <span className="text-xs text-muted-foreground font-medium">Image attached</span>
+                      <span className="text-xs text-muted-foreground font-medium">
+                        Image attached
+                      </span>
                     </div>
                   )}
 
@@ -640,10 +670,12 @@ function ProductsPage() {
                         <Wrench className="h-4 w-4" /> Operator Technician Assigned
                       </div>
                       <div className="text-white">
-                        Technician: <strong>{req.technicianName || "Ramesh Kumar"}</strong> ({req.technicianMobile || "9840192837"})
+                        Technician: <strong>{req.technicianName || "Ramesh Kumar"}</strong> (
+                        {req.technicianMobile || "9840192837"})
                       </div>
                       <div className="text-slate-300">
-                        Scheduled Slot: <strong>{req.scheduledDate || "Tomorrow at 11:00 AM"}</strong>
+                        Scheduled Slot:{" "}
+                        <strong>{req.scheduledDate || "Tomorrow at 11:00 AM"}</strong>
                       </div>
                     </div>
                   )}

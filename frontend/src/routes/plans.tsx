@@ -8,7 +8,11 @@ export const Route = createFileRoute("/plans")({
   head: () => ({
     meta: [
       { title: "Recharge Plans — STB RECHARGE" },
-      { name: "description", content: "Browse monthly packs, channel packs and add-ons. Find the perfect Set Top Box plan for you." },
+      {
+        name: "description",
+        content:
+          "Browse monthly packs, channel packs and add-ons. Find the perfect Set Top Box plan for you.",
+      },
       { property: "og:title", content: "Recharge Plans — STB RECHARGE" },
       { property: "og:description", content: "Monthly, channel packs and add-ons." },
     ],
@@ -27,7 +31,9 @@ function Plans() {
     <AppShell>
       <div className="mb-6">
         <h1 className="font-display text-3xl font-bold">Choose a plan</h1>
-        <p className="text-sm text-muted-foreground">Transparent pricing. Operator-approved recharge in minutes.</p>
+        <p className="text-sm text-muted-foreground">
+          Transparent pricing. Operator-approved recharge in minutes.
+        </p>
       </div>
 
       <div className="mb-6 inline-flex rounded-2xl border border-white/10 bg-white/5 p-1">
@@ -44,23 +50,33 @@ function Plans() {
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {list.map((p) => (
-          <div key={p.id} className={`card-3d relative flex flex-col rounded-3xl p-6 ${p.popular ? "neon-border" : ""}`}>
+          <div
+            key={p.id}
+            className={`card-3d relative flex flex-col rounded-3xl p-6 ${p.popular ? "neon-border" : ""}`}
+          >
             {p.popular && (
               <div className="absolute -top-3 left-6 flex items-center gap-1 rounded-full gradient-primary px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary-foreground shadow-[var(--shadow-glow)]">
                 <Star className="h-3 w-3" /> Most popular
               </div>
             )}
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">{p.category}</div>
+            <div className="text-xs uppercase tracking-widest text-muted-foreground">
+              {p.category}
+            </div>
             <div className="mt-1 font-sans text-xl font-semibold">{p.name}</div>
             <div className="mt-3 flex items-baseline gap-1">
               <span className="text-4xl font-bold text-gradient">₹{p.price}</span>
               <span className="text-sm text-muted-foreground">/ {p.validityDays} days</span>
             </div>
-            {p.channels && <div className="mt-1 text-xs text-muted-foreground">{p.channels} channels included</div>}
+            {p.channels && (
+              <div className="mt-1 text-xs text-muted-foreground">
+                {p.channels} channels included
+              </div>
+            )}
             <ul className="mt-4 space-y-2 text-sm">
               {p.features.map((f) => (
                 <li key={f} className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 text-[color:var(--neon-cyan)]" /> <span>{f}</span>
+                  <Check className="mt-0.5 h-4 w-4 text-[color:var(--neon-cyan)]" />{" "}
+                  <span>{f}</span>
                 </li>
               ))}
             </ul>

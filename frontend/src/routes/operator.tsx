@@ -53,7 +53,11 @@ export const Route = createFileRoute("/operator")({
   head: () => ({
     meta: [
       { title: "STB RECHARGE – Operator Panel" },
-      { name: "description", content: "Operator Control Center for STB Recharge Approvals, Accessories, Stock, and Complaint Management" },
+      {
+        name: "description",
+        content:
+          "Operator Control Center for STB Recharge Approvals, Accessories, Stock, and Complaint Management",
+      },
     ],
   }),
   component: OperatorPanel,
@@ -142,7 +146,9 @@ function OperatorPanel() {
   const navigate = useNavigate();
 
   // Navigation Menu Tabs: "txns" | "product_requests" | "stock" | "complaints"
-  const [activeMenu, setActiveMenu] = useState<"txns" | "product_requests" | "stock" | "complaints">("txns");
+  const [activeMenu, setActiveMenu] = useState<
+    "txns" | "product_requests" | "stock" | "complaints"
+  >("txns");
 
   // Search & filter state for txns
   const [searchTerm, setSearchTerm] = useState("");
@@ -206,8 +212,12 @@ function OperatorPanel() {
   const failedCount = txns.filter((t) => t.status === "failed").length;
 
   const pendingProductReqsCount = productRequests.filter((r) => r.status === "Pending").length;
-  const lowStockCount = products.filter((p) => p.category === "accessory" && p.availableStock <= 5).length;
-  const pendingComplaintsCount = complaints.filter((c) => c.status === "Pending" || c.status === "Assigned" || c.status === "In Progress").length;
+  const lowStockCount = products.filter(
+    (p) => p.category === "accessory" && p.availableStock <= 5,
+  ).length;
+  const pendingComplaintsCount = complaints.filter(
+    (c) => c.status === "Pending" || c.status === "Assigned" || c.status === "In Progress",
+  ).length;
 
   // Filtered transactions
   const filteredTxns = txns.filter((t) => {
@@ -227,7 +237,8 @@ function OperatorPanel() {
       r.stbId.toLowerCase().includes(productReqSearch.toLowerCase()) ||
       r.productName.toLowerCase().includes(productReqSearch.toLowerCase()) ||
       r.customerMobile.includes(productReqSearch);
-    const matchesStatus = productReqStatusFilter === "all" ? true : r.status === productReqStatusFilter;
+    const matchesStatus =
+      productReqStatusFilter === "all" ? true : r.status === productReqStatusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -240,7 +251,8 @@ function OperatorPanel() {
       c.category.toLowerCase().includes(complaintSearch.toLowerCase()) ||
       c.issueType.toLowerCase().includes(complaintSearch.toLowerCase()) ||
       c.customerMobile.includes(complaintSearch);
-    const matchesStatus = complaintStatusFilter === "all" ? true : c.status === complaintStatusFilter;
+    const matchesStatus =
+      complaintStatusFilter === "all" ? true : c.status === complaintStatusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -283,7 +295,7 @@ function OperatorPanel() {
       assigningComplaint.id,
       cmpTechName.trim(),
       cmpTechPhone.trim(),
-      cmpExpectedArrival.trim()
+      cmpExpectedArrival.trim(),
     );
     setAssigningComplaint(null);
   }
@@ -309,7 +321,13 @@ function OperatorPanel() {
                 </span>
               </div>
               <div className="text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
-                <span>Logged in: <strong className="font-normal text-white">{formatName(user.name || "Operator Admin")}</strong> ({user.operatorNumber || "OP-ADMIN"} · +91 {user.mobile})</span>
+                <span>
+                  Logged in:{" "}
+                  <strong className="font-normal text-white">
+                    {formatName(user.name || "Operator Admin")}
+                  </strong>{" "}
+                  ({user.operatorNumber || "OP-ADMIN"} · +91 {user.mobile})
+                </span>
                 <span>•</span>
                 <span className="flex items-center gap-1 text-[color:var(--neon-cyan)]">
                   <span className="relative flex h-2 w-2">
@@ -347,11 +365,20 @@ function OperatorPanel() {
         {/* Top greeting & Navigation Menu Tabs */}
         <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-[color:var(--neon-cyan)] font-extrabold">Welcome back, Operator</p>
+            <p className="text-xs uppercase tracking-[0.25em] text-[color:var(--neon-cyan)] font-extrabold">
+              Welcome back, Operator
+            </p>
             <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight sm:text-4xl text-white">
-              Hi <span className="font-normal text-white">{formatName(user.name || "Operator Admin")}</span> 👋
+              Hi{" "}
+              <span className="font-normal text-white">
+                {formatName(user.name || "Operator Admin")}
+              </span>{" "}
+              👋
             </h1>
-            <p className="mt-1 text-sm text-slate-300">Manage recharge transactions, product requests, stock inventory & customer service complaints.</p>
+            <p className="mt-1 text-sm text-slate-300">
+              Manage recharge transactions, product requests, stock inventory & customer service
+              complaints.
+            </p>
           </div>
 
           {/* 🧑‍💻 Operator Panel Navigation Menu Tabs */}
@@ -424,7 +451,9 @@ function OperatorPanel() {
             <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-[#0d121f]/90 p-6 backdrop-blur-xl shadow-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">Total Requests</span>
+                  <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
+                    Total Requests
+                  </span>
                   <Tv className="h-5 w-5 text-primary" />
                 </div>
                 <div className="mt-4 font-display text-4xl font-black text-white">{totalCount}</div>
@@ -433,28 +462,40 @@ function OperatorPanel() {
 
               <div className="group relative overflow-hidden rounded-3xl border border-yellow-500/20 bg-[#0d121f]/90 p-6 backdrop-blur-xl shadow-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-widest font-semibold text-yellow-400/90">Pending</span>
+                  <span className="text-xs uppercase tracking-widest font-semibold text-yellow-400/90">
+                    Pending
+                  </span>
                   <Clock className="h-5 w-5 text-yellow-400 animate-pulse" />
                 </div>
-                <div className="mt-4 font-display text-4xl font-black text-yellow-400">{pendingCount}</div>
+                <div className="mt-4 font-display text-4xl font-black text-yellow-400">
+                  {pendingCount}
+                </div>
                 <div className="mt-1 text-xs text-yellow-400/70">Awaiting operator action</div>
               </div>
 
               <div className="group relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-[#0d121f]/90 p-6 backdrop-blur-xl shadow-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-widest font-semibold text-emerald-400/90">Approved</span>
+                  <span className="text-xs uppercase tracking-widest font-semibold text-emerald-400/90">
+                    Approved
+                  </span>
                   <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                 </div>
-                <div className="mt-4 font-display text-4xl font-black text-emerald-400">{approvedCount}</div>
+                <div className="mt-4 font-display text-4xl font-black text-emerald-400">
+                  {approvedCount}
+                </div>
                 <div className="mt-1 text-xs text-emerald-400/70">Successfully activated</div>
               </div>
 
               <div className="group relative overflow-hidden rounded-3xl border border-red-500/20 bg-[#0d121f]/90 p-6 backdrop-blur-xl shadow-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-widest font-semibold text-red-400/90">Failed</span>
+                  <span className="text-xs uppercase tracking-widest font-semibold text-red-400/90">
+                    Failed
+                  </span>
                   <XCircle className="h-5 w-5 text-red-400" />
                 </div>
-                <div className="mt-4 font-display text-4xl font-black text-red-400">{failedCount}</div>
+                <div className="mt-4 font-display text-4xl font-black text-red-400">
+                  {failedCount}
+                </div>
                 <div className="mt-1 text-xs text-red-400/70">Rejected or cancelled</div>
               </div>
             </div>
@@ -517,15 +558,22 @@ function OperatorPanel() {
                         <tr key={t.id} className="hover:bg-white/5 transition">
                           <td className="px-6 py-4 font-mono font-bold text-white">{t.id}</td>
                           <td className="px-6 py-4">
-                            <div className="font-bold text-white">{t.customerName || "Customer"}</div>
-                            <div className="text-xs text-muted-foreground">STB: {t.stbId} · +91 {t.customerMobile}</div>
+                            <div className="font-bold text-white">
+                              {t.customerName || "Customer"}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              STB: {t.stbId} · +91 {t.customerMobile}
+                            </div>
                           </td>
                           <td className="px-6 py-4 font-medium text-white">{t.planName}</td>
-                          <td className="px-6 py-4 font-mono font-bold text-[color:var(--neon-cyan)]">₹{t.amount}</td>
+                          <td className="px-6 py-4 font-mono font-bold text-[color:var(--neon-cyan)]">
+                            ₹{t.amount}
+                          </td>
                           <td className="px-6 py-4">
                             {t.status === "pending" && (
                               <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow-500/40 bg-yellow-500/10 px-3 py-1 text-xs font-bold text-yellow-400">
-                                <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" /> Pending Approval
+                                <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />{" "}
+                                Pending Approval
                               </span>
                             )}
                             {t.status === "success" && (
@@ -586,7 +634,15 @@ function OperatorPanel() {
                 </div>
                 <div className="flex items-center gap-2 flex-wrap text-xs">
                   <span className="text-slate-400 font-bold">Status Filter:</span>
-                  {["all", "Pending", "Processing", "Out for Delivery", "Installation Scheduled", "Completed", "Not Available"].map((s) => (
+                  {[
+                    "all",
+                    "Pending",
+                    "Processing",
+                    "Out for Delivery",
+                    "Installation Scheduled",
+                    "Completed",
+                    "Not Available",
+                  ].map((s) => (
                     <button
                       key={s}
                       onClick={() => setProductReqStatusFilter(s)}
@@ -607,7 +663,9 @@ function OperatorPanel() {
               {filteredProductRequests.length === 0 ? (
                 <div className="md:col-span-2 rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
                   <Package className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-3 font-display text-lg font-bold text-white">No product requests found</h3>
+                  <h3 className="mt-3 font-display text-lg font-bold text-white">
+                    No product requests found
+                  </h3>
                 </div>
               ) : (
                 filteredProductRequests.map((req) => {
@@ -621,12 +679,20 @@ function OperatorPanel() {
                     >
                       <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-4">
                         <div>
-                          <div className="text-[11px] font-mono font-bold text-[color:var(--neon-cyan)]">REQ ID: {req.id}</div>
-                          <h3 className="font-display text-xl font-bold text-white mt-0.5">{req.customerName}</h3>
+                          <div className="text-[11px] font-mono font-bold text-[color:var(--neon-cyan)]">
+                            REQ ID: {req.id}
+                          </div>
+                          <h3 className="font-display text-xl font-bold text-white mt-0.5">
+                            {req.customerName}
+                          </h3>
                           <div className="text-xs text-slate-300 flex items-center gap-2 mt-1">
-                            <span>STB ID: <strong className="text-white font-mono">{req.stbId}</strong></span>
+                            <span>
+                              STB ID: <strong className="text-white font-mono">{req.stbId}</strong>
+                            </span>
                             <span>•</span>
-                            <span>Mobile: <strong className="text-white">{req.customerMobile}</strong></span>
+                            <span>
+                              Mobile: <strong className="text-white">{req.customerMobile}</strong>
+                            </span>
                           </div>
                         </div>
                         <ProductStatusBadge status={req.status} />
@@ -634,34 +700,61 @@ function OperatorPanel() {
 
                       <div className="grid grid-cols-2 gap-3 rounded-2xl bg-white/5 p-4 text-xs">
                         <div>
-                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">Product / Service</span>
-                          <strong className="text-white font-display text-sm">{req.productName}</strong>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">Stock Availability</span>
-                          <strong className={isStockAvailable ? "text-emerald-400" : "text-red-400 font-bold"}>
-                            {req.category === "service" ? "Service Available" : isStockAvailable ? `In Stock (${targetProd?.availableStock} avail)` : "⚠️ Out of Stock"}
+                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">
+                            Product / Service
+                          </span>
+                          <strong className="text-white font-display text-sm">
+                            {req.productName}
                           </strong>
                         </div>
                         <div>
-                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">Quantity & Price</span>
-                          <strong className="text-white">{req.quantity} x ₹{req.unitPrice}</strong>
+                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">
+                            Stock Availability
+                          </span>
+                          <strong
+                            className={
+                              isStockAvailable ? "text-emerald-400" : "text-red-400 font-bold"
+                            }
+                          >
+                            {req.category === "service"
+                              ? "Service Available"
+                              : isStockAvailable
+                                ? `In Stock (${targetProd?.availableStock} avail)`
+                                : "⚠️ Out of Stock"}
+                          </strong>
                         </div>
                         <div>
-                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">Total Price</span>
-                          <strong className="text-[color:var(--neon-cyan)] text-sm font-mono">₹{req.totalAmount}</strong>
+                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">
+                            Quantity & Price
+                          </span>
+                          <strong className="text-white">
+                            {req.quantity} x ₹{req.unitPrice}
+                          </strong>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">
+                            Total Price
+                          </span>
+                          <strong className="text-[color:var(--neon-cyan)] text-sm font-mono">
+                            ₹{req.totalAmount}
+                          </strong>
                         </div>
                       </div>
 
                       {req.description && (
                         <div className="text-xs text-slate-300 bg-black/30 p-3 rounded-xl border border-white/5">
-                          <strong className="text-muted-foreground">Requirement Notes: </strong> {req.description}
+                          <strong className="text-muted-foreground">Requirement Notes: </strong>{" "}
+                          {req.description}
                         </div>
                       )}
 
                       {req.imageUrl && (
                         <div className="flex items-center gap-3">
-                          <img src={req.imageUrl} alt="Attached" className="h-16 w-16 rounded-xl object-cover border border-white/20" />
+                          <img
+                            src={req.imageUrl}
+                            alt="Attached"
+                            className="h-16 w-16 rounded-xl object-cover border border-white/20"
+                          />
                           <span className="text-xs text-slate-400">Attached photo</span>
                         </div>
                       )}
@@ -688,7 +781,7 @@ function OperatorPanel() {
                             onClick={() =>
                               updateProductRequestStatus(
                                 req.id,
-                                req.category === "service" ? "Processing" : "Out for Delivery"
+                                req.category === "service" ? "Processing" : "Out for Delivery",
                               )
                             }
                             className="flex items-center gap-1 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-blue-500 shadow-md"
@@ -740,7 +833,9 @@ function OperatorPanel() {
                 <h2 className="font-display text-2xl font-bold text-white flex items-center gap-2">
                   📦 Operator Stock & Inventory Management
                 </h2>
-                <p className="text-xs text-slate-300 mt-1">Maintain product availability, update price & stock quantity.</p>
+                <p className="text-xs text-slate-300 mt-1">
+                  Maintain product availability, update price & stock quantity.
+                </p>
               </div>
 
               <button
@@ -777,18 +872,26 @@ function OperatorPanel() {
                             )}
                             <div>
                               <div>{p.name}</div>
-                              <span className="text-[10px] text-slate-400 font-normal">{p.description}</span>
+                              <span className="text-[10px] text-slate-400 font-normal">
+                                {p.description}
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 text-xs">
-                            <span className={`capitalize rounded-full px-2.5 py-0.5 font-bold ${
-                              p.category === "service" ? "bg-purple-500/20 text-purple-300" : "bg-cyan-500/20 text-cyan-300"
-                            }`}>
+                            <span
+                              className={`capitalize rounded-full px-2.5 py-0.5 font-bold ${
+                                p.category === "service"
+                                  ? "bg-purple-500/20 text-purple-300"
+                                  : "bg-cyan-500/20 text-cyan-300"
+                              }`}
+                            >
                               {p.category}
                             </span>
                           </td>
                           <td className="px-6 py-4 font-mono font-bold text-white">₹{p.price}</td>
-                          <td className="px-6 py-4 font-mono font-bold text-emerald-400">{p.availableStock}</td>
+                          <td className="px-6 py-4 font-mono font-bold text-emerald-400">
+                            {p.availableStock}
+                          </td>
                           <td className="px-6 py-4 font-mono text-slate-400">{p.soldQuantity}</td>
                           <td className="px-6 py-4">
                             {p.category === "accessory" ? (
@@ -797,10 +900,14 @@ function OperatorPanel() {
                                   ⚠️ Low Stock ({p.availableStock} left)
                                 </span>
                               ) : (
-                                <span className="font-mono text-emerald-400 font-bold">{p.availableStock} units</span>
+                                <span className="font-mono text-emerald-400 font-bold">
+                                  {p.availableStock} units
+                                </span>
                               )
                             ) : (
-                              <span className="text-xs text-purple-300 font-medium">Service Available</span>
+                              <span className="text-xs text-purple-300 font-medium">
+                                Service Available
+                              </span>
                             )}
                           </td>
                           <td className="px-6 py-4 text-right">
@@ -812,7 +919,8 @@ function OperatorPanel() {
                               }}
                               className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/15"
                             >
-                              <Edit3 className="h-3.5 w-3.5 text-[color:var(--neon-cyan)]" /> Edit Price / Stock
+                              <Edit3 className="h-3.5 w-3.5 text-[color:var(--neon-cyan)]" /> Edit
+                              Price / Stock
                             </button>
                           </td>
                         </tr>
@@ -864,7 +972,9 @@ function OperatorPanel() {
               {filteredComplaints.length === 0 ? (
                 <div className="md:col-span-2 rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
                   <Wrench className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-3 font-display text-lg font-bold text-white">No complaints found</h3>
+                  <h3 className="mt-3 font-display text-lg font-bold text-white">
+                    No complaints found
+                  </h3>
                 </div>
               ) : (
                 filteredComplaints.map((cmp) => (
@@ -881,9 +991,13 @@ function OperatorPanel() {
                           {cmp.customerName}
                         </h3>
                         <div className="text-xs text-slate-300 flex items-center gap-2 mt-1">
-                          <span>STB ID: <strong className="text-white font-mono">{cmp.stbId}</strong></span>
+                          <span>
+                            STB ID: <strong className="text-white font-mono">{cmp.stbId}</strong>
+                          </span>
                           <span>•</span>
-                          <span>Mobile: <strong className="text-white">{cmp.customerMobile}</strong></span>
+                          <span>
+                            Mobile: <strong className="text-white">{cmp.customerMobile}</strong>
+                          </span>
                         </div>
                       </div>
                       <ComplaintStatusBadge status={cmp.status} />
@@ -897,17 +1011,23 @@ function OperatorPanel() {
                         {cmp.category} – {cmp.issueType}
                       </div>
                       <div className="text-slate-400 text-[11px] mt-1">
-                        Preferred Time: <strong className="text-white">{cmp.preferredTime}</strong> · Created {new Date(cmp.createdAt).toLocaleString()}
+                        Preferred Time: <strong className="text-white">{cmp.preferredTime}</strong>{" "}
+                        · Created {new Date(cmp.createdAt).toLocaleString()}
                       </div>
                     </div>
 
                     <div className="text-xs text-slate-300 bg-black/30 p-3 rounded-xl border border-white/5">
-                      <strong className="text-muted-foreground">Description: </strong> {cmp.description}
+                      <strong className="text-muted-foreground">Description: </strong>{" "}
+                      {cmp.description}
                     </div>
 
                     {cmp.mediaUrl && (
                       <div className="flex items-center gap-3">
-                        <img src={cmp.mediaUrl} alt="Complaint Media" className="h-16 w-16 rounded-xl object-cover border border-white/20" />
+                        <img
+                          src={cmp.mediaUrl}
+                          alt="Complaint Media"
+                          className="h-16 w-16 rounded-xl object-cover border border-white/20"
+                        />
                         <span className="text-xs text-slate-400">Uploaded image/video proof</span>
                       </div>
                     )}
@@ -918,8 +1038,15 @@ function OperatorPanel() {
                         <div className="font-bold text-[color:var(--neon-cyan)] flex items-center gap-1.5">
                           <Car className="h-4 w-4 text-cyan-400" /> Assigned Technician Details
                         </div>
-                        <div>Name: <strong>{cmp.technicianName}</strong> (+91 {cmp.technicianMobile})</div>
-                        <div>Expected Arrival: <strong className="text-emerald-400">{cmp.expectedArrival || "In 20 Minutes"}</strong></div>
+                        <div>
+                          Name: <strong>{cmp.technicianName}</strong> (+91 {cmp.technicianMobile})
+                        </div>
+                        <div>
+                          Expected Arrival:{" "}
+                          <strong className="text-emerald-400">
+                            {cmp.expectedArrival || "In 20 Minutes"}
+                          </strong>
+                        </div>
                       </div>
                     )}
 
@@ -999,15 +1126,20 @@ function OperatorPanel() {
               <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
                 <Car className="h-5 w-5 text-amber-400" /> Assign Technician to Complaint
               </h3>
-              <button onClick={() => setAssigningComplaint(null)} className="rounded-lg p-1 text-slate-400 hover:text-white">
+              <button
+                onClick={() => setAssigningComplaint(null)}
+                className="rounded-lg p-1 text-slate-400 hover:text-white"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <form onSubmit={handleAssignComplaintSubmit} className="space-y-3 text-xs">
               <div className="rounded-xl bg-white/5 p-3 text-white">
-                <strong>{assigningComplaint.customerName}</strong> ({assigningComplaint.customerMobile})<br />
-                Complaint: {assigningComplaint.category} – {assigningComplaint.issueType}<br />
+                <strong>{assigningComplaint.customerName}</strong> (
+                {assigningComplaint.customerMobile})<br />
+                Complaint: {assigningComplaint.category} – {assigningComplaint.issueType}
+                <br />
                 STB ID: {assigningComplaint.stbId}
               </div>
 
@@ -1023,7 +1155,9 @@ function OperatorPanel() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Technician Mobile Number</label>
+                <label className="block font-bold text-slate-300 mb-1">
+                  Technician Mobile Number
+                </label>
                 <input
                   type="text"
                   required
@@ -1070,9 +1204,13 @@ function OperatorPanel() {
           <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[#0d121f] p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
-                <Wrench className="h-5 w-5 text-[color:var(--neon-cyan)]" /> Schedule Product Technician
+                <Wrench className="h-5 w-5 text-[color:var(--neon-cyan)]" /> Schedule Product
+                Technician
               </h3>
-              <button onClick={() => setSchedulingReq(null)} className="rounded-lg p-1 text-slate-400 hover:text-white">
+              <button
+                onClick={() => setSchedulingReq(null)}
+                className="rounded-lg p-1 text-slate-400 hover:text-white"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -1084,7 +1222,9 @@ function OperatorPanel() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Assign Technician Name</label>
+                <label className="block font-bold text-slate-300 mb-1">
+                  Assign Technician Name
+                </label>
                 <input
                   type="text"
                   required
@@ -1106,7 +1246,9 @@ function OperatorPanel() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Scheduled Date & Time Slot</label>
+                <label className="block font-bold text-slate-300 mb-1">
+                  Scheduled Date & Time Slot
+                </label>
                 <input
                   type="text"
                   required
@@ -1144,7 +1286,10 @@ function OperatorPanel() {
               <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
                 <Edit3 className="h-5 w-5 text-[color:var(--neon-cyan)]" /> Update Stock & Price
               </h3>
-              <button onClick={() => setEditingProduct(null)} className="rounded-lg p-1 text-slate-400 hover:text-white">
+              <button
+                onClick={() => setEditingProduct(null)}
+                className="rounded-lg p-1 text-slate-400 hover:text-white"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -1173,7 +1318,9 @@ function OperatorPanel() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Available Stock Quantity</label>
+                <label className="block font-bold text-slate-300 mb-1">
+                  Available Stock Quantity
+                </label>
                 <input
                   type="number"
                   required
@@ -1213,7 +1360,10 @@ function OperatorPanel() {
               <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
                 <Plus className="h-5 w-5 text-[color:var(--neon-cyan)]" /> Add New Inventory Product
               </h3>
-              <button onClick={() => setShowAddProduct(false)} className="rounded-lg p-1 text-slate-400 hover:text-white">
+              <button
+                onClick={() => setShowAddProduct(false)}
+                className="rounded-lg p-1 text-slate-400 hover:text-white"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>

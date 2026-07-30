@@ -79,7 +79,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#0b1020" },
       { title: "STB RECHARGE — Smart Cable TV Recharge" },
-      { name: "description", content: "Recharge your Set Top Box in seconds. Login with mobile OTP, pick a plan, pay, and track live operator approval." },
+      {
+        name: "description",
+        content:
+          "Recharge your Set Top Box in seconds. Login with mobile OTP, pick a plan, pay, and track live operator approval.",
+      },
       { property: "og:title", content: "STB RECHARGE" },
       { property: "og:description", content: "Smart Recharge with Operator Control." },
       { property: "og:type", content: "website" },
@@ -90,7 +94,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,

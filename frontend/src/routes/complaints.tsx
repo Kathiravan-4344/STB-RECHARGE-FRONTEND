@@ -35,13 +35,20 @@ export const Route = createFileRoute("/complaints")({
   head: () => ({
     meta: [
       { title: "Complaint & Service Management — STB RECHARGE" },
-      { name: "description", content: "Raise complaints for TV, STB, cable, or recharge issues and track technician live." },
+      {
+        name: "description",
+        content:
+          "Raise complaints for TV, STB, cable, or recharge issues and track technician live.",
+      },
     ],
   }),
   component: ComplaintsPage,
 });
 
-const CATEGORY_ISSUES: Record<string, { label: string; icon: any; issues: string[] }> = {
+const CATEGORY_ISSUES: Record<
+  string,
+  { label: string; icon: React.ElementType; issues: string[] }
+> = {
   "TV Issues": {
     label: "📺 TV Issues",
     icon: Tv,
@@ -50,7 +57,13 @@ const CATEGORY_ISSUES: Record<string, { label: string; icon: any; issues: string
   "STB Issues": {
     label: "📡 STB Issues",
     icon: Radio,
-    issues: ["STB Not Working", "STB Power Problem", "Remote Not Working", "STB Error Message", "Box Replacement Request"],
+    issues: [
+      "STB Not Working",
+      "STB Power Problem",
+      "Remote Not Working",
+      "STB Error Message",
+      "Box Replacement Request",
+    ],
   },
   "Cable Connection Issues": {
     label: "🔌 Cable Connection Issues",
@@ -117,7 +130,9 @@ function ProgressTracker({ status }: { status: ComplaintStatus }) {
                   isActive ? step.color + " shadow-[0_0_10px_currentColor]" : "bg-white/10"
                 }`}
               />
-              <span className={`block text-[10px] text-center font-bold ${isActive ? "text-white" : "text-slate-500"}`}>
+              <span
+                className={`block text-[10px] text-center font-bold ${isActive ? "text-white" : "text-slate-500"}`}
+              >
                 {step.label}
               </span>
             </div>
@@ -145,7 +160,7 @@ function ComplaintsPage() {
   const [stbIdInput, setStbIdInput] = useState<string>(stb?.id ?? "1234567890");
   const [nameInput, setNameInput] = useState<string>(user?.name || stb?.customerName || "");
   const [mobileInput, setMobileInput] = useState<string>(user?.mobile || "9876543210");
-  
+
   const [selectedCategory, setSelectedCategory] = useState<string>("TV Issues");
   const [selectedIssueType, setSelectedIssueType] = useState<string>("No Signal");
   const [description, setDescription] = useState<string>("");
@@ -164,7 +179,7 @@ function ComplaintsPage() {
     (c) =>
       (user?.mobile && c.customerMobile === user.mobile) ||
       (stb?.id && c.stbId === stb.id) ||
-      c.customerMobile === mobileInput
+      c.customerMobile === mobileInput,
   );
 
   const activeTrackingComplaints = userComplaints.filter((c) => c.status !== "Resolved");
@@ -239,7 +254,8 @@ function ComplaintsPage() {
               🛠️ Complaint & Service Management
             </h1>
             <p className="mt-1.5 text-sm text-slate-300 max-w-xl">
-              Report signal breakdown, STB power errors, cable damage, or payment issues. Track technician arrival live and rate completed services.
+              Report signal breakdown, STB power errors, cable damage, or payment issues. Track
+              technician arrival live and rate completed services.
             </p>
           </div>
 
@@ -286,7 +302,10 @@ function ComplaintsPage() {
             <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
             <span>{successMsg}</span>
           </div>
-          <button onClick={() => setSuccessMsg(null)} className="rounded-lg p-1 hover:bg-emerald-500/20">
+          <button
+            onClick={() => setSuccessMsg(null)}
+            className="rounded-lg p-1 hover:bg-emerald-500/20"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -321,10 +340,16 @@ function ComplaintsPage() {
                       <span className="rounded-xl border border-white/10 bg-white/10 p-2 text-amber-400">
                         <IconComp className="h-5 w-5" />
                       </span>
-                      {isSelected && <span className="text-xs font-extrabold text-amber-400">Selected ✓</span>}
+                      {isSelected && (
+                        <span className="text-xs font-extrabold text-amber-400">Selected ✓</span>
+                      )}
                     </div>
-                    <div className="mt-3 font-display text-base font-bold text-white">{catObj.label}</div>
-                    <span className="text-[10px] text-slate-400">{catObj.issues.length} Issue Types</span>
+                    <div className="mt-3 font-display text-base font-bold text-white">
+                      {catObj.label}
+                    </div>
+                    <span className="text-[10px] text-slate-400">
+                      {catObj.issues.length} Issue Types
+                    </span>
                   </button>
                 );
               })}
@@ -361,8 +386,12 @@ function ComplaintsPage() {
           <div className="lg:col-span-5">
             <div className="sticky top-24 rounded-3xl glass-strong border border-white/15 p-6 shadow-2xl space-y-4">
               <div className="border-b border-white/10 pb-3">
-                <h3 className="font-display text-xl font-bold text-white">📝 Complaint Submission Form</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Submit to local operator for technician dispatch</p>
+                <h3 className="font-display text-xl font-bold text-white">
+                  📝 Complaint Submission Form
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Submit to local operator for technician dispatch
+                </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
@@ -411,8 +440,12 @@ function ComplaintsPage() {
 
                 {/* 4. Category & Issue Summary */}
                 <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-slate-200">
-                  <div className="text-[10px] uppercase font-bold text-amber-400">Selected Complaint</div>
-                  <strong className="text-white text-sm block mt-0.5">{selectedCategory} $\rightarrow$ {selectedIssueType}</strong>
+                  <div className="text-[10px] uppercase font-bold text-amber-400">
+                    Selected Complaint
+                  </div>
+                  <strong className="text-white text-sm block mt-0.5">
+                    {selectedCategory} $\rightarrow$ {selectedIssueType}
+                  </strong>
                 </div>
 
                 {/* 5. Description */}
@@ -439,12 +472,25 @@ function ComplaintsPage() {
                     <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-white/5 p-3 text-xs font-bold text-slate-300 hover:border-amber-400 hover:bg-white/10 transition">
                       <Upload className="h-4 w-4 text-amber-400" />
                       <span>{mediaPreview ? "Change File" : "Upload TV Error / Cable Photo"}</span>
-                      <input type="file" accept="image/*,video/*" onChange={handleMediaUpload} className="hidden" />
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        onChange={handleMediaUpload}
+                        className="hidden"
+                      />
                     </label>
                     {mediaPreview && (
                       <div className="relative h-12 w-12 rounded-xl overflow-hidden border border-white/20">
-                        <img src={mediaPreview} alt="Attached" className="h-full w-full object-cover" />
-                        <button type="button" onClick={() => setMediaPreview(null)} className="absolute top-0 right-0 grid h-4 w-4 place-items-center bg-black/80 text-white">
+                        <img
+                          src={mediaPreview}
+                          alt="Attached"
+                          className="h-full w-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setMediaPreview(null)}
+                          className="absolute top-0 right-0 grid h-4 w-4 place-items-center bg-black/80 text-white"
+                        >
                           <X className="h-3 w-3" />
                         </button>
                       </div>
@@ -497,8 +543,12 @@ function ComplaintsPage() {
           {activeTrackingComplaints.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
               <Wrench className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-3 font-display text-lg font-bold text-white">No active complaints in progress</h3>
-              <p className="mt-1 text-sm text-slate-400">All your service complaints have been resolved!</p>
+              <h3 className="mt-3 font-display text-lg font-bold text-white">
+                No active complaints in progress
+              </h3>
+              <p className="mt-1 text-sm text-slate-400">
+                All your service complaints have been resolved!
+              </p>
               <button
                 onClick={() => setActiveTab("raise")}
                 className="mt-4 rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-bold text-black shadow-[0_0_20px_rgba(245,158,11,0.4)]"
@@ -532,12 +582,17 @@ function ComplaintsPage() {
                   <ProgressTracker status={c.status} />
 
                   <div className="text-xs text-slate-300 bg-black/30 p-3 rounded-xl border border-white/5">
-                    <strong className="text-muted-foreground">Issue Description: </strong> {c.description}
+                    <strong className="text-muted-foreground">Issue Description: </strong>{" "}
+                    {c.description}
                   </div>
 
                   {c.mediaUrl && (
                     <div className="flex items-center gap-3">
-                      <img src={c.mediaUrl} alt="Attached" className="h-16 w-16 rounded-xl object-cover border border-white/20" />
+                      <img
+                        src={c.mediaUrl}
+                        alt="Attached"
+                        className="h-16 w-16 rounded-xl object-cover border border-white/20"
+                      />
                       <span className="text-xs text-slate-400">Attached damage/screen photo</span>
                     </div>
                   )}
@@ -547,7 +602,8 @@ function ComplaintsPage() {
                     <div className="group relative overflow-hidden rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/60 via-slate-900 to-slate-900 p-4 space-y-3 shadow-[0_0_20px_rgba(0,210,255,0.15)]">
                       <div className="flex items-center justify-between border-b border-white/10 pb-2">
                         <span className="font-display text-sm font-extrabold text-[color:var(--neon-cyan)] flex items-center gap-2">
-                          <Car className="h-4 w-4 animate-bounce text-cyan-400" /> Technician is on the way 🚗
+                          <Car className="h-4 w-4 animate-bounce text-cyan-400" /> Technician is on
+                          the way 🚗
                         </span>
                         <span className="rounded-full bg-cyan-500/20 px-2.5 py-0.5 text-[10px] font-bold text-cyan-300">
                           LIVE DISPATCH
@@ -556,24 +612,39 @@ function ComplaintsPage() {
 
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
-                          <span className="text-slate-400 block text-[10px] uppercase font-bold">Technician Name</span>
+                          <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                            Technician Name
+                          </span>
                           <strong className="text-white text-sm">{c.technicianName}</strong>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[10px] uppercase font-bold">Expected Arrival</span>
-                          <strong className="text-emerald-400 font-mono text-sm">{c.expectedArrival || "In 20 Minutes"}</strong>
+                          <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                            Expected Arrival
+                          </span>
+                          <strong className="text-emerald-400 font-mono text-sm">
+                            {c.expectedArrival || "In 20 Minutes"}
+                          </strong>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[10px] uppercase font-bold">Assigned Time</span>
-                          <strong className="text-slate-200">{c.assignedAt ? new Date(c.assignedAt).toLocaleTimeString() : "Just now"}</strong>
+                          <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                            Assigned Time
+                          </span>
+                          <strong className="text-slate-200">
+                            {c.assignedAt
+                              ? new Date(c.assignedAt).toLocaleTimeString()
+                              : "Just now"}
+                          </strong>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[10px] uppercase font-bold">Contact Number</span>
+                          <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                            Contact Number
+                          </span>
                           <a
                             href={`tel:${c.technicianMobile || "9840192837"}`}
                             className="inline-flex items-center gap-1 text-[color:var(--neon-cyan)] font-bold hover:underline"
                           >
-                            <Phone className="h-3.5 w-3.5" /> +91 {c.technicianMobile || "9840192837"}
+                            <Phone className="h-3.5 w-3.5" /> +91{" "}
+                            {c.technicianMobile || "9840192837"}
                           </a>
                         </div>
                       </div>
@@ -601,24 +672,40 @@ function ComplaintsPage() {
           {resolvedComplaints.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
               <History className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-3 font-display text-lg font-bold text-white">No service history yet</h3>
-              <p className="mt-1 text-sm text-slate-400">Completed complaints will be stored here for future reference.</p>
+              <h3 className="mt-3 font-display text-lg font-bold text-white">
+                No service history yet
+              </h3>
+              <p className="mt-1 text-sm text-slate-400">
+                Completed complaints will be stored here for future reference.
+              </p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {resolvedComplaints.map((c) => (
-                <div key={c.id} className="rounded-3xl border border-white/15 glass-strong p-6 space-y-3 hover:border-white/30 transition">
+                <div
+                  key={c.id}
+                  className="rounded-3xl border border-white/15 glass-strong p-6 space-y-3 hover:border-white/30 transition"
+                >
                   <div className="flex items-start justify-between gap-2 border-b border-white/10 pb-3">
                     <div>
-                      <div className="text-[10px] font-mono font-bold text-emerald-400">COMPLAINT ID: {c.id}</div>
-                      <h3 className="font-display text-lg font-bold text-white mt-0.5">{c.category} – {c.issueType}</h3>
-                      <div className="text-xs text-muted-foreground">Resolved on: {c.resolvedAt ? new Date(c.resolvedAt).toLocaleDateString() : "Recently"}</div>
+                      <div className="text-[10px] font-mono font-bold text-emerald-400">
+                        COMPLAINT ID: {c.id}
+                      </div>
+                      <h3 className="font-display text-lg font-bold text-white mt-0.5">
+                        {c.category} – {c.issueType}
+                      </h3>
+                      <div className="text-xs text-muted-foreground">
+                        Resolved on:{" "}
+                        {c.resolvedAt ? new Date(c.resolvedAt).toLocaleDateString() : "Recently"}
+                      </div>
                     </div>
                     <StatusBadge status={c.status} />
                   </div>
 
                   <div className="text-xs text-slate-300 bg-white/5 p-3 rounded-xl">
-                    <div>Technician: <strong>{c.technicianName || "Assigned Technician"}</strong></div>
+                    <div>
+                      Technician: <strong>{c.technicianName || "Assigned Technician"}</strong>
+                    </div>
                     <div className="mt-1 text-slate-400">Details: {c.description}</div>
                   </div>
 
@@ -629,11 +716,16 @@ function ComplaintsPage() {
                         <span>Your Rating Given:</span>
                         <div className="flex items-center gap-1">
                           {[1, 2, 3, 4, 5].map((s) => (
-                            <Star key={s} className={`h-3.5 w-3.5 ${s <= c.rating! ? "fill-amber-400 text-amber-400" : "text-slate-600"}`} />
+                            <Star
+                              key={s}
+                              className={`h-3.5 w-3.5 ${s <= c.rating! ? "fill-amber-400 text-amber-400" : "text-slate-600"}`}
+                            />
                           ))}
                         </div>
                       </div>
-                      {c.feedback && <p className="text-xs text-slate-200 italic">"{c.feedback}"</p>}
+                      {c.feedback && (
+                        <p className="text-xs text-slate-200 italic">"{c.feedback}"</p>
+                      )}
                     </div>
                   ) : (
                     <button
@@ -662,15 +754,21 @@ function ComplaintsPage() {
               <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
                 <Star className="h-5 w-5 text-amber-400 fill-amber-400" /> Rate Service Experience
               </h3>
-              <button onClick={() => setRatingComplaint(null)} className="rounded-lg p-1 text-slate-400 hover:text-white">
+              <button
+                onClick={() => setRatingComplaint(null)}
+                className="rounded-lg p-1 text-slate-400 hover:text-white"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <form onSubmit={handleSaveRating} className="space-y-4 text-xs">
               <div className="text-center space-y-2">
-                <p className="text-slate-300 font-medium">How was your service experience with <strong>{ratingComplaint.technicianName || "the technician"}</strong>?</p>
-                
+                <p className="text-slate-300 font-medium">
+                  How was your service experience with{" "}
+                  <strong>{ratingComplaint.technicianName || "the technician"}</strong>?
+                </p>
+
                 {/* 1 to 5 Star Interactive Picker */}
                 <div className="flex items-center justify-center gap-2 py-2">
                   {[1, 2, 3, 4, 5].map((st) => (
@@ -680,12 +778,20 @@ function ComplaintsPage() {
                       onClick={() => setStarVal(st)}
                       className="p-1 transition hover:scale-125 active:scale-95"
                     >
-                      <Star className={`h-8 w-8 ${st <= starVal ? "fill-amber-400 text-amber-400" : "text-slate-600"}`} />
+                      <Star
+                        className={`h-8 w-8 ${st <= starVal ? "fill-amber-400 text-amber-400" : "text-slate-600"}`}
+                      />
                     </button>
                   ))}
                 </div>
                 <span className="text-amber-400 font-bold text-sm block">
-                  {starVal === 5 ? "⭐⭐⭐⭐⭐ Excellent" : starVal === 4 ? "⭐⭐⭐⭐ Good" : starVal === 3 ? "⭐⭐⭐ Average" : "Poor"}
+                  {starVal === 5
+                    ? "⭐⭐⭐⭐⭐ Excellent"
+                    : starVal === 4
+                      ? "⭐⭐⭐⭐ Good"
+                      : starVal === 3
+                        ? "⭐⭐⭐ Average"
+                        : "Poor"}
                 </span>
               </div>
 

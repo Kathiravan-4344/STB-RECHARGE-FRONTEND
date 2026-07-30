@@ -1,13 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Tv, Shield, Zap, ArrowRight } from "lucide-react";
-import { sendOtp, verifyOtp, useStore } from "@/lib/store";
+import { Tv, Shield, Zap, ArrowRight, Lock } from "lucide-react";
+import { sendOtp, verifyOtp, useStore, isOperatorApproved } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "STB RECHARGE — Smart Cable TV Recharge with Operator Control" },
-      { name: "description", content: "Recharge your Set Top Box in seconds. Login with mobile OTP, choose a plan, pay, and track operator approval live." },
+      { title: "STB RECHARGE — Smart Cable TV Recharge & Admin Portal" },
+      {
+        name: "description",
+        content:
+          "Recharge your Set Top Box in seconds. Login with mobile OTP, choose a plan, pay, and track operator approval live.",
+      },
       { property: "og:title", content: "STB RECHARGE" },
       { property: "og:description", content: "Smart Recharge with Operator Control." },
       { property: "og:type", content: "website" },
@@ -23,6 +27,7 @@ function LoginPage() {
   // Common & Customer state
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [stbId, setStbId] = useState("");
 
   // Operator state: Contact can be Mobile Number OR Gmail
   const [operatorContact, setOperatorContact] = useState("");
@@ -36,7 +41,13 @@ function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      navigate({ to: user.role === "operator" ? "/operator" : "/dashboard" });
+      if (user.role === "admin") {
+        navigate({ to: "/admin" });
+      } else if (user.role === "operator") {
+        navigate({ to: "/operator" });
+      } else {
+        navigate({ to: "/dashboard" });
+      }
     }
   }, [user, navigate]);
 
@@ -60,14 +71,14 @@ function LoginPage() {
   const isOperatorEmail = operatorContact.includes("@");
   const isOperatorValidEmail =
     isOperatorEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(operatorContact.trim());
-  const isOperatorValidMobile =
-    !isOperatorEmail && /^\d{10}$/.test(operatorContact.trim());
+  const isOperatorValidMobile = !isOperatorEmail && /^\d{10}$/.test(operatorContact.trim());
 
   const isOperatorValid =
-    name.trim().length > 0 && (isOperatorValidEmail || isOperatorValidMobile);
+    name.trim().length > 0 &&
+    (isOperatorValidEmail || isOperatorValidMobile || operatorContact.trim() === "9080864542");
 
   const isCustomerValid =
-    name.trim().length > 0 && /^\d{10}$/.test(mobile.trim());
+    name.trim().length > 0 && /^\d{10}$/.test(mobile.trim()) && stbId.trim().length > 0;
 
   const isFormValid = role === "operator" ? isOperatorValid : isCustomerValid;
 
@@ -80,10 +91,30 @@ function LoginPage() {
 
     if (role === "operator") {
       const contact = operatorContact.trim();
+      const cleanedContact = contact.replace(/\D/g, "");
+
       if (!contact) {
         setErr("ENTER YOUR MOBILE NUMBER OR GMAIL");
         return;
       }
+
+      // Check if Admin login number 9080864542
+      if (cleanedContact === "9080864542") {
+        setLoading(true);
+        await sendOtp("9080864542");
+        setLoading(false);
+        setStep("otp");
+        return;
+      }
+
+      // STRICT OPERATOR WHITELIST CHECK FOR OTHERS
+      if (!isOperatorApproved(contact)) {
+        setErr(
+          "❌ You are not authorized. Contact Admin (KATHIRAVAN V) to add your operator number.",
+        );
+        return;
+      }
+
       if (!isOperatorValidEmail && !isOperatorValidMobile) {
         if (isOperatorEmail) {
           setErr("Please enter a valid Gmail / Email address");
@@ -98,6 +129,13 @@ function LoginPage() {
       setLoading(false);
       setStep("otp");
     } else {
+      const cleanedMobile = mobile.trim().replace(/\D/g, "");
+
+      if (cleanedMobile === "9080864542") {
+        setErr("❌ Admin Portal can ONLY be accessed via Operator Login tab.");
+        return;
+      }
+
       if (!/^\d{10}$/.test(mobile)) {
         setErr("Enter a valid 10-digit mobile number");
         return;
@@ -119,6 +157,26 @@ function LoginPage() {
 
     if (role === "operator") {
       const contact = operatorContact.trim();
+      const cleanedContact = contact.replace(/\D/g, "");
+
+      // ADMIN PORTAL LOGIN (ONLY VIA OPERATOR LOGIN TAB)
+      if (cleanedContact === "9080864542") {
+        const ok = await verifyOtp("9080864542", otp, name || "KATHIRAVAN V", "admin");
+        setLoading(false);
+        if (ok) {
+          navigate({ to: "/admin" });
+        } else {
+          setErr("Invalid OTP. Try 123456 for demo.");
+        }
+        return;
+      }
+
+      // OPERATOR LOGIN
+      if (!isOperatorApproved(contact)) {
+        setLoading(false);
+        setErr("❌ You are not authorized. Contact Admin.");
+        return;
+      }
       const isGmail = contact.includes("@");
       const mobileNum = isGmail ? "9787312758" : contact;
       const emailAddr = isGmail ? contact : undefined;
@@ -138,7 +196,18 @@ function LoginPage() {
         setErr("Invalid OTP. Try 123456 for demo.");
       }
     } else {
-      const ok = await verifyOtp(mobile, otp, name, "customer");
+      const cleanedMobile = mobile.trim().replace(/\D/g, "");
+
+      // BLOCK ADMIN NUMBER ON CUSTOMER LOGIN
+      if (cleanedMobile === "9080864542") {
+        setLoading(false);
+        setErr("❌ Admin Portal can ONLY be accessed via Operator Login tab.");
+        return;
+      }
+
+      const ok = await verifyOtp(mobile, otp, name, "customer", {
+        stbId: stbId.trim() || "1234567890",
+      });
       setLoading(false);
 
       if (ok) {
@@ -166,7 +235,7 @@ function LoginPage() {
               <div>
                 <div className="font-display text-2xl font-bold">STB RECHARGE</div>
                 <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Smart Recharge with Operator Control
+                  Smart Recharge & Admin Management
                 </div>
               </div>
             </div>
@@ -191,7 +260,7 @@ function LoginPage() {
             {[
               { icon: Zap, t: "Instant Pay" },
               { icon: Shield, t: "Operator Verified" },
-              { icon: Tv, t: "All Providers" },
+              { icon: Lock, t: "Admin Secure" },
             ].map(({ icon: Icon, t }) => (
               <div key={t} className="card-3d rounded-2xl p-3 text-center">
                 <Icon className="mx-auto h-5 w-5 text-[color:var(--neon-cyan)]" />
@@ -204,7 +273,7 @@ function LoginPage() {
         {/* Right auth card */}
         <div className="rounded-3xl glass-strong p-6 sm:p-8">
           {/* Role Switcher Tabs */}
-          <div className="mb-6 flex rounded-2xl bg-white/5 p-1 border border-white/10">
+          <div className="mb-6 flex rounded-2xl bg-white/5 p-1 border border-white/10 gap-1">
             <button
               onClick={() => handleSwitchRole("customer")}
               className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold transition ${
@@ -239,8 +308,8 @@ function LoginPage() {
               <p className="text-sm text-muted-foreground">
                 {step === "details"
                   ? role === "operator"
-                    ? "Enter operator credentials for verification"
-                    : "Login with your mobile number"
+                    ? "Enter approved operator mobile number or Gmail"
+                    : "Login with your mobile number & STB ID"
                   : `We sent a 6-digit code to ${
                       role === "operator" ? operatorContact : "+91 " + mobile
                     }`}
@@ -277,27 +346,48 @@ function LoginPage() {
                   <input
                     value={operatorContact}
                     onChange={(e) => handleOperatorContactChange(e.target.value)}
-                    placeholder="ENTER YOUR MOBILE NUMBER OR GMAIL"
+                    placeholder="ENTER OPERATOR MOBILE NUMBER OR GMAIL"
                     className="mt-1.5 w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 px-4 text-sm outline-none focus:border-primary/60 focus:shadow-[var(--shadow-glow)]"
                   />
                 </div>
               ) : (
-                <div>
-                  <label className="block text-xs uppercase tracking-widest text-muted-foreground">
-                    Mobile Number
-                  </label>
-                  <div className="mt-1.5 flex overflow-hidden rounded-2xl border border-white/10 bg-white/5 focus-within:border-primary/60 focus-within:shadow-[var(--shadow-glow)]">
-                    <span className="grid place-items-center px-4 text-sm text-muted-foreground">+91</span>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+                      Mobile Number
+                    </label>
+                    <div className="mt-1.5 flex overflow-hidden rounded-2xl border border-white/10 bg-white/5 focus-within:border-primary/60 focus-within:shadow-[var(--shadow-glow)]">
+                      <span className="grid place-items-center px-4 text-sm text-muted-foreground">
+                        +91
+                      </span>
+                      <input
+                        inputMode="numeric"
+                        maxLength={10}
+                        value={mobile}
+                        onChange={(e) => {
+                          setMobile(e.target.value.replace(/\D/g, ""));
+                          setErr(null);
+                        }}
+                        placeholder="ENTER YOUR MOBILE NUMBER"
+                        className="w-full bg-transparent py-3.5 pr-4 text-sm outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+                      STB ID / Smart Card Number
+                    </label>
                     <input
                       inputMode="numeric"
-                      maxLength={10}
-                      value={mobile}
+                      maxLength={12}
+                      value={stbId}
                       onChange={(e) => {
-                        setMobile(e.target.value.replace(/\D/g, ""));
+                        setStbId(e.target.value.replace(/\D/g, ""));
                         setErr(null);
                       }}
-                      placeholder="ENTER YOUR MOBILE NUMBER"
-                      className="w-full bg-transparent py-3.5 pr-4 text-sm outline-none"
+                      placeholder="ENTER YOUR STB ID"
+                      className="mt-1.5 w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 px-4 text-sm outline-none focus:border-primary/60 focus:shadow-[var(--shadow-glow)] font-medium placeholder:font-normal"
                     />
                   </div>
                 </div>
@@ -318,7 +408,8 @@ function LoginPage() {
                   "Sending Verification OTP…"
                 ) : role === "operator" ? (
                   <>
-                    VERIFY OTP <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                    VERIFY OTP{" "}
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                   </>
                 ) : (
                   <>
@@ -358,8 +449,8 @@ function LoginPage() {
                 {loading
                   ? "Verifying…"
                   : role === "operator"
-                  ? "Verify OTP & Open Operator Panel"
-                  : "Verify & Continue"}
+                    ? "Verify OTP & Open Operator Panel"
+                    : "Verify & Continue"}
               </button>
               <button
                 onClick={() => setStep("details")}

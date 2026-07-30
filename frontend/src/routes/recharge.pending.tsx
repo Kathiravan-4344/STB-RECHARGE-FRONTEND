@@ -5,7 +5,12 @@ import { useStore, useCountdown, approvePending, rejectPending } from "@/lib/sto
 import { Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/recharge/pending")({
-  head: () => ({ meta: [{ title: "Waiting for Operator — STB RECHARGE" }, { name: "description", content: "Your recharge is pending operator approval." }] }),
+  head: () => ({
+    meta: [
+      { title: "Waiting for Operator — STB RECHARGE" },
+      { name: "description", content: "Your recharge is pending operator approval." },
+    ],
+  }),
   component: Pending,
 });
 
@@ -15,17 +20,18 @@ function Pending() {
   const pending = useStore((s) => s.pending);
   const txns = useStore((s) => s.txns);
   const navigate = useNavigate();
+  const cd = useCountdown(pending?.startedAt ?? 0, FORTY_FIVE_MIN);
 
   useEffect(() => {
     if (!pending) {
       const last = txns[0];
-      if (last?.status === "success") navigate({ to: "/recharge/success", search: { id: last.id } });
+      if (last?.status === "success")
+        navigate({ to: "/recharge/success", search: { id: last.id } });
       else navigate({ to: "/dashboard" });
     }
   }, [pending, txns, navigate]);
 
   if (!pending) return null;
-  const cd = useCountdown(pending.startedAt, FORTY_FIVE_MIN);
   const pct = Math.min(100, Math.max(0, cd.pct * 100));
 
   return (
@@ -36,7 +42,10 @@ function Pending() {
 
           <div className="relative mx-auto grid h-24 w-24 place-items-center">
             <div className="absolute inset-0 rounded-full border-2 border-white/10" />
-            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary" style={{ animation: "ring-spin 1.6s linear infinite" }} />
+            <div
+              className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary"
+              style={{ animation: "ring-spin 1.6s linear infinite" }}
+            />
             <Loader2 className="h-8 w-8 animate-spin text-[color:var(--neon-cyan)]" />
           </div>
 
@@ -51,10 +60,17 @@ function Pending() {
 
           {/* Countdown */}
           <div className="mx-auto mt-6 max-w-sm">
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">Auto-completes in</div>
-            <div className="mt-1 font-display text-5xl font-bold tabular-nums text-gradient">{cd.label}</div>
+            <div className="text-xs uppercase tracking-widest text-muted-foreground">
+              Auto-completes in
+            </div>
+            <div className="mt-1 font-display text-5xl font-bold tabular-nums text-gradient">
+              {cd.label}
+            </div>
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
-              <div className="h-full gradient-primary transition-[width] duration-1000" style={{ width: `${pct}%` }} />
+              <div
+                className="h-full gradient-primary transition-[width] duration-1000"
+                style={{ width: `${pct}%` }}
+              />
             </div>
           </div>
 
@@ -80,7 +96,9 @@ function Pending() {
               <XCircle className="h-4 w-4" /> Simulate Reject
             </button>
           </div>
-          <p className="mt-3 text-[11px] text-muted-foreground">Demo: request auto-approves in ~12 seconds.</p>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            Demo: request auto-approves in ~12 seconds.
+          </p>
         </div>
       </div>
     </AppShell>

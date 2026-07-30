@@ -97,12 +97,21 @@ export type STB = {
   active: boolean;
 };
 
+export type ApprovedOperator = {
+  id: string;
+  mobile: string;
+  name: string;
+  addedAt: string;
+  active: boolean;
+};
+
 export type User = {
   mobile: string;
   name?: string;
   email?: string;
   operatorNumber?: string;
-  role: "operator" | "customer";
+  stbId?: string;
+  role: "operator" | "customer" | "admin";
 };
 
 export type State = {
@@ -115,187 +124,163 @@ export type State = {
   productRequests: ProductRequest[];
   complaints: Complaint[];
   appliedCoupon: string | null;
+  approvedOperators: ApprovedOperator[];
+  blockedCustomers: string[];
 };
 
-const KEY = "stb_recharge_state_v1";
+const KEY = "stb_recharge_state_v2";
 
-const INITIAL_SEED_TXNS: Txn[] = [
-  {
-    id: "TXN849120",
-    planName: "Basic Tamil Silver Pack Monthly Rs 240",
-    amount: 240,
-    date: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-    startedAt: Date.now() - 10 * 60 * 1000,
-    status: "pending",
-    customerName: "Rahul Sharma",
-    customerMobile: "9876543210",
-    stbId: "1234567890",
-  },
-  {
-    id: "TXN731945",
-    planName: "Basic Tamil HD Packs Rs 300",
-    amount: 300,
-    date: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
-    startedAt: Date.now() - 35 * 60 * 1000,
-    status: "pending",
-    customerName: "Priya Verma",
-    customerMobile: "9988776655",
-    stbId: "9999999999",
-  },
-  {
-    id: "TXN612840",
-    planName: "Basic Tamil Pack Monthly Rs 220",
-    amount: 220,
-    date: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-    startedAt: Date.now() - 2 * 3600 * 1000,
-    status: "success",
-    approvedAt: new Date(Date.now() - 1.9 * 3600 * 1000).toISOString(),
-    customerName: "Anand Kumar",
-    customerMobile: "9765432109",
-    stbId: "5544332211",
-  },
-  {
-    id: "TXN489123",
-    planName: "Sports Pack Rs 49",
-    amount: 49,
-    date: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
-    startedAt: Date.now() - 5 * 3600 * 1000,
-    status: "failed",
-    customerName: "Karthik Raja",
-    customerMobile: "9123456780",
-    stbId: "7788990011",
-  },
-];
+const INITIAL_SEED_TXNS: Txn[] = [];
 
 export const INITIAL_SEED_PRODUCTS: Product[] = [
-  { id: "p1", name: "HDMI Cable", category: "accessory", price: 150, availableStock: 15, soldQuantity: 8, description: "High-speed 1.5m 4K HDMI cable for crisp video & clear audio." },
-  { id: "p2", name: "AV Cable", category: "accessory", price: 100, availableStock: 12, soldQuantity: 5, description: "3-RCA Red White Yellow Audio-Video Cable." },
-  { id: "p3", name: "Remote Control", category: "accessory", price: 250, availableStock: 5, soldQuantity: 14, description: "Universal STB Remote with learning keys." },
-  { id: "p4", name: "STB Adapter / Power Supply", category: "accessory", price: 200, availableStock: 8, soldQuantity: 6, description: "12V 1.5A original STB power adapter." },
-  { id: "p5", name: "Set Top Box Replacement", category: "accessory", price: 799, availableStock: 4, soldQuantity: 2, description: "HD Digital STB unit swap with warranty." },
-  { id: "p6", name: "Dish Cable", category: "accessory", price: 180, availableStock: 25, soldQuantity: 10, description: "Heavy-duty RG6 Coaxial cable (per 10 meters)." },
-  { id: "p7", name: "Connector", category: "accessory", price: 40, availableStock: 50, soldQuantity: 30, description: "F-type waterproof coaxial cable connector pack." },
-  { id: "p8", name: "Splitter", category: "accessory", price: 120, availableStock: 18, soldQuantity: 7, description: "2-Way Signal Splitter for multi-connection." },
-  { id: "p9", name: "Other Accessories", category: "accessory", price: 150, availableStock: 20, soldQuantity: 3, description: "Wall brackets, clip sets, and cable ties." },
-  
+  {
+    id: "p1",
+    name: "HDMI Cable",
+    category: "accessory",
+    price: 150,
+    availableStock: 15,
+    soldQuantity: 0,
+    description: "High-speed 1.5m 4K HDMI cable for crisp video & clear audio.",
+  },
+  {
+    id: "p2",
+    name: "AV Cable",
+    category: "accessory",
+    price: 100,
+    availableStock: 12,
+    soldQuantity: 0,
+    description: "3-RCA Red White Yellow Audio-Video Cable.",
+  },
+  {
+    id: "p3",
+    name: "Remote Control",
+    category: "accessory",
+    price: 250,
+    availableStock: 15,
+    soldQuantity: 0,
+    description: "Universal STB Remote with learning keys.",
+  },
+  {
+    id: "p4",
+    name: "STB Adapter / Power Supply",
+    category: "accessory",
+    price: 200,
+    availableStock: 8,
+    soldQuantity: 0,
+    description: "12V 1.5A original STB power adapter.",
+  },
+  {
+    id: "p5",
+    name: "Set Top Box Replacement",
+    category: "accessory",
+    price: 799,
+    availableStock: 4,
+    soldQuantity: 0,
+    description: "HD Digital STB unit swap with warranty.",
+  },
+  {
+    id: "p6",
+    name: "Dish Cable",
+    category: "accessory",
+    price: 180,
+    availableStock: 25,
+    soldQuantity: 0,
+    description: "Heavy-duty RG6 Coaxial cable (per 10 meters).",
+  },
+  {
+    id: "p7",
+    name: "Connector",
+    category: "accessory",
+    price: 40,
+    availableStock: 50,
+    soldQuantity: 0,
+    description: "F-type waterproof coaxial cable connector pack.",
+  },
+  {
+    id: "p8",
+    name: "Splitter",
+    category: "accessory",
+    price: 120,
+    availableStock: 18,
+    soldQuantity: 0,
+    description: "2-Way Signal Splitter for multi-connection.",
+  },
+  {
+    id: "p9",
+    name: "Other Accessories",
+    category: "accessory",
+    price: 150,
+    availableStock: 20,
+    soldQuantity: 0,
+    description: "Wall brackets, clip sets, and cable ties.",
+  },
+
   // Installation services
-  { id: "s1", name: "New STB Installation", category: "service", price: 350, availableStock: 99, soldQuantity: 12, description: "Full new connection setup with dish alignment & box activation." },
-  { id: "s2", name: "Cable Replacement", category: "service", price: 200, availableStock: 99, soldQuantity: 8, description: "Inspection and re-wiring of old RG6 co-axial cables." },
-  { id: "s3", name: "Extra Connection Request", category: "service", price: 500, availableStock: 99, soldQuantity: 4, description: "Multi-TV extension installation with secondary box." },
-  { id: "s4", name: "STB Replacement Installation", category: "service", price: 300, availableStock: 99, soldQuantity: 6, description: "On-site swapping and re-configuration of replacement STB." },
-  { id: "s5", name: "HDMI/AV Setup", category: "service", price: 150, availableStock: 99, soldQuantity: 15, description: "TV display calibration and audio output configuration." },
-];
-
-export const INITIAL_SEED_PRODUCT_REQUESTS: ProductRequest[] = [
   {
-    id: "PR-90412",
-    stbId: "1234567890",
-    customerName: "Rahul Sharma",
-    customerMobile: "9876543210",
-    productId: "p3",
-    productName: "Remote Control",
-    category: "accessory",
-    quantity: 1,
-    unitPrice: 250,
-    totalAmount: 250,
-    description: "Buttons are un-responsive on my current STB remote control.",
-    status: "Pending",
-    createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "PR-88124",
-    stbId: "9999999999",
-    customerName: "Priya Verma",
-    customerMobile: "9988776655",
-    productId: "p1",
-    productName: "HDMI Cable",
-    category: "accessory",
-    quantity: 2,
-    unitPrice: 150,
-    totalAmount: 300,
-    description: "Need 2 long HDMI cables for living room wall mount.",
-    status: "Out for Delivery",
-    createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-  },
-  {
-    id: "PR-77310",
-    stbId: "5544332211",
-    customerName: "Anand Kumar",
-    customerMobile: "9765432109",
-    productId: "s1",
-    productName: "New STB Installation",
+    id: "s1",
+    name: "New STB Installation",
     category: "service",
-    quantity: 1,
-    unitPrice: 350,
-    totalAmount: 350,
-    description: "Shifting to new apartment. Need full dish alignment & installation.",
-    status: "Installation Scheduled",
-    technicianName: "Ramesh Kumar",
-    technicianMobile: "9840192837",
-    scheduledDate: "Tomorrow at 11:00 AM",
-    createdAt: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+    price: 350,
+    availableStock: 99,
+    soldQuantity: 0,
+    description: "Full new connection setup with dish alignment & box activation.",
+  },
+  {
+    id: "s2",
+    name: "Cable Replacement",
+    category: "service",
+    price: 200,
+    availableStock: 99,
+    soldQuantity: 0,
+    description: "Inspection and re-wiring of old RG6 co-axial cables.",
+  },
+  {
+    id: "s3",
+    name: "Extra Connection Request",
+    category: "service",
+    price: 500,
+    availableStock: 99,
+    soldQuantity: 0,
+    description: "Multi-TV extension installation with secondary box.",
+  },
+  {
+    id: "s4",
+    name: "STB Replacement Installation",
+    category: "service",
+    price: 300,
+    availableStock: 99,
+    soldQuantity: 0,
+    description: "On-site swapping and re-configuration of replacement STB.",
+  },
+  {
+    id: "s5",
+    name: "HDMI/AV Setup",
+    category: "service",
+    price: 150,
+    availableStock: 99,
+    soldQuantity: 0,
+    description: "TV display calibration and audio output configuration.",
   },
 ];
 
-export const INITIAL_SEED_COMPLAINTS: Complaint[] = [
-  {
-    id: "CMP-90142",
-    stbId: "1234567890",
-    customerName: "Rahul Sharma",
-    customerMobile: "9876543210",
-    category: "TV Issues",
-    issueType: "No Signal",
-    description: "Screen displays E48-32 No Signal error code since morning rain.",
-    preferredTime: "Immediate Emergency",
-    status: "In Progress",
-    createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-    technicianName: "Ramesh Kumar",
-    technicianMobile: "9840192837",
-    assignedAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-    expectedArrival: "In 15 Minutes",
-  },
-  {
-    id: "CMP-88105",
-    stbId: "9999999999",
-    customerName: "Priya Verma",
-    customerMobile: "9988776655",
-    category: "STB Issues",
-    issueType: "STB Power Problem",
-    description: "Red power light is blinking rapidly and box won't boot up.",
-    preferredTime: "Evening (4 PM - 7 PM)",
-    status: "Pending",
-    createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-  },
-  {
-    id: "CMP-77012",
-    stbId: "5544332211",
-    customerName: "Anand Kumar",
-    customerMobile: "9765432109",
-    category: "Cable Connection Issues",
-    issueType: "Cable Cut",
-    description: "Coaxial wire cut near terrace wall due to tree branch.",
-    preferredTime: "Morning (9 AM - 12 PM)",
-    status: "Resolved",
-    createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-    technicianName: "Suresh Babu",
-    technicianMobile: "9710293847",
-    assignedAt: new Date(Date.now() - 22 * 3600 * 1000).toISOString(),
-    resolvedAt: new Date(Date.now() - 18 * 3600 * 1000).toISOString(),
-    rating: 5,
-    feedback: "Excellent technician! Fixed the cable splice quickly and checked all channels.",
-  },
-];
+export const INITIAL_SEED_PRODUCT_REQUESTS: ProductRequest[] = [];
+
+export const INITIAL_SEED_COMPLAINTS: Complaint[] = [];
+
+export const INITIAL_APPROVED_OPERATORS: ApprovedOperator[] = [];
 
 const defaultState: State = {
   user: null,
   stb: null,
   autoRecharge: { enabled: false },
   pending: null,
-  txns: INITIAL_SEED_TXNS,
+  txns: [],
   products: INITIAL_SEED_PRODUCTS,
-  productRequests: INITIAL_SEED_PRODUCT_REQUESTS,
-  complaints: INITIAL_SEED_COMPLAINTS,
+  productRequests: [],
+  complaints: [],
   appliedCoupon: null,
+  approvedOperators: [],
+  blockedCustomers: [],
 };
 
 let state: State = load();
@@ -310,10 +295,13 @@ function load(): State {
     return {
       ...defaultState,
       ...parsed,
-      txns: parsed.txns && parsed.txns.length > 0 ? parsed.txns : INITIAL_SEED_TXNS,
-      products: parsed.products && parsed.products.length > 0 ? parsed.products : INITIAL_SEED_PRODUCTS,
-      productRequests: parsed.productRequests && parsed.productRequests.length > 0 ? parsed.productRequests : INITIAL_SEED_PRODUCT_REQUESTS,
-      complaints: parsed.complaints && parsed.complaints.length > 0 ? parsed.complaints : INITIAL_SEED_COMPLAINTS,
+      txns: parsed.txns || [],
+      products:
+        parsed.products && parsed.products.length > 0 ? parsed.products : INITIAL_SEED_PRODUCTS,
+      productRequests: parsed.productRequests || [],
+      complaints: parsed.complaints || [],
+      approvedOperators: parsed.approvedOperators || [],
+      blockedCustomers: parsed.blockedCustomers || [],
     };
   } catch {
     return defaultState;
@@ -323,15 +311,23 @@ function save() {
   if (typeof window === "undefined") return;
   localStorage.setItem(KEY, JSON.stringify(state));
 }
-function emit() { listeners.forEach((l) => l()); }
+function emit() {
+  listeners.forEach((l) => l());
+}
 
-export function getState() { return state; }
+export function getState() {
+  return state;
+}
 export function setState(patch: Partial<State> | ((s: State) => Partial<State>)) {
   const p = typeof patch === "function" ? patch(state) : patch;
   state = { ...state, ...p };
-  save(); emit();
+  save();
+  emit();
 }
-export function subscribe(l: () => void) { listeners.add(l); return () => listeners.delete(l); }
+export function subscribe(l: () => void) {
+  listeners.add(l);
+  return () => listeners.delete(l);
+}
 
 export function useStore<T>(selector: (s: State) => T): T {
   return useSyncExternalStore(
@@ -347,27 +343,179 @@ export function sendOtp(mobile: string) {
   console.log(`[MOCK OTP] Sent 123456 to ${mobile}`);
   return Promise.resolve();
 }
+export function isOperatorApproved(contact: string): boolean {
+  const cleaned = contact.trim().toLowerCase();
+  const digitsOnly = cleaned.replace(/\D/g, "");
+  return state.approvedOperators.some(
+    (op) =>
+      op.active &&
+      (op.mobile === digitsOnly || (digitsOnly.length >= 5 && op.mobile.includes(digitsOnly))),
+  );
+}
+
+export function isCustomerBlocked(identifier: string): boolean {
+  if (!identifier) return false;
+  const cleaned = identifier.trim().toLowerCase();
+  return state.blockedCustomers.some((c) => c.toLowerCase() === cleaned);
+}
+
 export function verifyOtp(
   mobile: string,
   otp: string,
   name?: string,
-  role: "operator" | "customer" = "customer",
-  extra?: { email?: string; operatorNumber?: string }
+  role: "operator" | "customer" | "admin" = "customer",
+  extra?: { email?: string; operatorNumber?: string; stbId?: string },
 ) {
   if (otp === "123456" || otp.length === 6) {
-    const displayName = name || (role === "operator" ? "Operator Admin" : "Customer");
-    setState({
-      user: {
+    const cleanedMobile = mobile.trim().replace(/\D/g, "");
+
+    // STRICT ADMIN ACCESS RULE
+    if (cleanedMobile === "9080864542" || role === "admin") {
+      if (cleanedMobile !== "9080864542") {
+        return Promise.resolve(false);
+      }
+      const adminUser: User = {
+        mobile: "9080864542",
+        name: "KATHIRAVAN V",
+        role: "admin",
+      };
+      setState({ user: adminUser });
+      return Promise.resolve(true);
+    }
+
+    // STRICT OPERATOR ACCESS RULE
+    if (role === "operator") {
+      const contactCheck = extra?.email || mobile;
+      if (!isOperatorApproved(contactCheck)) {
+        return Promise.resolve(false);
+      }
+      const displayName = name || "Operator Admin";
+      const user: User = {
         mobile,
         name: displayName,
-        role,
+        role: "operator",
         email: extra?.email,
         operatorNumber: extra?.operatorNumber,
-      },
-    });
+      };
+      setState({ user });
+      return Promise.resolve(true);
+    }
+
+    // CUSTOMER RULE
+    if (isCustomerBlocked(mobile) || (extra?.stbId && isCustomerBlocked(extra.stbId))) {
+      return Promise.resolve(false);
+    }
+
+    const displayName = name || "Customer";
+    const user: User = {
+      mobile,
+      name: displayName,
+      role: "customer",
+      email: extra?.email,
+      stbId: extra?.stbId,
+    };
+    setState({ user });
+    fetchStb(extra?.stbId || "1234567890");
     return Promise.resolve(true);
   }
   return Promise.resolve(false);
+}
+
+export function addApprovedOperator(
+  mobile: string,
+  name?: string,
+): { success: boolean; message: string } {
+  const cleaned = mobile.trim().replace(/\D/g, "");
+  if (cleaned.length !== 10) {
+    return { success: false, message: "Enter a valid 10-digit mobile number." };
+  }
+
+  const existing = state.approvedOperators.find((op) => op.mobile === cleaned);
+  if (existing) {
+    if (!existing.active) {
+      setState((s) => ({
+        approvedOperators: s.approvedOperators.map((op) =>
+          op.id === existing.id ? { ...op, active: true } : op,
+        ),
+      }));
+      return { success: true, message: `Operator ${cleaned} re-activated.` };
+    }
+    return { success: false, message: `Operator ${cleaned} is already approved.` };
+  }
+
+  const newOp: ApprovedOperator = {
+    id: "op-" + Date.now(),
+    mobile: cleaned,
+    name: name?.trim() || `Operator (${cleaned.slice(-4)})`,
+    addedAt: new Date().toISOString(),
+    active: true,
+  };
+
+  setState((s) => ({
+    approvedOperators: [newOp, ...s.approvedOperators],
+  }));
+
+  return { success: true, message: `Operator ${cleaned} added to approved list.` };
+}
+
+export function toggleOperatorStatus(id: string) {
+  setState((s) => ({
+    approvedOperators: s.approvedOperators.map((op) =>
+      op.id === id ? { ...op, active: !op.active } : op,
+    ),
+  }));
+}
+
+export function removeApprovedOperator(id: string) {
+  setState((s) => ({
+    approvedOperators: s.approvedOperators.filter((op) => op.id !== id),
+  }));
+}
+
+export function toggleBlockCustomer(identifier: string) {
+  const cleaned = identifier.trim();
+  if (!cleaned) return;
+  setState((s) => {
+    const isBlocked = s.blockedCustomers.includes(cleaned);
+    return {
+      blockedCustomers: isBlocked
+        ? s.blockedCustomers.filter((c) => c !== cleaned)
+        : [...s.blockedCustomers, cleaned],
+    };
+  });
+}
+
+export function clearRechargeHistory() {
+  setState({ txns: [], pending: null });
+}
+
+export function clearProductOrderHistory() {
+  setState({ productRequests: [] });
+}
+
+export function clearComplaintHistory() {
+  setState({ complaints: [] });
+}
+
+export function clearAllFakeEntries() {
+  setState({
+    txns: state.txns.filter((t) => !t.id.startsWith("TXN849120") && !t.id.startsWith("TXN731945")),
+    productRequests: state.productRequests.filter((pr) => !pr.id.startsWith("PR-90412")),
+    complaints: state.complaints.filter((c) => !c.id.startsWith("CMP-90142")),
+  });
+}
+
+export function updateProduct(id: string, patch: Partial<Product>) {
+  setState((s) => ({
+    products: s.products.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+  }));
+}
+
+export function deleteProduct(id: string) {
+  setState((s) => ({
+    products: s.products.filter((p) => p.id !== id),
+    productRequests: s.productRequests.filter((pr) => pr.productId !== id),
+  }));
 }
 
 export function logout() {
@@ -405,14 +553,77 @@ export function fetchStb(id: string): Promise<STB | null> {
 }
 
 export const PLANS: Plan[] = [
-  { id: "m1", name: "Basic Tamil Pack Monthly Rs 220", price: 220, validityDays: 30, category: "Monthly", features: ["150+ SD Channels", "Standard Definition", "1 STB"], channels: 150 },
-  { id: "m2", name: "Basic Tamil Silver Pack Monthly Rs 240", price: 240, validityDays: 30, category: "Monthly", features: ["300+ HD Channels", "Full HD Quality", "OTT App bundle"], popular: true, channels: 300 },
-  { id: "m3", name: "Basic Tamil HD Packs Rs 300", price: 300, validityDays: 30, category: "Monthly", features: ["400+ Channels", "4K where available", "3 months validity"], channels: 400 },
-  { id: "c1", name: "Sports Pack Rs 49", price: 49, validityDays: 30, category: "Channels", features: ["Star Sports HD", "Sony Sports", "Willow Cricket"], channels: 18 },
-  { id: "c2", name: "HD Movies Pack Rs 79", price: 79, validityDays: 30, category: "Channels", features: ["Star Movies", "&pictures HD", "Sony Pix"], channels: 22 },
-  { id: "c3", name: "Kids Pack Rs 49", price: 49, validityDays: 30, category: "Channels", features: ["Cartoon Network", "Nick HD+", "Disney"], channels: 12 },
-  { id: "a1", name: "OTT Add-on (Hotstar)", price: 99, validityDays: 30, category: "Add-on", features: ["Disney+ Hotstar Mobile", "1 device"] },
-  { id: "a2", name: "Regional Bhasha Pack", price: 59, validityDays: 30, category: "Add-on", features: ["25+ regional channels"] },
+  {
+    id: "m1",
+    name: "Basic Tamil Pack Monthly Rs 220",
+    price: 220,
+    validityDays: 30,
+    category: "Monthly",
+    features: ["150+ SD Channels", "Standard Definition", "1 STB"],
+    channels: 150,
+  },
+  {
+    id: "m2",
+    name: "Basic Tamil Silver Pack Monthly Rs 240",
+    price: 240,
+    validityDays: 30,
+    category: "Monthly",
+    features: ["300+ HD Channels", "Full HD Quality", "OTT App bundle"],
+    popular: true,
+    channels: 300,
+  },
+  {
+    id: "m3",
+    name: "Basic Tamil HD Packs Rs 300",
+    price: 300,
+    validityDays: 30,
+    category: "Monthly",
+    features: ["400+ Channels", "4K where available", "3 months validity"],
+    channels: 400,
+  },
+  {
+    id: "c1",
+    name: "Sports Pack Rs 49",
+    price: 49,
+    validityDays: 30,
+    category: "Channels",
+    features: ["Star Sports HD", "Sony Sports", "Willow Cricket"],
+    channels: 18,
+  },
+  {
+    id: "c2",
+    name: "HD Movies Pack Rs 79",
+    price: 79,
+    validityDays: 30,
+    category: "Channels",
+    features: ["Star Movies", "&pictures HD", "Sony Pix"],
+    channels: 22,
+  },
+  {
+    id: "c3",
+    name: "Kids Pack Rs 49",
+    price: 49,
+    validityDays: 30,
+    category: "Channels",
+    features: ["Cartoon Network", "Nick HD+", "Disney"],
+    channels: 12,
+  },
+  {
+    id: "a1",
+    name: "OTT Add-on (Hotstar)",
+    price: 99,
+    validityDays: 30,
+    category: "Add-on",
+    features: ["Disney+ Hotstar Mobile", "1 device"],
+  },
+  {
+    id: "a2",
+    name: "Regional Bhasha Pack",
+    price: 59,
+    validityDays: 30,
+    category: "Add-on",
+    features: ["25+ regional channels"],
+  },
 ];
 
 export function startPayment(planId: string, amount: number, planName: string) {
@@ -445,20 +656,23 @@ export function approvePending(txnId: string) {
     const nowIso = new Date().toISOString();
     const targetTxn = s.txns.find((t) => t.id === txnId);
 
-    const updatedTxns = s.txns.map((t) => (t.id === txnId ? { ...t, status: "success" as const, approvedAt: nowIso } : t));
+    const updatedTxns = s.txns.map((t) =>
+      t.id === txnId ? { ...t, status: "success" as const, approvedAt: nowIso } : t,
+    );
     const isCurrentPending = s.pending?.txnId === txnId;
 
     return {
       pending: isCurrentPending ? null : s.pending,
       txns: updatedTxns,
-      stb: s.stb && (isCurrentPending || (targetTxn && s.stb.id === targetTxn.stbId))
-        ? {
-          ...s.stb,
-          active: true,
-          currentPlan: targetTxn?.planName || s.stb.currentPlan,
-          expiry: new Date(Date.now() + 30 * 86400000).toISOString(),
-        }
-        : s.stb,
+      stb:
+        s.stb && (isCurrentPending || (targetTxn && s.stb.id === targetTxn.stbId))
+          ? {
+              ...s.stb,
+              active: true,
+              currentPlan: targetTxn?.planName || s.stb.currentPlan,
+              expiry: new Date(Date.now() + 30 * 86400000).toISOString(),
+            }
+          : s.stb,
     };
   });
 }
@@ -480,7 +694,11 @@ export function useCountdown(startedAt: number, durationMs: number) {
   const remaining = Math.max(0, startedAt + durationMs - now);
   const mm = Math.floor(remaining / 60000);
   const ss = Math.floor((remaining % 60000) / 1000);
-  return { remaining, label: `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`, pct: 1 - remaining / durationMs };
+  return {
+    remaining,
+    label: `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`,
+    pct: 1 - remaining / durationMs,
+  };
 }
 
 export function formatName(str?: string): string {
@@ -542,7 +760,7 @@ export function updateProductRequestStatus(
     technicianMobile?: string;
     scheduledDate?: string;
     operatorNote?: string;
-  }
+  },
 ) {
   setState((s) => {
     const updatedRequests = s.productRequests.map((req) => {
@@ -551,7 +769,9 @@ export function updateProductRequestStatus(
         ...req,
         status,
         ...(details?.technicianName !== undefined && { technicianName: details.technicianName }),
-        ...(details?.technicianMobile !== undefined && { technicianMobile: details.technicianMobile }),
+        ...(details?.technicianMobile !== undefined && {
+          technicianMobile: details.technicianMobile,
+        }),
         ...(details?.scheduledDate !== undefined && { scheduledDate: details.scheduledDate }),
         ...(details?.operatorNote !== undefined && { operatorNote: details.operatorNote }),
       };
@@ -597,9 +817,7 @@ export function addProduct(product: Omit<Product, "id" | "soldQuantity">): Produ
 export function updateProductStock(id: string, availableStock: number, price?: number) {
   setState((s) => ({
     products: s.products.map((p) =>
-      p.id === id
-        ? { ...p, availableStock, ...(price !== undefined ? { price } : {}) }
-        : p
+      p.id === id ? { ...p, availableStock, ...(price !== undefined ? { price } : {}) } : p,
     ),
   }));
 }
@@ -644,7 +862,7 @@ export function updateComplaintStatus(
     technicianName?: string;
     technicianMobile?: string;
     expectedArrival?: string;
-  }
+  },
 ) {
   setState((s) => ({
     complaints: s.complaints.map((c) => {
@@ -656,7 +874,9 @@ export function updateComplaintStatus(
         ...(details?.technicianName && { technicianName: details.technicianName }),
         ...(details?.technicianMobile && { technicianMobile: details.technicianMobile }),
         ...(details?.expectedArrival && { expectedArrival: details.expectedArrival }),
-        ...(status === "Assigned" || status === "In Progress" ? { assignedAt: c.assignedAt || nowIso } : {}),
+        ...(status === "Assigned" || status === "In Progress"
+          ? { assignedAt: c.assignedAt || nowIso }
+          : {}),
         ...(status === "Resolved" ? { resolvedAt: nowIso } : {}),
       };
     }),
@@ -667,7 +887,7 @@ export function assignTechnicianToComplaint(
   id: string,
   technicianName: string,
   technicianMobile: string,
-  expectedArrival: string
+  expectedArrival: string,
 ) {
   updateComplaintStatus(id, "In Progress", {
     technicianName,
@@ -678,8 +898,6 @@ export function assignTechnicianToComplaint(
 
 export function submitComplaintRating(id: string, rating: number, feedback: string) {
   setState((s) => ({
-    complaints: s.complaints.map((c) =>
-      c.id === id ? { ...c, rating, feedback } : c
-    ),
+    complaints: s.complaints.map((c) => (c.id === id ? { ...c, rating, feedback } : c)),
   }));
 }
