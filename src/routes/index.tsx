@@ -12,8 +12,8 @@ export const Route = createFileRoute("/")({
         content:
           "Recharge your Set Top Box in seconds. Login with mobile OTP, choose a plan, pay, and track operator approval live.",
       },
-      { property: "og:title", content: "STB RECHARGE" },
-      { property: "og:description", content: "Smart Recharge with Operator Control." },
+      { property: "og:title", content: "STB RECHARGE — Smart Cable TV Recharge & Admin Portal" },
+      { property: "og:description", content: "Recharge your Set Top Box in seconds. Login with mobile OTP, choose a plan, pay, and track operator approval live." },
       { property: "og:type", content: "website" },
     ],
   }),
