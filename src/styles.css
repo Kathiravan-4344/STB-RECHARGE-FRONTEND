@@ -139,6 +139,14 @@
   box-shadow: var(--shadow-elev);
   transition: transform 300ms cubic-bezier(.2,.9,.3,1), box-shadow 300ms;
 }
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility card-3d-hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 50px -12px oklch(0 0 0 / 0.7), var(--shadow-glow);

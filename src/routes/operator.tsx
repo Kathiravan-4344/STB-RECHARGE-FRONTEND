@@ -382,10 +382,10 @@ function OperatorPanel() {
           </div>
 
           {/* 🧑‍💻 Operator Panel Navigation Menu Tabs */}
-          <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1.5 flex-wrap">
+          <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1.5 overflow-x-auto no-scrollbar max-w-full">
             <button
               onClick={() => setActiveMenu("txns")}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all ${
+              className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap ${
                 activeMenu === "txns"
                   ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]"
                   : "text-muted-foreground hover:text-white"
@@ -396,7 +396,7 @@ function OperatorPanel() {
 
             <button
               onClick={() => setActiveMenu("product_requests")}
-              className={`relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all ${
+              className={`relative flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap ${
                 activeMenu === "product_requests"
                   ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]"
                   : "text-muted-foreground hover:text-white"
@@ -412,7 +412,7 @@ function OperatorPanel() {
 
             <button
               onClick={() => setActiveMenu("stock")}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all ${
+              className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap ${
                 activeMenu === "stock"
                   ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]"
                   : "text-muted-foreground hover:text-white"
@@ -428,7 +428,7 @@ function OperatorPanel() {
 
             <button
               onClick={() => setActiveMenu("complaints")}
-              className={`relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all ${
+              className={`relative flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap ${
                 activeMenu === "complaints"
                   ? "bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.4)]"
                   : "text-muted-foreground hover:text-white"

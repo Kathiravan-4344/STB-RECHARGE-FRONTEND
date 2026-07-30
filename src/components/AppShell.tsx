@@ -124,10 +124,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="mx-auto max-w-6xl px-4 pb-28 pt-6 md:pb-10">{children}</main>
 
-      {/* Bottom nav mobile (Only for Customers / Operators) */}
+      {/* Bottom nav mobile (For Customers & Operators) */}
       {!isAdminRoute && (
-        <nav className="fixed bottom-3 left-1/2 z-40 -translate-x-1/2 md:hidden">
-          <div className="glass-strong flex items-center gap-1 rounded-2xl border border-white/10 px-2 py-2">
+        <nav className="fixed bottom-3 left-1/2 z-50 w-[95vw] max-w-lg -translate-x-1/2 md:hidden">
+          <div className="glass-strong flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-white/10 px-2 py-2 shadow-2xl backdrop-blur-xl no-scrollbar">
             {nav.map((n) => {
               const Icon = n.icon;
               const active = pathname.startsWith(n.to);
@@ -135,13 +135,30 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Link
                   key={n.to}
                   to={n.to}
-                  className={`flex min-w-16 flex-col items-center rounded-xl px-3 py-1.5 text-[10px] transition ${active ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]" : "text-muted-foreground"}`}
+                  className={`flex shrink-0 flex-col items-center rounded-xl px-2.5 py-1.5 text-[10px] font-semibold transition-all ${
+                    active
+                      ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)] font-bold"
+                      : "text-muted-foreground hover:text-white"
+                  }`}
                 >
                   <Icon className="h-4 w-4" />
-                  {n.label}
+                  <span className="whitespace-nowrap">{n.label}</span>
                 </Link>
               );
             })}
+            {user?.role === "operator" && (
+              <Link
+                to="/operator"
+                className={`flex shrink-0 flex-col items-center rounded-xl px-2.5 py-1.5 text-[10px] font-bold transition-all ${
+                  pathname.startsWith("/operator")
+                    ? "bg-[color:var(--neon-cyan)] text-black shadow-[0_0_12px_rgba(0,210,255,0.5)]"
+                    : "text-[color:var(--neon-cyan)] border border-[color:var(--neon-cyan)]/30 bg-[color:var(--neon-cyan)]/10"
+                }`}
+              >
+                <Shield className="h-4 w-4" />
+                <span className="whitespace-nowrap">Operator</span>
+              </Link>
+            )}
           </div>
         </nav>
       )}

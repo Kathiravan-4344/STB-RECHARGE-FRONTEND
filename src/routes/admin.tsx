@@ -219,7 +219,7 @@ function AdminPage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="mb-6 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-white/5 p-1.5">
+      <div className="mb-6 flex overflow-x-auto gap-2 rounded-2xl border border-white/10 bg-white/5 p-1.5 no-scrollbar max-w-full">
         {[
           { id: "dashboard", label: "📊 Dashboard", icon: Shield },
           { id: "operators", label: "🧑💻 Operators", icon: UserCheck },
@@ -232,7 +232,7 @@ function AdminPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id as TabType)}
-            className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition ${
+            className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition whitespace-nowrap ${
               tab === t.id
                 ? "bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]"
                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground"

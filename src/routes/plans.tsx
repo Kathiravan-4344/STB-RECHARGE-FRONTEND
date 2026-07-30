@@ -36,12 +36,12 @@ function Plans() {
         </p>
       </div>
 
-      <div className="mb-6 inline-flex rounded-2xl border border-white/10 bg-white/5 p-1">
+      <div className="mb-6 inline-flex max-w-full overflow-x-auto no-scrollbar rounded-2xl border border-white/10 bg-white/5 p-1">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-xl px-4 py-2 text-sm transition ${tab === t ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]" : "text-muted-foreground hover:text-foreground"}`}
+            className={`flex shrink-0 rounded-xl px-4 py-2 text-sm transition whitespace-nowrap ${tab === t ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]" : "text-muted-foreground hover:text-foreground"}`}
           >
             {t}
           </button>
