@@ -14,16 +14,433 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      approved_operators: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          mobile: string
+          name: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          mobile: string
+          name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          mobile?: string
+          name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blocked_customers: {
+        Row: {
+          created_at: string
+          id: string
+          identifier: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          identifier: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          identifier?: string
+        }
+        Relationships: []
+      }
+      complaints: {
+        Row: {
+          assigned_at: string | null
+          category: string
+          created_at: string
+          customer_mobile: string | null
+          customer_name: string | null
+          description: string | null
+          expected_arrival: string | null
+          feedback: string | null
+          id: string
+          issue_type: string | null
+          media_url: string | null
+          preferred_time: string | null
+          rating: number | null
+          resolved_at: string | null
+          status: string
+          stb_id: string | null
+          technician_mobile: string | null
+          technician_name: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          category: string
+          created_at?: string
+          customer_mobile?: string | null
+          customer_name?: string | null
+          description?: string | null
+          expected_arrival?: string | null
+          feedback?: string | null
+          id: string
+          issue_type?: string | null
+          media_url?: string | null
+          preferred_time?: string | null
+          rating?: number | null
+          resolved_at?: string | null
+          status?: string
+          stb_id?: string | null
+          technician_mobile?: string | null
+          technician_name?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          assigned_at?: string | null
+          category?: string
+          created_at?: string
+          customer_mobile?: string | null
+          customer_name?: string | null
+          description?: string | null
+          expected_arrival?: string | null
+          feedback?: string | null
+          id?: string
+          issue_type?: string | null
+          media_url?: string | null
+          preferred_time?: string | null
+          rating?: number | null
+          resolved_at?: string | null
+          status?: string
+          stb_id?: string | null
+          technician_mobile?: string | null
+          technician_name?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          active: boolean
+          category: string
+          channels: number | null
+          created_at: string
+          features: string[]
+          id: string
+          name: string
+          popular: boolean
+          price: number
+          updated_at: string
+          validity_days: number
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          channels?: number | null
+          created_at?: string
+          features?: string[]
+          id: string
+          name: string
+          popular?: boolean
+          price: number
+          updated_at?: string
+          validity_days?: number
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          channels?: number | null
+          created_at?: string
+          features?: string[]
+          id?: string
+          name?: string
+          popular?: boolean
+          price?: number
+          updated_at?: string
+          validity_days?: number
+        }
+        Relationships: []
+      }
+      product_requests: {
+        Row: {
+          category: string
+          created_at: string
+          customer_mobile: string | null
+          customer_name: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          operator_note: string | null
+          product_id: string | null
+          product_name: string
+          quantity: number
+          scheduled_date: string | null
+          status: string
+          stb_id: string | null
+          technician_mobile: string | null
+          technician_name: string | null
+          total_amount: number
+          unit_price: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          customer_mobile?: string | null
+          customer_name?: string | null
+          description?: string | null
+          id: string
+          image_url?: string | null
+          operator_note?: string | null
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          scheduled_date?: string | null
+          status?: string
+          stb_id?: string | null
+          technician_mobile?: string | null
+          technician_name?: string | null
+          total_amount?: number
+          unit_price?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          customer_mobile?: string | null
+          customer_name?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          operator_note?: string | null
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          scheduled_date?: string | null
+          status?: string
+          stb_id?: string | null
+          technician_mobile?: string | null
+          technician_name?: string | null
+          total_amount?: number
+          unit_price?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          available_stock: number
+          category: string
+          created_at: string
+          description: string | null
+          icon_name: string | null
+          id: string
+          name: string
+          price: number
+          sold_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          available_stock?: number
+          category: string
+          created_at?: string
+          description?: string | null
+          icon_name?: string | null
+          id: string
+          name: string
+          price?: number
+          sold_quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          available_stock?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon_name?: string | null
+          id?: string
+          name?: string
+          price?: number
+          sold_quantity?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          mobile: string | null
+          name: string | null
+          operator_number: string | null
+          stb_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          mobile?: string | null
+          name?: string | null
+          operator_number?: string | null
+          stb_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          mobile?: string | null
+          name?: string | null
+          operator_number?: string | null
+          stb_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stb_accounts: {
+        Row: {
+          active: boolean
+          created_at: string
+          current_plan: string | null
+          customer_mobile: string | null
+          customer_name: string
+          expiry: string | null
+          id: string
+          owner_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          current_plan?: string | null
+          customer_mobile?: string | null
+          customer_name?: string
+          expiry?: string | null
+          id: string
+          owner_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          current_plan?: string | null
+          customer_mobile?: string | null
+          customer_name?: string
+          expiry?: string | null
+          id?: string
+          owner_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          coupon: string | null
+          created_at: string
+          customer_mobile: string | null
+          customer_name: string | null
+          id: string
+          plan_id: string | null
+          plan_name: string
+          started_at: string
+          status: Database["public"]["Enums"]["txn_status"]
+          stb_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          coupon?: string | null
+          created_at?: string
+          customer_mobile?: string | null
+          customer_name?: string | null
+          id: string
+          plan_id?: string | null
+          plan_name: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["txn_status"]
+          stb_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          coupon?: string | null
+          created_at?: string
+          customer_mobile?: string | null
+          customer_name?: string | null
+          id?: string
+          plan_id?: string | null
+          plan_name?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["txn_status"]
+          stb_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_role: {
+        Args: { _mobile: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_blocked: { Args: { _identifier: string }; Returns: boolean }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "operator" | "customer"
+      txn_status: "pending" | "success" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +567,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "operator", "customer"],
+      txn_status: ["pending", "success", "failed"],
+    },
   },
 } as const

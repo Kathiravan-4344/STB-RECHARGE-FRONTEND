@@ -174,7 +174,7 @@ function LoginPage() {
         if (ok) {
           navigate({ to: "/admin" });
         } else {
-          setErr("Invalid OTP. Try 123456 for demo.");
+          setErr("Incorrect code. Your 6-digit code is set on first login — use the same one each time.");
         }
         return;
       }
@@ -182,7 +182,7 @@ function LoginPage() {
       // OPERATOR LOGIN
       if (!isOperatorApproved(contact)) {
         setLoading(false);
-        setErr("❌ You are not authorized. Contact Admin.");
+        setErr("❌ You are not authorized. Contact Admin (KATHIRAVAN V) to add your operator number.");
         return;
       }
       const isGmail = contact.includes("@");
@@ -201,7 +201,7 @@ function LoginPage() {
       if (ok) {
         navigate({ to: "/operator" });
       } else {
-        setErr("Invalid OTP. Try 123456 for demo.");
+        setErr("Incorrect code. Your 6-digit code is set on first login — use the same one each time.");
       }
     } else {
       const cleanedMobile = mobile.trim().replace(/\D/g, "");
@@ -221,7 +221,7 @@ function LoginPage() {
       if (ok) {
         navigate({ to: "/dashboard" });
       } else {
-        setErr("Invalid OTP. Try 123456 for demo.");
+        setErr("Incorrect code. Your 6-digit code is set on first login — use the same one each time.");
       }
     }
   }

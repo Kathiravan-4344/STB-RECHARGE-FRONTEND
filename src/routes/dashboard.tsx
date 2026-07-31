@@ -55,7 +55,8 @@ function Dashboard() {
     }
   }, [stb, user]);
 
-  const recommended = PLANS.filter((p) => p.popular || p.category === "Monthly").slice(0, 3);
+  const allPlans = useStore((s) => (s.plans.length ? s.plans : PLANS));
+  const recommended = allPlans.filter((p) => p.popular || p.category === "Monthly").slice(0, 3);
   const daysLeft = stb ? Math.ceil((new Date(stb.expiry).getTime() - Date.now()) / 86400000) : 0;
 
   return (
