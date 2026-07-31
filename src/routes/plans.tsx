@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { PLANS } from "@/lib/store";
+import { PLANS, useStore } from "@/lib/store";
 import { Check, Star } from "lucide-react";
 
 export const Route = createFileRoute("/plans")({
@@ -25,7 +25,8 @@ const TABS = ["All", "Monthly", "Channels", "Add-on"] as const;
 function Plans() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("All");
   const navigate = useNavigate();
-  const list = PLANS.filter((p) => tab === "All" || p.category === tab);
+  const allPlans = useStore((s) => (s.plans.length ? s.plans : PLANS));
+  const list = allPlans.filter((p) => tab === "All" || p.category === tab);
 
   return (
     <AppShell>

@@ -22,7 +22,11 @@ const COUPONS: Record<string, number> = { STB50: 50, NEW10: 10, WELCOME: 25 };
 
 function Checkout() {
   const { plan: planId } = Route.useSearch();
-  const plan = useMemo(() => PLANS.find((p) => p.id === planId) ?? PLANS[1], [planId]);
+  const allPlans = useStore((s) => (s.plans.length ? s.plans : PLANS));
+  const plan = useMemo(
+    () => allPlans.find((p) => p.id === planId) ?? allPlans[1] ?? allPlans[0],
+    [allPlans, planId],
+  );
   const stb = useStore((s) => s.stb);
   const appliedCoupon = useStore((s) => s.appliedCoupon);
   const navigate = useNavigate();

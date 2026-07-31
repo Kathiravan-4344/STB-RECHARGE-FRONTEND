@@ -1,6 +1,9 @@
-// Lightweight mock store for STB Recharge prototype.
-// Persists via localStorage. No backend.
+// Data layer for STB RECHARGE — backed by Lovable Cloud (database + auth + realtime).
+// Keeps a synchronous in-memory cache so components stay simple, while every
+// mutation is persisted and every change is streamed back over realtime.
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import * as db from "./db";
 
 export type Plan = {
   id: string;
@@ -86,14 +89,14 @@ export type Txn = {
   customerName?: string;
   customerMobile?: string;
   stbId?: string;
-  startedAt?: number; // ms timestamp
+  startedAt?: number;
 };
 
 export type STB = {
   id: string;
   customerName: string;
   currentPlan: string;
-  expiry: string; // ISO
+  expiry: string;
   active: boolean;
 };
 
@@ -106,6 +109,7 @@ export type ApprovedOperator = {
 };
 
 export type User = {
+  id?: string;
   mobile: string;
   name?: string;
   email?: string;
@@ -120,437 +124,17 @@ export type State = {
   autoRecharge: { enabled: boolean; planId?: string };
   pending: { txnId: string; planName: string; amount: number; startedAt: number } | null;
   txns: Txn[];
+  plans: Plan[];
   products: Product[];
   productRequests: ProductRequest[];
   complaints: Complaint[];
   appliedCoupon: string | null;
   approvedOperators: ApprovedOperator[];
   blockedCustomers: string[];
+  ready: boolean;
 };
 
-const KEY = "stb_recharge_state_v2";
-
-const INITIAL_SEED_TXNS: Txn[] = [];
-
-export const INITIAL_SEED_PRODUCTS: Product[] = [
-  {
-    id: "p1",
-    name: "HDMI Cable",
-    category: "accessory",
-    price: 150,
-    availableStock: 15,
-    soldQuantity: 0,
-    description: "High-speed 1.5m 4K HDMI cable for crisp video & clear audio.",
-  },
-  {
-    id: "p2",
-    name: "AV Cable",
-    category: "accessory",
-    price: 100,
-    availableStock: 12,
-    soldQuantity: 0,
-    description: "3-RCA Red White Yellow Audio-Video Cable.",
-  },
-  {
-    id: "p3",
-    name: "Remote Control",
-    category: "accessory",
-    price: 250,
-    availableStock: 15,
-    soldQuantity: 0,
-    description: "Universal STB Remote with learning keys.",
-  },
-  {
-    id: "p4",
-    name: "STB Adapter / Power Supply",
-    category: "accessory",
-    price: 200,
-    availableStock: 8,
-    soldQuantity: 0,
-    description: "12V 1.5A original STB power adapter.",
-  },
-  {
-    id: "p5",
-    name: "Set Top Box Replacement",
-    category: "accessory",
-    price: 799,
-    availableStock: 4,
-    soldQuantity: 0,
-    description: "HD Digital STB unit swap with warranty.",
-  },
-  {
-    id: "p6",
-    name: "Dish Cable",
-    category: "accessory",
-    price: 180,
-    availableStock: 25,
-    soldQuantity: 0,
-    description: "Heavy-duty RG6 Coaxial cable (per 10 meters).",
-  },
-  {
-    id: "p7",
-    name: "Connector",
-    category: "accessory",
-    price: 40,
-    availableStock: 50,
-    soldQuantity: 0,
-    description: "F-type waterproof coaxial cable connector pack.",
-  },
-  {
-    id: "p8",
-    name: "Splitter",
-    category: "accessory",
-    price: 120,
-    availableStock: 18,
-    soldQuantity: 0,
-    description: "2-Way Signal Splitter for multi-connection.",
-  },
-  {
-    id: "p9",
-    name: "Other Accessories",
-    category: "accessory",
-    price: 150,
-    availableStock: 20,
-    soldQuantity: 0,
-    description: "Wall brackets, clip sets, and cable ties.",
-  },
-
-  // Installation services
-  {
-    id: "s1",
-    name: "New STB Installation",
-    category: "service",
-    price: 350,
-    availableStock: 99,
-    soldQuantity: 0,
-    description: "Full new connection setup with dish alignment & box activation.",
-  },
-  {
-    id: "s2",
-    name: "Cable Replacement",
-    category: "service",
-    price: 200,
-    availableStock: 99,
-    soldQuantity: 0,
-    description: "Inspection and re-wiring of old RG6 co-axial cables.",
-  },
-  {
-    id: "s3",
-    name: "Extra Connection Request",
-    category: "service",
-    price: 500,
-    availableStock: 99,
-    soldQuantity: 0,
-    description: "Multi-TV extension installation with secondary box.",
-  },
-  {
-    id: "s4",
-    name: "STB Replacement Installation",
-    category: "service",
-    price: 300,
-    availableStock: 99,
-    soldQuantity: 0,
-    description: "On-site swapping and re-configuration of replacement STB.",
-  },
-  {
-    id: "s5",
-    name: "HDMI/AV Setup",
-    category: "service",
-    price: 150,
-    availableStock: 99,
-    soldQuantity: 0,
-    description: "TV display calibration and audio output configuration.",
-  },
-];
-
-export const INITIAL_SEED_PRODUCT_REQUESTS: ProductRequest[] = [];
-
-export const INITIAL_SEED_COMPLAINTS: Complaint[] = [];
-
-export const INITIAL_APPROVED_OPERATORS: ApprovedOperator[] = [];
-
-const defaultState: State = {
-  user: null,
-  stb: null,
-  autoRecharge: { enabled: false },
-  pending: null,
-  txns: [],
-  products: INITIAL_SEED_PRODUCTS,
-  productRequests: [],
-  complaints: [],
-  appliedCoupon: null,
-  approvedOperators: [],
-  blockedCustomers: [],
-};
-
-let state: State = load();
-const listeners = new Set<() => void>();
-
-function load(): State {
-  if (typeof window === "undefined") return defaultState;
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return defaultState;
-    const parsed = JSON.parse(raw);
-    return {
-      ...defaultState,
-      ...parsed,
-      txns: parsed.txns || [],
-      products:
-        parsed.products && parsed.products.length > 0 ? parsed.products : INITIAL_SEED_PRODUCTS,
-      productRequests: parsed.productRequests || [],
-      complaints: parsed.complaints || [],
-      approvedOperators: parsed.approvedOperators || [],
-      blockedCustomers: parsed.blockedCustomers || [],
-    };
-  } catch {
-    return defaultState;
-  }
-}
-function save() {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(state));
-}
-function emit() {
-  listeners.forEach((l) => l());
-}
-
-export function getState() {
-  return state;
-}
-export function setState(patch: Partial<State> | ((s: State) => Partial<State>)) {
-  const p = typeof patch === "function" ? patch(state) : patch;
-  state = { ...state, ...p };
-  save();
-  emit();
-}
-export function subscribe(l: () => void) {
-  listeners.add(l);
-  return () => listeners.delete(l);
-}
-
-export function useStore<T>(selector: (s: State) => T): T {
-  return useSyncExternalStore(
-    (l) => subscribe(l),
-    () => selector(state),
-    () => selector(defaultState),
-  );
-}
-
-// ---------- Mock actions ----------
-export function sendOtp(mobile: string) {
-  // pretend to send
-  console.log(`[MOCK OTP] Sent 123456 to ${mobile}`);
-  return Promise.resolve();
-}
-export function isOperatorApproved(contact: string): boolean {
-  const cleaned = contact.trim().toLowerCase();
-  const digitsOnly = cleaned.replace(/\D/g, "");
-  return state.approvedOperators.some(
-    (op) =>
-      op.active &&
-      (op.mobile === digitsOnly || (digitsOnly.length >= 5 && op.mobile.includes(digitsOnly))),
-  );
-}
-
-export function isCustomerBlocked(identifier: string): boolean {
-  if (!identifier) return false;
-  const cleaned = identifier.trim().toLowerCase();
-  return state.blockedCustomers.some((c) => c.toLowerCase() === cleaned);
-}
-
-export function verifyOtp(
-  mobile: string,
-  otp: string,
-  name?: string,
-  role: "operator" | "customer" | "admin" = "customer",
-  extra?: { email?: string; operatorNumber?: string; stbId?: string },
-) {
-  if (otp === "123456" || otp.length === 6) {
-    const cleanedMobile = mobile.trim().replace(/\D/g, "");
-
-    // STRICT ADMIN ACCESS RULE
-    if (cleanedMobile === "9080864542" || role === "admin") {
-      if (cleanedMobile !== "9080864542") {
-        return Promise.resolve(false);
-      }
-      const adminUser: User = {
-        mobile: "9080864542",
-        name: "KATHIRAVAN V",
-        role: "admin",
-      };
-      setState({ user: adminUser });
-      return Promise.resolve(true);
-    }
-
-    // STRICT OPERATOR ACCESS RULE
-    if (role === "operator") {
-      const contactCheck = extra?.email || mobile;
-      if (!isOperatorApproved(contactCheck)) {
-        return Promise.resolve(false);
-      }
-      const displayName = name || "Operator Admin";
-      const user: User = {
-        mobile,
-        name: displayName,
-        role: "operator",
-        email: extra?.email,
-        operatorNumber: extra?.operatorNumber,
-      };
-      setState({ user });
-      return Promise.resolve(true);
-    }
-
-    // CUSTOMER RULE
-    if (isCustomerBlocked(mobile) || (extra?.stbId && isCustomerBlocked(extra.stbId))) {
-      return Promise.resolve(false);
-    }
-
-    const displayName = name || "Customer";
-    const user: User = {
-      mobile,
-      name: displayName,
-      role: "customer",
-      email: extra?.email,
-      stbId: extra?.stbId,
-    };
-    setState({ user });
-    fetchStb(extra?.stbId || "1234567890");
-    return Promise.resolve(true);
-  }
-  return Promise.resolve(false);
-}
-
-export function addApprovedOperator(
-  mobile: string,
-  name?: string,
-): { success: boolean; message: string } {
-  const cleaned = mobile.trim().replace(/\D/g, "");
-  if (cleaned.length !== 10) {
-    return { success: false, message: "Enter a valid 10-digit mobile number." };
-  }
-
-  const existing = state.approvedOperators.find((op) => op.mobile === cleaned);
-  if (existing) {
-    if (!existing.active) {
-      setState((s) => ({
-        approvedOperators: s.approvedOperators.map((op) =>
-          op.id === existing.id ? { ...op, active: true } : op,
-        ),
-      }));
-      return { success: true, message: `Operator ${cleaned} re-activated.` };
-    }
-    return { success: false, message: `Operator ${cleaned} is already approved.` };
-  }
-
-  const newOp: ApprovedOperator = {
-    id: "op-" + Date.now(),
-    mobile: cleaned,
-    name: name?.trim() || `Operator (${cleaned.slice(-4)})`,
-    addedAt: new Date().toISOString(),
-    active: true,
-  };
-
-  setState((s) => ({
-    approvedOperators: [newOp, ...s.approvedOperators],
-  }));
-
-  return { success: true, message: `Operator ${cleaned} added to approved list.` };
-}
-
-export function toggleOperatorStatus(id: string) {
-  setState((s) => ({
-    approvedOperators: s.approvedOperators.map((op) =>
-      op.id === id ? { ...op, active: !op.active } : op,
-    ),
-  }));
-}
-
-export function removeApprovedOperator(id: string) {
-  console.warn("Operator numbers cannot be deleted once added.");
-  return { success: false, message: "Operator numbers are permanent and cannot be deleted." };
-}
-
-export function toggleBlockCustomer(identifier: string) {
-  const cleaned = identifier.trim();
-  if (!cleaned) return;
-  setState((s) => {
-    const isBlocked = s.blockedCustomers.includes(cleaned);
-    return {
-      blockedCustomers: isBlocked
-        ? s.blockedCustomers.filter((c) => c !== cleaned)
-        : [...s.blockedCustomers, cleaned],
-    };
-  });
-}
-
-export function clearRechargeHistory() {
-  setState({ txns: [], pending: null });
-}
-
-export function clearProductOrderHistory() {
-  setState({ productRequests: [] });
-}
-
-export function clearComplaintHistory() {
-  setState({ complaints: [] });
-}
-
-export function clearAllFakeEntries() {
-  setState({
-    txns: state.txns.filter((t) => !t.id.startsWith("TXN849120") && !t.id.startsWith("TXN731945")),
-    productRequests: state.productRequests.filter((pr) => !pr.id.startsWith("PR-90412")),
-    complaints: state.complaints.filter((c) => !c.id.startsWith("CMP-90142")),
-  });
-}
-
-export function updateProduct(id: string, patch: Partial<Product>) {
-  setState((s) => ({
-    products: s.products.map((p) => (p.id === id ? { ...p, ...patch } : p)),
-  }));
-}
-
-export function deleteProduct(id: string) {
-  setState((s) => ({
-    products: s.products.filter((p) => p.id !== id),
-    productRequests: s.productRequests.filter((pr) => pr.productId !== id),
-  }));
-}
-
-export function logout() {
-  setState({ user: null, stb: null, pending: null });
-}
-
-const MOCK_STB: Record<string, STB> = {
-  "1234567890": {
-    id: "1234567890",
-    customerName: "Rahul Sharma",
-    currentPlan: "Premium HD Monthly",
-    expiry: new Date(Date.now() + 3 * 86400000).toISOString(),
-    active: true,
-  },
-  "9999999999": {
-    id: "9999999999",
-    customerName: "Priya Verma",
-    currentPlan: "Basic Pack",
-    expiry: new Date(Date.now() - 2 * 86400000).toISOString(),
-    active: false,
-  },
-};
-
-export function fetchStb(id: string): Promise<STB | null> {
-  const cleaned = id.trim();
-  const stb = MOCK_STB[cleaned] ?? {
-    id: cleaned,
-    customerName: "Guest Customer",
-    currentPlan: "Standard SD Pack",
-    expiry: new Date(Date.now() + 5 * 86400000).toISOString(),
-    active: true,
-  };
-  setState({ stb });
-  return Promise.resolve(stb);
-}
-
+// Fallback catalogue used before the database responds (also the seeded values).
 export const PLANS: Plan[] = [
   {
     id: "m1",
@@ -625,11 +209,295 @@ export const PLANS: Plan[] = [
   },
 ];
 
+export const INITIAL_SEED_PRODUCTS: Product[] = [];
+export const INITIAL_SEED_PRODUCT_REQUESTS: ProductRequest[] = [];
+export const INITIAL_SEED_COMPLAINTS: Complaint[] = [];
+export const INITIAL_APPROVED_OPERATORS: ApprovedOperator[] = [];
+
+const defaultState: State = {
+  user: null,
+  stb: null,
+  autoRecharge: { enabled: false },
+  pending: null,
+  txns: [],
+  plans: PLANS,
+  products: [],
+  productRequests: [],
+  complaints: [],
+  appliedCoupon: null,
+  approvedOperators: [],
+  blockedCustomers: [],
+  ready: false,
+};
+
+let state: State = defaultState;
+const listeners = new Set<() => void>();
+
+function emit() {
+  listeners.forEach((l) => l());
+}
+
+export function getState() {
+  return state;
+}
+export function setState(patch: Partial<State> | ((s: State) => Partial<State>)) {
+  const p = typeof patch === "function" ? patch(state) : patch;
+  state = { ...state, ...p };
+  emit();
+}
+export function subscribe(l: () => void) {
+  listeners.add(l);
+  return () => listeners.delete(l);
+}
+export function useStore<T>(selector: (s: State) => T): T {
+  return useSyncExternalStore(
+    (l) => subscribe(l),
+    () => selector(state),
+    () => selector(defaultState),
+  );
+}
+
+// ---------------- bootstrap + realtime ----------------
+let booted = false;
+
+export async function initStore() {
+  if (booted || typeof window === "undefined") return;
+  booted = true;
+
+  const catalogue = await db.fetchCatalogue();
+  setState({
+    plans: catalogue.plans.length ? catalogue.plans : PLANS,
+    products: catalogue.products,
+  });
+
+  const { data } = await supabase.auth.getSession();
+  if (data.session) await hydrateSession();
+  else setState({ ready: true });
+
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_OUT") {
+      setState({ ...defaultState, plans: state.plans, products: state.products, ready: true });
+    }
+  });
+
+  supabase
+    .channel("stb-live")
+    .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, () =>
+      refreshUserData(),
+    )
+    .on("postgres_changes", { event: "*", schema: "public", table: "product_requests" }, () =>
+      refreshUserData(),
+    )
+    .on("postgres_changes", { event: "*", schema: "public", table: "complaints" }, () =>
+      refreshUserData(),
+    )
+    .on("postgres_changes", { event: "*", schema: "public", table: "stb_accounts" }, () =>
+      refreshStb(),
+    )
+    .subscribe();
+}
+
+async function loadProfile(userId: string, email?: string) {
+  const [{ data: profile }, { data: roles }] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+    supabase.from("user_roles").select("role").eq("user_id", userId),
+  ]);
+  const roleList = (roles ?? []).map((r: { role: string }) => r.role);
+  const role: User["role"] = roleList.includes("admin")
+    ? "admin"
+    : roleList.includes("operator")
+      ? "operator"
+      : "customer";
+  const user: User = {
+    id: userId,
+    mobile: profile?.mobile ?? "",
+    name: profile?.name ?? undefined,
+    email: profile?.email ?? email,
+    stbId: profile?.stb_id ?? undefined,
+    operatorNumber: profile?.operator_number ?? undefined,
+    role,
+  };
+  setState({ user });
+  return user;
+}
+
+async function hydrateSession() {
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) {
+    setState({ ready: true });
+    return;
+  }
+  const user = await loadProfile(data.user.id, data.user.email ?? undefined);
+  await refreshUserData();
+  if (user.role === "admin") await refreshAdminData();
+  if (user.stbId) await fetchStb(user.stbId);
+  setState({ ready: true });
+}
+
+export async function refreshUserData() {
+  const rows = await db.fetchUserData();
+  const pendingTxn = rows.txns.find((t) => t.status === "pending");
+  setState({
+    txns: rows.txns,
+    productRequests: rows.productRequests,
+    complaints: rows.complaints,
+    pending: pendingTxn
+      ? {
+          txnId: pendingTxn.id,
+          planName: pendingTxn.planName,
+          amount: pendingTxn.amount,
+          startedAt: pendingTxn.startedAt ?? new Date(pendingTxn.date).getTime(),
+        }
+      : null,
+  });
+}
+
+export async function refreshAdminData() {
+  const rows = await db.fetchAdminData();
+  setState({
+    approvedOperators: rows.approvedOperators,
+    blockedCustomers: rows.blockedCustomers,
+  });
+}
+
+export async function refreshCatalogue() {
+  const catalogue = await db.fetchCatalogue();
+  setState({
+    plans: catalogue.plans.length ? catalogue.plans : PLANS,
+    products: catalogue.products,
+  });
+}
+
+async function refreshStb() {
+  const id = state.stb?.id ?? state.user?.stbId;
+  if (id) await fetchStb(id);
+}
+
+// ---------------- auth ----------------
+export function sendOtp(mobile: string) {
+  // The 6-digit code doubles as the account PIN for this mobile number.
+  console.log(`[STB] Enter your 6-digit PIN for ${mobile}`);
+  return Promise.resolve();
+}
+
+export function isOperatorApproved(contact: string): boolean {
+  const digitsOnly = db.cleanMobile(contact);
+  // The approved list is admin-only data; when it isn't loaded, let the server
+  // decide during verifyOtp (claim_role) instead of blocking here.
+  if (state.approvedOperators.length === 0) return true;
+  return state.approvedOperators.some(
+    (op) =>
+      op.active &&
+      (op.mobile === digitsOnly || (digitsOnly.length >= 5 && op.mobile.includes(digitsOnly))),
+  );
+}
+
+export function isCustomerBlocked(identifier: string): boolean {
+  if (!identifier) return false;
+  const cleaned = identifier.trim().toLowerCase();
+  return state.blockedCustomers.some((c) => c.toLowerCase() === cleaned);
+}
+
+export async function verifyOtp(
+  mobile: string,
+  otp: string,
+  name?: string,
+  role: "operator" | "customer" | "admin" = "customer",
+  extra?: { email?: string; operatorNumber?: string; stbId?: string },
+): Promise<boolean> {
+  const cleanedMobile = db.cleanMobile(mobile);
+  if (cleanedMobile.length < 10 || otp.trim().length < 6) return false;
+
+  const email = db.mobileToEmail(cleanedMobile);
+  const password = `stb-${otp.trim()}`;
+
+  let signIn = await supabase.auth.signInWithPassword({ email, password });
+
+  if (signIn.error) {
+    const signUp = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { mobile: cleanedMobile, name: name || "Customer", stb_id: extra?.stbId ?? null },
+      },
+    });
+    if (signUp.error) {
+      console.error("[auth]", signUp.error.message);
+      return false;
+    }
+    signIn = await supabase.auth.signInWithPassword({ email, password });
+    if (signIn.error) {
+      console.error("[auth]", signIn.error.message);
+      return false;
+    }
+  }
+
+  const userId = signIn.data.user?.id;
+  if (!userId) return false;
+
+  // Server decides the real role from the admin number / approved-operator list.
+  const { data: claimed, error: claimError } = await supabase.rpc("claim_role", {
+    _mobile: cleanedMobile,
+  });
+  if (claimError) console.error("[auth:role]", claimError.message);
+  const effectiveRole = (claimed as User["role"]) ?? "customer";
+
+  if (role === "admin" && effectiveRole !== "admin") {
+    await supabase.auth.signOut();
+    return false;
+  }
+  if (role === "operator" && effectiveRole === "customer") {
+    await supabase.auth.signOut();
+    return false;
+  }
+
+  const { data: blocked } = await supabase.rpc("is_blocked", { _identifier: cleanedMobile });
+  const { data: blockedStb } = extra?.stbId
+    ? await supabase.rpc("is_blocked", { _identifier: extra.stbId })
+    : { data: false };
+  if ((blocked || blockedStb) && effectiveRole === "customer") {
+    await supabase.auth.signOut();
+    return false;
+  }
+
+  await supabase
+    .from("profiles")
+    .update({
+      name: name || undefined,
+      mobile: cleanedMobile,
+      stb_id: extra?.stbId ?? undefined,
+      operator_number: extra?.operatorNumber ?? undefined,
+    })
+    .eq("id", userId);
+
+  await hydrateSession();
+  if (extra?.stbId) await fetchStb(extra.stbId);
+  return true;
+}
+
+export async function logout() {
+  await supabase.auth.signOut();
+  setState({ ...defaultState, plans: state.plans, products: state.products, ready: true });
+}
+
+// ---------------- STB ----------------
+export async function fetchStb(id: string): Promise<STB | null> {
+  const stb = await db.getOrCreateStb(id, {
+    ownerId: state.user?.id,
+    customerName: state.user?.name || "Customer",
+    customerMobile: state.user?.mobile,
+  });
+  if (stb) setState({ stb });
+  return stb;
+}
+
+// ---------------- recharge flow ----------------
 export function startPayment(planId: string, amount: number, planName: string) {
   const txnId = "TXN" + Math.floor(Math.random() * 900000 + 100000);
   const now = Date.now();
-  const currentUser = state.user;
-  const currentStb = state.stb;
+  const user = state.user;
+  const stb = state.stb;
 
   const newTxn: Txn = {
     id: txnId,
@@ -638,52 +506,394 @@ export function startPayment(planId: string, amount: number, planName: string) {
     date: new Date(now).toISOString(),
     startedAt: now,
     status: "pending",
-    customerName: currentUser?.name || currentStb?.customerName || "Customer",
-    customerMobile: currentUser?.mobile || "9876543210",
-    stbId: currentStb?.id || "1234567890",
+    customerName: user?.name || stb?.customerName || "Customer",
+    customerMobile: user?.mobile,
+    stbId: stb?.id,
   };
 
   setState((s) => ({
     pending: { txnId, planName, amount, startedAt: now },
     txns: [newTxn, ...s.txns],
   }));
+
+  void db.insertTransaction({
+    id: txnId,
+    user_id: user?.id ?? null,
+    stb_id: stb?.id ?? null,
+    plan_id: planId,
+    plan_name: planName,
+    amount,
+    status: "pending",
+    customer_name: newTxn.customerName,
+    customer_mobile: newTxn.customerMobile ?? null,
+    coupon: state.appliedCoupon,
+    started_at: new Date(now).toISOString(),
+  });
+
   return txnId;
 }
 
-export function approvePending(txnId: string) {
-  setState((s) => {
-    const nowIso = new Date().toISOString();
-    const targetTxn = s.txns.find((t) => t.id === txnId);
+export async function approvePending(txnId: string) {
+  const nowIso = new Date().toISOString();
+  const target = state.txns.find((t) => t.id === txnId);
 
-    const updatedTxns = s.txns.map((t) =>
+  setState((s) => ({
+    pending: s.pending?.txnId === txnId ? null : s.pending,
+    txns: s.txns.map((t) =>
       t.id === txnId ? { ...t, status: "success" as const, approvedAt: nowIso } : t,
-    );
-    const isCurrentPending = s.pending?.txnId === txnId;
+    ),
+  }));
 
-    return {
-      pending: isCurrentPending ? null : s.pending,
-      txns: updatedTxns,
-      stb:
-        s.stb && (isCurrentPending || (targetTxn && s.stb.id === targetTxn.stbId))
-          ? {
-              ...s.stb,
-              active: true,
-              currentPlan: targetTxn?.planName || s.stb.currentPlan,
-              expiry: new Date(Date.now() + 30 * 86400000).toISOString(),
-            }
-          : s.stb,
-    };
-  });
+  const error = await db.updateTransaction(txnId, { status: "success", approved_at: nowIso });
+  if (error) {
+    // Only operators/admins may approve — roll back to the server truth.
+    await refreshUserData();
+    return false;
+  }
+
+  if (target?.stbId) {
+    const expiry = new Date(Date.now() + 30 * 86400000).toISOString();
+    await db.updateStb(target.stbId, {
+      active: true,
+      current_plan: target.planName,
+      expiry,
+    });
+    if (state.stb?.id === target.stbId) {
+      setState((s) => ({
+        stb: s.stb ? { ...s.stb, active: true, currentPlan: target.planName, expiry } : s.stb,
+      }));
+    }
+  }
+  return true;
 }
 
-export function rejectPending(txnId: string) {
+export async function rejectPending(txnId: string) {
   setState((s) => ({
     pending: s.pending?.txnId === txnId ? null : s.pending,
     txns: s.txns.map((t) => (t.id === txnId ? { ...t, status: "failed" as const } : t)),
   }));
+  const error = await db.updateTransaction(txnId, { status: "failed" });
+  if (error) {
+    await refreshUserData();
+    return false;
+  }
+  return true;
 }
 
-// countdown hook
+// ---------------- operators / blocked customers ----------------
+export function addApprovedOperator(mobile: string, name?: string) {
+  const cleaned = db.cleanMobile(mobile);
+  if (cleaned.length !== 10) {
+    return { success: false, message: "Enter a valid 10-digit mobile number." };
+  }
+  const existing = state.approvedOperators.find((op) => op.mobile === cleaned);
+  if (existing && existing.active) {
+    return { success: false, message: `Operator ${cleaned} is already approved.` };
+  }
+  void db
+    .upsertOperator(cleaned, name?.trim() || `Operator (${cleaned.slice(-4)})`, true)
+    .then(refreshAdminData);
+  return {
+    success: true,
+    message: existing
+      ? `Operator ${cleaned} re-activated.`
+      : `Operator ${cleaned} added to approved list.`,
+  };
+}
+
+export function toggleOperatorStatus(id: string) {
+  const op = state.approvedOperators.find((o) => o.id === id);
+  if (!op) return;
+  setState((s) => ({
+    approvedOperators: s.approvedOperators.map((o) =>
+      o.id === id ? { ...o, active: !o.active } : o,
+    ),
+  }));
+  void db.setOperatorActive(id, !op.active).then(refreshAdminData);
+}
+
+export function removeApprovedOperator(_id: string) {
+  return { success: false, message: "Operator numbers are permanent and cannot be deleted." };
+}
+
+export function toggleBlockCustomer(identifier: string) {
+  const cleaned = identifier.trim();
+  if (!cleaned) return;
+  const isBlocked = state.blockedCustomers.includes(cleaned);
+  setState((s) => ({
+    blockedCustomers: isBlocked
+      ? s.blockedCustomers.filter((c) => c !== cleaned)
+      : [...s.blockedCustomers, cleaned],
+  }));
+  void (isBlocked ? db.unblockCustomer(cleaned) : db.blockCustomer(cleaned)).then(refreshAdminData);
+}
+
+// ---------------- history maintenance (admin) ----------------
+export function clearRechargeHistory() {
+  setState({ txns: [], pending: null });
+  void db.deleteAll("transactions");
+}
+export function clearProductOrderHistory() {
+  setState({ productRequests: [] });
+  void db.deleteAll("product_requests");
+}
+export function clearComplaintHistory() {
+  setState({ complaints: [] });
+  void db.deleteAll("complaints");
+}
+export function clearAllFakeEntries() {
+  void refreshUserData();
+}
+
+// ---------------- products ----------------
+export function updateProduct(id: string, patch: Partial<Product>) {
+  setState((s) => ({
+    products: s.products.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+  }));
+  const row: Record<string, unknown> = { id };
+  if (patch.name !== undefined) row.name = patch.name;
+  if (patch.category !== undefined) row.category = patch.category;
+  if (patch.price !== undefined) row.price = patch.price;
+  if (patch.availableStock !== undefined) row.available_stock = patch.availableStock;
+  if (patch.soldQuantity !== undefined) row.sold_quantity = patch.soldQuantity;
+  if (patch.description !== undefined) row.description = patch.description;
+  if (patch.iconName !== undefined) row.icon_name = patch.iconName;
+  void db.upsertProduct(row);
+}
+
+export function deleteProduct(id: string) {
+  setState((s) => ({
+    products: s.products.filter((p) => p.id !== id),
+    productRequests: s.productRequests.filter((pr) => pr.productId !== id),
+  }));
+  void db.removeProduct(id);
+}
+
+export function addProduct(product: Omit<Product, "id" | "soldQuantity">): Product {
+  const newId = "p" + Date.now().toString(36) + Math.floor(Math.random() * 1000);
+  const newProduct: Product = { ...product, id: newId, soldQuantity: 0 };
+  setState((s) => ({ products: [...s.products, newProduct] }));
+  void db.upsertProduct({
+    id: newId,
+    name: newProduct.name,
+    category: newProduct.category,
+    price: newProduct.price,
+    available_stock: newProduct.availableStock,
+    sold_quantity: 0,
+    description: newProduct.description ?? null,
+    icon_name: newProduct.iconName ?? null,
+  });
+  return newProduct;
+}
+
+export function updateProductStock(id: string, availableStock: number, price?: number) {
+  updateProduct(id, { availableStock, ...(price !== undefined ? { price } : {}) });
+}
+
+// ---------------- product & service requests ----------------
+export function createProductRequest(input: {
+  stbId: string;
+  customerName: string;
+  customerMobile: string;
+  productId: string;
+  quantity: number;
+  description: string;
+  imageUrl?: string;
+}): ProductRequest {
+  const reqId = "PR-" + Math.floor(Math.random() * 90000 + 10000);
+  const target = state.products.find((p) => p.id === input.productId);
+  const unitPrice = target?.price || 0;
+
+  const newReq: ProductRequest = {
+    id: reqId,
+    stbId: input.stbId,
+    customerName: input.customerName,
+    customerMobile: input.customerMobile,
+    productId: input.productId,
+    productName: target?.name || "Product / Service",
+    category: target?.category || "accessory",
+    quantity: input.quantity,
+    unitPrice,
+    totalAmount: unitPrice * input.quantity,
+    description: input.description,
+    imageUrl: input.imageUrl,
+    status: "Pending",
+    createdAt: new Date().toISOString(),
+  };
+
+  setState((s) => ({ productRequests: [newReq, ...s.productRequests] }));
+
+  void db.insertProductRequest({
+    id: reqId,
+    user_id: state.user?.id ?? null,
+    stb_id: newReq.stbId,
+    customer_name: newReq.customerName,
+    customer_mobile: newReq.customerMobile,
+    product_id: newReq.productId,
+    product_name: newReq.productName,
+    category: newReq.category,
+    quantity: newReq.quantity,
+    unit_price: newReq.unitPrice,
+    total_amount: newReq.totalAmount,
+    description: newReq.description,
+    image_url: newReq.imageUrl ?? null,
+    status: "Pending",
+  });
+
+  return newReq;
+}
+
+export function updateProductRequestStatus(
+  id: string,
+  status: ProductRequestStatus,
+  details?: {
+    technicianName?: string;
+    technicianMobile?: string;
+    scheduledDate?: string;
+    operatorNote?: string;
+  },
+) {
+  const req = state.productRequests.find((r) => r.id === id);
+
+  setState((s) => ({
+    productRequests: s.productRequests.map((r) =>
+      r.id === id
+        ? {
+            ...r,
+            status,
+            ...(details?.technicianName !== undefined && {
+              technicianName: details.technicianName,
+            }),
+            ...(details?.technicianMobile !== undefined && {
+              technicianMobile: details.technicianMobile,
+            }),
+            ...(details?.scheduledDate !== undefined && { scheduledDate: details.scheduledDate }),
+            ...(details?.operatorNote !== undefined && { operatorNote: details.operatorNote }),
+          }
+        : r,
+    ),
+  }));
+
+  void db.updateProductRequest(id, {
+    status,
+    ...(details?.technicianName !== undefined && { technician_name: details.technicianName }),
+    ...(details?.technicianMobile !== undefined && { technician_mobile: details.technicianMobile }),
+    ...(details?.scheduledDate !== undefined && { scheduled_date: details.scheduledDate }),
+    ...(details?.operatorNote !== undefined && { operator_note: details.operatorNote }),
+  });
+
+  if (req && status === "Completed" && req.status !== "Completed") {
+    const product = state.products.find((p) => p.id === req.productId);
+    if (product) {
+      updateProduct(product.id, {
+        availableStock: Math.max(0, product.availableStock - req.quantity),
+        soldQuantity: product.soldQuantity + req.quantity,
+      });
+    }
+  }
+}
+
+// ---------------- complaints ----------------
+export function createComplaint(input: {
+  stbId: string;
+  customerName: string;
+  customerMobile: string;
+  category: string;
+  issueType: string;
+  description: string;
+  mediaUrl?: string;
+  preferredTime: string;
+}): Complaint {
+  const cmpId = "CMP-" + Math.floor(Math.random() * 90000 + 10000);
+  const newComplaint: Complaint = {
+    id: cmpId,
+    ...input,
+    status: "Pending",
+    createdAt: new Date().toISOString(),
+  };
+
+  setState((s) => ({ complaints: [newComplaint, ...s.complaints] }));
+
+  void db.insertComplaint({
+    id: cmpId,
+    user_id: state.user?.id ?? null,
+    stb_id: input.stbId,
+    customer_name: input.customerName,
+    customer_mobile: input.customerMobile,
+    category: input.category,
+    issue_type: input.issueType,
+    description: input.description,
+    media_url: input.mediaUrl ?? null,
+    preferred_time: input.preferredTime,
+    status: "Pending",
+  });
+
+  return newComplaint;
+}
+
+export function updateComplaintStatus(
+  id: string,
+  status: ComplaintStatus,
+  details?: {
+    technicianName?: string;
+    technicianMobile?: string;
+    expectedArrival?: string;
+  },
+) {
+  const nowIso = new Date().toISOString();
+  const current = state.complaints.find((c) => c.id === id);
+
+  setState((s) => ({
+    complaints: s.complaints.map((c) =>
+      c.id === id
+        ? {
+            ...c,
+            status,
+            ...(details?.technicianName && { technicianName: details.technicianName }),
+            ...(details?.technicianMobile && { technicianMobile: details.technicianMobile }),
+            ...(details?.expectedArrival && { expectedArrival: details.expectedArrival }),
+            ...(status === "Assigned" || status === "In Progress"
+              ? { assignedAt: c.assignedAt || nowIso }
+              : {}),
+            ...(status === "Resolved" ? { resolvedAt: nowIso } : {}),
+          }
+        : c,
+    ),
+  }));
+
+  void db.updateComplaint(id, {
+    status,
+    ...(details?.technicianName && { technician_name: details.technicianName }),
+    ...(details?.technicianMobile && { technician_mobile: details.technicianMobile }),
+    ...(details?.expectedArrival && { expected_arrival: details.expectedArrival }),
+    ...(status === "Assigned" || status === "In Progress"
+      ? { assigned_at: current?.assignedAt || nowIso }
+      : {}),
+    ...(status === "Resolved" ? { resolved_at: nowIso } : {}),
+  });
+}
+
+export function assignTechnicianToComplaint(
+  id: string,
+  technicianName: string,
+  technicianMobile: string,
+  expectedArrival: string,
+) {
+  updateComplaintStatus(id, "In Progress", {
+    technicianName,
+    technicianMobile,
+    expectedArrival,
+  });
+}
+
+export function submitComplaintRating(id: string, rating: number, feedback: string) {
+  setState((s) => ({
+    complaints: s.complaints.map((c) => (c.id === id ? { ...c, rating, feedback } : c)),
+  }));
+  void db.updateComplaint(id, { rating, feedback });
+}
+
+// ---------------- misc helpers ----------------
 export function useCountdown(startedAt: number, durationMs: number) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -708,195 +918,4 @@ export function formatName(str?: string): string {
     .split(/\s+/)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-}
-
-// ---------- Product & Service Request Actions ----------
-export function createProductRequest(input: {
-  stbId: string;
-  customerName: string;
-  customerMobile: string;
-  productId: string;
-  quantity: number;
-  description: string;
-  imageUrl?: string;
-}): ProductRequest {
-  const reqId = "PR-" + Math.floor(Math.random() * 90000 + 10000);
-  const targetProduct = state.products.find((p) => p.id === input.productId);
-  const productName = targetProduct?.name || "Product / Service";
-  const category = targetProduct?.category || "accessory";
-  const unitPrice = targetProduct?.price || 0;
-  const totalAmount = unitPrice * input.quantity;
-
-  const newReq: ProductRequest = {
-    id: reqId,
-    stbId: input.stbId,
-    customerName: input.customerName,
-    customerMobile: input.customerMobile,
-    productId: input.productId,
-    productName,
-    category,
-    quantity: input.quantity,
-    unitPrice,
-    totalAmount,
-    description: input.description,
-    imageUrl: input.imageUrl,
-    status: "Pending",
-    createdAt: new Date().toISOString(),
-  };
-
-  setState((s) => ({
-    productRequests: [newReq, ...s.productRequests],
-  }));
-
-  return newReq;
-}
-
-export function updateProductRequestStatus(
-  id: string,
-  status: ProductRequestStatus,
-  details?: {
-    technicianName?: string;
-    technicianMobile?: string;
-    scheduledDate?: string;
-    operatorNote?: string;
-  },
-) {
-  setState((s) => {
-    const updatedRequests = s.productRequests.map((req) => {
-      if (req.id !== id) return req;
-      return {
-        ...req,
-        status,
-        ...(details?.technicianName !== undefined && { technicianName: details.technicianName }),
-        ...(details?.technicianMobile !== undefined && {
-          technicianMobile: details.technicianMobile,
-        }),
-        ...(details?.scheduledDate !== undefined && { scheduledDate: details.scheduledDate }),
-        ...(details?.operatorNote !== undefined && { operatorNote: details.operatorNote }),
-      };
-    });
-
-    // If marked Completed, update stock and sold quantity for accessories
-    const req = s.productRequests.find((r) => r.id === id);
-    let updatedProducts = s.products;
-    if (req && status === "Completed" && req.status !== "Completed") {
-      updatedProducts = s.products.map((p) => {
-        if (p.id === req.productId) {
-          const newAvailable = Math.max(0, p.availableStock - req.quantity);
-          return {
-            ...p,
-            availableStock: newAvailable,
-            soldQuantity: p.soldQuantity + req.quantity,
-          };
-        }
-        return p;
-      });
-    }
-
-    return {
-      productRequests: updatedRequests,
-      products: updatedProducts,
-    };
-  });
-}
-
-export function addProduct(product: Omit<Product, "id" | "soldQuantity">): Product {
-  const newId = "p" + (state.products.length + 1) + "_" + Math.floor(Math.random() * 1000);
-  const newProduct: Product = {
-    ...product,
-    id: newId,
-    soldQuantity: 0,
-  };
-  setState((s) => ({
-    products: [...s.products, newProduct],
-  }));
-  return newProduct;
-}
-
-export function updateProductStock(id: string, availableStock: number, price?: number) {
-  setState((s) => ({
-    products: s.products.map((p) =>
-      p.id === id ? { ...p, availableStock, ...(price !== undefined ? { price } : {}) } : p,
-    ),
-  }));
-}
-
-// ---------- Complaint Actions ----------
-export function createComplaint(input: {
-  stbId: string;
-  customerName: string;
-  customerMobile: string;
-  category: string;
-  issueType: string;
-  description: string;
-  mediaUrl?: string;
-  preferredTime: string;
-}): Complaint {
-  const cmpId = "CMP-" + Math.floor(Math.random() * 90000 + 10000);
-  const newComplaint: Complaint = {
-    id: cmpId,
-    stbId: input.stbId,
-    customerName: input.customerName,
-    customerMobile: input.customerMobile,
-    category: input.category,
-    issueType: input.issueType,
-    description: input.description,
-    mediaUrl: input.mediaUrl,
-    preferredTime: input.preferredTime,
-    status: "Pending",
-    createdAt: new Date().toISOString(),
-  };
-
-  setState((s) => ({
-    complaints: [newComplaint, ...s.complaints],
-  }));
-
-  return newComplaint;
-}
-
-export function updateComplaintStatus(
-  id: string,
-  status: ComplaintStatus,
-  details?: {
-    technicianName?: string;
-    technicianMobile?: string;
-    expectedArrival?: string;
-  },
-) {
-  setState((s) => ({
-    complaints: s.complaints.map((c) => {
-      if (c.id !== id) return c;
-      const nowIso = new Date().toISOString();
-      return {
-        ...c,
-        status,
-        ...(details?.technicianName && { technicianName: details.technicianName }),
-        ...(details?.technicianMobile && { technicianMobile: details.technicianMobile }),
-        ...(details?.expectedArrival && { expectedArrival: details.expectedArrival }),
-        ...(status === "Assigned" || status === "In Progress"
-          ? { assignedAt: c.assignedAt || nowIso }
-          : {}),
-        ...(status === "Resolved" ? { resolvedAt: nowIso } : {}),
-      };
-    }),
-  }));
-}
-
-export function assignTechnicianToComplaint(
-  id: string,
-  technicianName: string,
-  technicianMobile: string,
-  expectedArrival: string,
-) {
-  updateComplaintStatus(id, "In Progress", {
-    technicianName,
-    technicianMobile,
-    expectedArrival,
-  });
-}
-
-export function submitComplaintRating(id: string, rating: number, feedback: string) {
-  setState((s) => ({
-    complaints: s.complaints.map((c) => (c.id === id ? { ...c, rating, feedback } : c)),
-  }));
 }
