@@ -9,52 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as ComplaintsRouteImport } from './routes/complaints'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as HistoryRouteImport } from './routes/history'
-import { Route as OffersRouteImport } from './routes/offers'
-import { Route as OperatorRouteImport } from './routes/operator'
-import { Route as PlansRouteImport } from './routes/plans'
 import { Route as ProductsRouteImport } from './routes/products'
-import { Route as RechargeCheckoutRouteImport } from './routes/recharge.checkout'
-import { Route as RechargePendingRouteImport } from './routes/recharge.pending'
+import { Route as PlansRouteImport } from './routes/plans'
+import { Route as OperatorRouteImport } from './routes/operator'
+import { Route as OffersRouteImport } from './routes/offers'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ComplaintsRouteImport } from './routes/complaints'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as RechargeSuccessRouteImport } from './routes/recharge.success'
+import { Route as RechargePendingRouteImport } from './routes/recharge.pending'
+import { Route as RechargeCheckoutRouteImport } from './routes/recharge.checkout'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ComplaintsRoute = ComplaintsRouteImport.update({
-  id: '/complaints',
-  path: '/complaints',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HistoryRoute = HistoryRouteImport.update({
-  id: '/history',
-  path: '/history',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OffersRoute = OffersRouteImport.update({
-  id: '/offers',
-  path: '/offers',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OperatorRoute = OperatorRouteImport.update({
-  id: '/operator',
-  path: '/operator',
+const ProductsRoute = ProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlansRoute = PlansRouteImport.update({
@@ -62,14 +32,44 @@ const PlansRoute = PlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProductsRoute = ProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
+const OperatorRoute = OperatorRouteImport.update({
+  id: '/operator',
+  path: '/operator',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RechargeCheckoutRoute = RechargeCheckoutRouteImport.update({
-  id: '/recharge/checkout',
-  path: '/recharge/checkout',
+const OffersRoute = OffersRouteImport.update({
+  id: '/offers',
+  path: '/offers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplaintsRoute = ComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RechargeSuccessRoute = RechargeSuccessRouteImport.update({
+  id: '/recharge/success',
+  path: '/recharge/success',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RechargePendingRoute = RechargePendingRouteImport.update({
@@ -77,9 +77,9 @@ const RechargePendingRoute = RechargePendingRouteImport.update({
   path: '/recharge/pending',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RechargeSuccessRoute = RechargeSuccessRouteImport.update({
-  id: '/recharge/success',
-  path: '/recharge/success',
+const RechargeCheckoutRoute = RechargeCheckoutRouteImport.update({
+  id: '/recharge/checkout',
+  path: '/recharge/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -188,53 +188,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/complaints': {
-      id: '/complaints'
-      path: '/complaints'
-      fullPath: '/complaints'
-      preLoaderRoute: typeof ComplaintsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/history': {
-      id: '/history'
-      path: '/history'
-      fullPath: '/history'
-      preLoaderRoute: typeof HistoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/offers': {
-      id: '/offers'
-      path: '/offers'
-      fullPath: '/offers'
-      preLoaderRoute: typeof OffersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/operator': {
-      id: '/operator'
-      path: '/operator'
-      fullPath: '/operator'
-      preLoaderRoute: typeof OperatorRouteImport
+    '/products': {
+      id: '/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/plans': {
@@ -244,18 +202,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/products': {
-      id: '/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof ProductsRouteImport
+    '/operator': {
+      id: '/operator'
+      path: '/operator'
+      fullPath: '/operator'
+      preLoaderRoute: typeof OperatorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/recharge/checkout': {
-      id: '/recharge/checkout'
-      path: '/recharge/checkout'
-      fullPath: '/recharge/checkout'
-      preLoaderRoute: typeof RechargeCheckoutRouteImport
+    '/offers': {
+      id: '/offers'
+      path: '/offers'
+      fullPath: '/offers'
+      preLoaderRoute: typeof OffersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/complaints': {
+      id: '/complaints'
+      path: '/complaints'
+      fullPath: '/complaints'
+      preLoaderRoute: typeof ComplaintsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recharge/success': {
+      id: '/recharge/success'
+      path: '/recharge/success'
+      fullPath: '/recharge/success'
+      preLoaderRoute: typeof RechargeSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recharge/pending': {
@@ -265,11 +265,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RechargePendingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/recharge/success': {
-      id: '/recharge/success'
-      path: '/recharge/success'
-      fullPath: '/recharge/success'
-      preLoaderRoute: typeof RechargeSuccessRouteImport
+    '/recharge/checkout': {
+      id: '/recharge/checkout'
+      path: '/recharge/checkout'
+      fullPath: '/recharge/checkout'
+      preLoaderRoute: typeof RechargeCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
