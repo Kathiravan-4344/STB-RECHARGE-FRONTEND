@@ -41,7 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div
               className={`grid h-9 w-9 place-items-center rounded-xl shadow-[var(--shadow-glow)] ${
                 isAdminRoute
-                  ? "bg-amber-500 text-black font-bold shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                  ? "bg-emerald-500 text-black font-bold shadow-[0_0_15px_rgba(16,185,129,0.4)]"
                   : "gradient-primary text-primary-foreground"
               }`}
             >
@@ -51,7 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="font-display text-base font-bold tracking-tight flex items-center gap-2">
                 STB RECHARGE
                 {isAdminRoute && (
-                  <span className="rounded-md bg-amber-500/20 px-2 py-0.5 text-[10px] font-extrabold text-amber-400 border border-amber-500/40 uppercase tracking-wider">
+                  <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-[10px] font-extrabold text-emerald-400 border border-emerald-500/40 uppercase tracking-wider">
                     ADMIN PORTAL
                   </span>
                 )}
@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </nav>
           ) : (
             <div className="hidden md:flex items-center gap-2">
-              <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400">
+              <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">
                 👑 Super Admin: KATHIRAVAN V (9080864542)
               </span>
             </div>

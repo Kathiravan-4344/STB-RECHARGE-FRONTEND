@@ -210,19 +210,19 @@ export function AdminPage() {
   return (
     <AppShell>
       {/* Top Banner */}
-      <div className="mb-6 flex flex-col gap-4 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-950/40 via-purple-950/40 to-slate-900/80 p-6 shadow-[0_0_30px_rgba(245,158,11,0.15)] md:flex-row md:items-center md:justify-between">
+      <div className="mb-6 flex flex-col gap-4 rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/60 via-slate-900/80 to-emerald-950/60 p-6 shadow-[0_0_30px_rgba(16,185,129,0.2)] md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
             <Shield className="h-7 w-7" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-display text-2xl font-bold text-white">Super Admin Portal</h1>
-              <span className="rounded-md bg-amber-500/20 px-2 py-0.5 text-xs font-extrabold text-amber-400 border border-amber-500/40 uppercase">
+              <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-xs font-extrabold text-emerald-400 border border-emerald-500/40 uppercase">
                 MASTER CONTROL
               </span>
             </div>
-            <p className="text-xs text-amber-200/80 mt-1">
+            <p className="text-xs text-emerald-200/80 mt-1">
               Logged in as 👑 <strong>Kathiravan V</strong> (9080864542) • Full Administrative
               Privileges
             </p>
@@ -270,7 +270,7 @@ export function AdminPage() {
             onClick={() => setTab(t.id as TabType)}
             className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition whitespace-nowrap ${
               tab === t.id
-                ? "bg-amber-500 text-black font-extrabold shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                ? "bg-emerald-500 text-black font-extrabold shadow-[0_0_15px_rgba(16,185,129,0.4)]"
                 : "text-muted-foreground hover:text-white"
             }`}
           >

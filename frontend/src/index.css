@@ -41,45 +41,45 @@
 
 :root {
   --radius: 0.9rem;
-  /* Deep navy dark theme */
-  --background: oklch(0.16 0.03 265);
-  --foreground: oklch(0.97 0.01 240);
-  --card: oklch(0.21 0.035 265);
-  --card-foreground: oklch(0.97 0.01 240);
-  --popover: oklch(0.21 0.035 265);
-  --popover-foreground: oklch(0.97 0.01 240);
-  --primary: oklch(0.72 0.22 250);           /* neon blue */
-  --primary-foreground: oklch(0.12 0.03 265);
-  --secondary: oklch(0.28 0.05 265);
-  --secondary-foreground: oklch(0.97 0.01 240);
-  --muted: oklch(0.26 0.04 265);
-  --muted-foreground: oklch(0.72 0.03 250);
-  --accent: oklch(0.75 0.19 200);            /* cyan */
-  --accent-foreground: oklch(0.12 0.03 265);
+  /* Green Dark Theme (Deep Charcoal Emerald & Neon Mint Accents) */
+  --background: oklch(0.12 0.03 160);       /* Deep charcoal green #07120e */
+  --foreground: oklch(0.97 0.01 160);       /* Crisp mint soft white */
+  --card: oklch(0.17 0.04 160);             /* Dark emerald card surface #0e2218 */
+  --card-foreground: oklch(0.97 0.01 160);
+  --popover: oklch(0.17 0.04 160);
+  --popover-foreground: oklch(0.97 0.01 160);
+  --primary: oklch(0.72 0.22 155);          /* Vibrant emerald green #10b981 */
+  --primary-foreground: oklch(0.10 0.03 160);
+  --secondary: oklch(0.24 0.05 160);
+  --secondary-foreground: oklch(0.97 0.01 160);
+  --muted: oklch(0.22 0.04 160);
+  --muted-foreground: oklch(0.75 0.04 155); /* Mint slate tint */
+  --accent: oklch(0.78 0.18 175);           /* Mint cyan */
+  --accent-foreground: oklch(0.10 0.03 160);
   --destructive: oklch(0.63 0.24 25);
-  --destructive-foreground: oklch(0.98 0.01 240);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.72 0.22 250);
+  --destructive-foreground: oklch(0.98 0.01 160);
+  --border: oklch(0.72 0.22 155 / 15%);
+  --input: oklch(0.72 0.22 155 / 18%);
+  --ring: oklch(0.72 0.22 155);
 
-  --neon: oklch(0.72 0.22 250);
-  --neon-cyan: oklch(0.82 0.18 200);
-  --neon-purple: oklch(0.68 0.24 305);
-  --success: oklch(0.75 0.19 150);
+  --neon: oklch(0.72 0.22 155);             /* Neon emerald */
+  --neon-cyan: oklch(0.82 0.18 175);        /* Bright mint cyan */
+  --neon-purple: oklch(0.75 0.19 140);      /* Bright lime green */
+  --success: oklch(0.75 0.22 150);
   --warning: oklch(0.82 0.17 85);
 
-  --gradient-primary: linear-gradient(135deg, oklch(0.72 0.22 250), oklch(0.68 0.24 305));
-  --gradient-cyan: linear-gradient(135deg, oklch(0.82 0.18 200), oklch(0.72 0.22 250));
-  --gradient-radial: radial-gradient(1200px 600px at 10% -10%, oklch(0.72 0.22 250 / 0.25), transparent 60%),
-                     radial-gradient(900px 500px at 110% 10%, oklch(0.68 0.24 305 / 0.22), transparent 60%),
-                     radial-gradient(700px 400px at 50% 120%, oklch(0.82 0.18 200 / 0.18), transparent 60%);
-  --shadow-glow: 0 0 40px oklch(0.72 0.22 250 / 0.35), 0 0 80px oklch(0.68 0.24 305 / 0.15);
-  --shadow-glow-cyan: 0 0 30px oklch(0.82 0.18 200 / 0.4);
-  --shadow-glow-success: 0 0 40px oklch(0.75 0.19 150 / 0.5);
+  --gradient-primary: linear-gradient(135deg, oklch(0.72 0.22 155), oklch(0.58 0.20 165));
+  --gradient-cyan: linear-gradient(135deg, oklch(0.82 0.18 175), oklch(0.72 0.22 155));
+  --gradient-radial: radial-gradient(1200px 600px at 10% -10%, oklch(0.72 0.22 155 / 0.22), transparent 60%),
+                     radial-gradient(900px 500px at 110% 10%, oklch(0.58 0.20 165 / 0.20), transparent 60%),
+                     radial-gradient(700px 400px at 50% 120%, oklch(0.82 0.18 175 / 0.15), transparent 60%);
+  --shadow-glow: 0 0 35px oklch(0.72 0.22 155 / 0.4), 0 0 70px oklch(0.58 0.20 165 / 0.2);
+  --shadow-glow-cyan: 0 0 30px oklch(0.82 0.18 175 / 0.4);
+  --shadow-glow-success: 0 0 40px oklch(0.75 0.22 150 / 0.5);
   --shadow-glow-danger: 0 0 30px oklch(0.63 0.24 25 / 0.45);
-  --shadow-elev: 0 10px 40px -12px oklch(0 0 0 / 0.6), 0 2px 8px -2px oklch(0 0 0 / 0.4);
-  --glass-bg: color-mix(in oklab, var(--card) 65%, transparent);
-  --glass-border: color-mix(in oklab, white 12%, transparent);
+  --shadow-elev: 0 10px 40px -12px oklch(0 0 0 / 0.7), 0 2px 8px -2px oklch(0 0 0 / 0.5);
+  --glass-bg: color-mix(in oklab, var(--card) 78%, transparent);
+  --glass-border: color-mix(in oklab, oklch(0.72 0.22 155) 20%, transparent);
 }
 
 @layer base {
@@ -108,7 +108,7 @@
 }
 
 @utility glass-strong {
-  background: color-mix(in oklab, var(--card) 82%, transparent);
+  background: color-mix(in oklab, var(--card) 85%, transparent);
   backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-elev);
@@ -153,8 +153,8 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.75 0.19 150 / 0.55); }
-  50%      { box-shadow: 0 0 0 12px oklch(0.75 0.19 150 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.72 0.22 155 / 0.55); }
+  50%      { box-shadow: 0 0 0 12px oklch(0.72 0.22 155 / 0); }
 }
 @keyframes pulse-glow-red {
   0%, 100% { box-shadow: 0 0 0 0 oklch(0.63 0.24 25 / 0.55); }
