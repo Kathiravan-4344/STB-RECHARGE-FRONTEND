@@ -38,14 +38,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-blue-600 text-white font-bold shadow-sm">
+            <div className="grid h-9 w-9 place-items-center rounded-lg bg-slate-700 text-slate-100 font-bold border border-slate-600">
               <Tv className="h-5 w-5" />
             </div>
             <div className="leading-tight">
               <div className="font-display text-base font-bold tracking-tight flex items-center gap-2 text-slate-100">
                 STB RECHARGE
                 {isAdminRoute && (
-                  <span className="rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400 border border-blue-500/30 uppercase tracking-wider">
+                  <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-200 border border-slate-700 uppercase tracking-wider">
                     ADMIN PORTAL
                   </span>
                 )}
@@ -68,7 +68,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     to={n.to}
                     className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                       active
-                        ? "bg-blue-600 text-white font-semibold"
+                        ? "bg-slate-700 text-white font-semibold border border-slate-600"
                         : "text-slate-400 hover:text-slate-100 hover:bg-slate-800"
                     }`}
                   >
@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {user?.role === "operator" && (
                 <Link
                   to="/operator"
-                  className="flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-blue-500/10 px-3 py-1.5 text-xs font-semibold text-blue-400 transition hover:bg-blue-600 hover:text-white"
+                  className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700 hover:text-white"
                 >
                   <Shield className="h-3.5 w-3.5" /> Operator Panel
                 </Link>
