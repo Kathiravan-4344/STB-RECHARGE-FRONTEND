@@ -440,7 +440,7 @@ export function LoginPage() {
               {err && <p className="text-sm text-destructive">{err}</p>}
               <button
                 onClick={handleVerify}
-                disabled={loading || otp.length !== 6}
+                disabled={loading || otp.length !== 4}
                 className={`w-full rounded-2xl py-4 font-semibold shadow-[var(--shadow-glow)] transition hover:scale-[1.01] disabled:opacity-40 disabled:pointer-events-none ${
                   role === "operator"
                     ? "bg-[color:var(--neon-cyan)] text-black font-bold shadow-[0_0_20px_rgba(0,210,255,0.4)]"
