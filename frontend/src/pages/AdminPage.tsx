@@ -106,7 +106,7 @@ export function AdminPage() {
     setMsg(null);
     if (!opMobile.trim() || !opName.trim()) return;
     upsertOperator(opMobile, opName);
-    setMsg({ text: `Operator ${opName} whitelisted successfully!` });
+    setMsg({ text: `Operator ${opName} added successfully!` });
     setOpMobile("");
     setOpName("");
   }
@@ -308,7 +308,7 @@ export function AdminPage() {
               <div className="mt-4 font-display text-4xl font-black text-white">
                 {approvedOperators.length}
               </div>
-              <div className="mt-1 text-xs text-slate-400">Whitelisted operator logins</div>
+              <div className="mt-1 text-xs text-slate-400">Approved operator logins</div>
             </div>
 
             <div
@@ -351,7 +351,7 @@ export function AdminPage() {
                 <h3 className="font-bold text-white text-base">Manage Operators</h3>
               </div>
               <p className="text-xs text-slate-400">
-                Whitelist, activate, or deactivate operator logins.
+                Add, activate, or deactivate operator logins.
               </p>
             </div>
 
@@ -390,7 +390,7 @@ export function AdminPage() {
           <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-r from-amber-950/20 via-slate-900/40 to-slate-900/80 p-6 space-y-4 backdrop-blur-xl shadow-xl">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
-                <Shield className="h-5 w-5 text-amber-400" /> Whitelist & Add New Operator
+                <Shield className="h-5 w-5 text-amber-400" /> ADD OPERATOR
               </h2>
               <span className="text-[11px] text-amber-300/80 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 font-mono">
                 Instant Access
@@ -433,7 +433,7 @@ export function AdminPage() {
                 type="submit"
                 className="h-10 rounded-xl bg-amber-500 hover:bg-amber-400 px-6 py-2.5 text-xs font-extrabold text-black shadow-[0_0_15px_rgba(245,158,11,0.4)] transition"
               >
-                + Add Operator
+                + ADD OPERATOR
               </button>
             </form>
           </div>
@@ -472,12 +472,6 @@ export function AdminPage() {
                         className="rounded-xl border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold text-white hover:bg-white/15"
                       >
                         Toggle Status
-                      </button>
-                      <button
-                        onClick={() => removeApprovedOperator(op.id)}
-                        className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-500/20"
-                      >
-                        Remove
                       </button>
                     </td>
                   </tr>
