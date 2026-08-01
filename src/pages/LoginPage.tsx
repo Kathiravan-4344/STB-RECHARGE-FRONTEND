@@ -264,26 +264,26 @@ export function LoginPage() {
         {/* Right auth card */}
         <div className="rounded-3xl glass-strong p-6 sm:p-8">
           {/* Role Switcher Tabs */}
-          <div className="mb-6 flex rounded-2xl bg-white/5 p-1 border border-white/10 gap-1">
+          <div className="mb-6 flex rounded-2xl bg-slate-950 p-1.5 border border-slate-700/80 gap-1.5 shadow-inner">
             <button
               onClick={() => handleSwitchRole("customer")}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold transition ${
+              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold transition ${
                 role === "customer"
-                  ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-slate-800 text-white border border-slate-600 shadow-md ring-1 ring-slate-500/50"
+                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-900"
               }`}
             >
               <Tv className="h-4 w-4" /> Customer Login
             </button>
             <button
               onClick={() => handleSwitchRole("operator")}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold transition ${
+              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold transition ${
                 role === "operator"
-                  ? "bg-[color:var(--neon-cyan)] text-black font-bold shadow-[0_0_15px_rgba(0,210,255,0.4)]"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-slate-800 text-white border border-slate-600 shadow-md ring-1 ring-slate-500/50"
+                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-900"
               }`}
             >
-              <Shield className="h-4 w-4" /> Operator Login
+              <Shield className="h-4 w-4" /> Operator / Admin Login
             </button>
           </div>
 
