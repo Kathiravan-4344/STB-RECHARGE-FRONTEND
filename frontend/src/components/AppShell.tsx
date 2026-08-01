@@ -35,28 +35,22 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 glass-strong border-b border-white/10">
+      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div
-              className={`grid h-9 w-9 place-items-center rounded-xl shadow-[var(--shadow-glow)] ${
-                isAdminRoute
-                  ? "bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-                  : "gradient-primary text-primary-foreground"
-              }`}
-            >
+          <div className="flex items-center gap-2.5">
+            <div className="grid h-9 w-9 place-items-center rounded-lg bg-blue-600 text-white font-bold shadow-sm">
               <Tv className="h-5 w-5" />
             </div>
             <div className="leading-tight">
-              <div className="font-display text-base font-bold tracking-tight flex items-center gap-2">
+              <div className="font-display text-base font-bold tracking-tight flex items-center gap-2 text-slate-100">
                 STB RECHARGE
                 {isAdminRoute && (
-                  <span className="rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-extrabold text-white border border-white/30 uppercase tracking-wider">
+                  <span className="rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400 border border-blue-500/30 uppercase tracking-wider">
                     ADMIN PORTAL
                   </span>
                 )}
               </div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              <div className="text-[10px] uppercase tracking-widest text-slate-400">
                 {isAdminRoute
                   ? "Master Control • KATHIRAVAN V"
                   : "Smart Recharge · Operator Control"}
@@ -72,10 +66,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Link
                     key={n.to}
                     to={n.to}
-                    className={`rounded-lg px-3 py-2 text-sm transition-all ${
+                    className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                       active
-                        ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                        : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                        ? "bg-blue-600 text-white font-semibold"
+                        : "text-slate-400 hover:text-slate-100 hover:bg-slate-800"
                     }`}
                   >
                     {n.label}
@@ -85,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {user?.role === "operator" && (
                 <Link
                   to="/operator"
-                  className="flex items-center gap-1.5 rounded-lg border border-white/30 bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white hover:text-black"
+                  className="flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-blue-500/10 px-3 py-1.5 text-xs font-semibold text-blue-400 transition hover:bg-blue-600 hover:text-white"
                 >
                   <Shield className="h-3.5 w-3.5" /> Operator Panel
                 </Link>
@@ -93,7 +87,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </nav>
           ) : (
             <div className="hidden md:flex items-center gap-2">
-              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white">
+              <span className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-medium text-slate-300">
                 👑 Super Admin: KATHIRAVAN V (9080864542)
               </span>
             </div>
