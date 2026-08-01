@@ -445,17 +445,19 @@ export async function verifyOtp(
   role: "operator" | "customer" | "admin" = "customer",
   extra?: { email?: string; operatorNumber?: string; stbId?: string },
 ): Promise<boolean> {
-  const cleanedMobile = cleanMobile(mobile);
-  if (cleanedMobile.length < 10 || otp.trim().length < 4) return false;
+  const isEmail = mobile.includes("@");
+  const cleanedMobile = isEmail ? mobile.trim().toLowerCase() : cleanMobile(mobile);
+  if (otp.trim().length < 4) return false;
+  if (!isEmail && cleanedMobile.length < 10 && cleanedMobile !== "9080864542") return false;
 
   let effectiveRole: User["role"] = role;
   if (cleanedMobile === "9080864542") {
     effectiveRole = "admin";
-  } else if (role === "operator" && isOperatorApproved(cleanedMobile)) {
+  } else if (role === "operator" && isOperatorApproved(mobile)) {
     effectiveRole = "operator";
   }
 
-  if (isCustomerBlocked(cleanedMobile) && effectiveRole === "customer") {
+  if (isCustomerBlocked(mobile) && effectiveRole === "customer") {
     return false;
   }
 
@@ -463,7 +465,7 @@ export async function verifyOtp(
     id: `usr-${cleanedMobile}`,
     mobile: cleanedMobile,
     name: name || (effectiveRole === "admin" ? "Kathiravan V" : "Customer"),
-    email: extra?.email || mobileToEmail(cleanedMobile),
+    email: extra?.email || (isEmail ? mobile : mobileToEmail(cleanedMobile)),
     stbId: extra?.stbId || `STB-${cleanedMobile.slice(-6)}`,
     operatorNumber: extra?.operatorNumber,
     role: effectiveRole,
