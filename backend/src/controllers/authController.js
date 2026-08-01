@@ -18,8 +18,8 @@ const sendOtp = async (req, res) => {
     }
 
     const cleanMobile = mobileNumber.trim();
-    // Default fixed/demo OTP 123456 or generated 6-digit OTP
-    const otp = "123456";
+    // Default fixed 4-digit OTP 1234
+    const otp = "1234";
 
     let user = await User.findOne({ mobileNumber: cleanMobile });
     if (!user) {

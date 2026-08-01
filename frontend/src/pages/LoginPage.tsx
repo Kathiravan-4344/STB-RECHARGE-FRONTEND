@@ -140,8 +140,8 @@ export function LoginPage() {
 
   async function handleVerify() {
     setErr(null);
-    if (otp.length !== 6) {
-      setErr("Enter the 6-digit OTP");
+    if (otp.length !== 4) {
+      setErr("Enter the 4-digit OTP");
       return;
     }
     setLoading(true);
@@ -157,7 +157,7 @@ export function LoginPage() {
         if (ok) {
           navigate({ to: "/admin" });
         } else {
-          setErr("Incorrect code. Your 6-digit code is set on first login — use the same one each time.");
+          setErr("Incorrect OTP code. Enter 4-digit OTP.");
         }
         return;
       }
@@ -301,7 +301,7 @@ export function LoginPage() {
                   ? role === "operator"
                     ? "Enter approved operator mobile number or Gmail"
                     : "Login with your mobile number & STB ID"
-                  : `We sent a 6-digit code to ${
+                  : `We sent a 4-digit code to ${
                       role === "operator" ? operatorContact : "+91 " + mobile
                     }`}
               </p>
@@ -431,10 +431,10 @@ export function LoginPage() {
               <input
                 autoFocus
                 inputMode="numeric"
-                maxLength={6}
+                maxLength={4}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                placeholder="••••••"
+                placeholder="••••"
                 className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 text-center text-3xl tracking-[0.6em] outline-none focus:border-primary/60 focus:shadow-[var(--shadow-glow)]"
               />
               {err && <p className="text-sm text-destructive">{err}</p>}
