@@ -1,7 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { AppShell } from "@/components/AppShell";
-import { fetchStb, useStore, PLANS, formatName } from "@/lib/store";
+import { AppShell } from "../components/AppShell";
+import { fetchStb, useStore, PLANS, formatName, setState, getState } from "../services/store";
 import {
   Tv,
   Zap,
@@ -19,22 +19,7 @@ import {
   Headphones,
 } from "lucide-react";
 
-export const Route = createFileRoute("/dashboard")({
-  head: () => ({
-    meta: [
-      { title: "Dashboard — STB RECHARGE" },
-      {
-        name: "description",
-        content: "View your STB status, quick recharge and personalized plan recommendations.",
-      },
-      { property: "og:title", content: "STB RECHARGE — Dashboard" },
-      { property: "og:description", content: "Live STB status and quick recharge." },
-    ],
-  }),
-  component: Dashboard,
-});
-
-function Dashboard() {
+export function DashboardPage() {
   const user = useStore((s) => s.user);
   const stb = useStore((s) => s.stb);
   const autoRecharge = useStore((s) => s.autoRecharge);
@@ -55,7 +40,8 @@ function Dashboard() {
     }
   }, [stb, user]);
 
-  const recommended = PLANS.filter((p) => p.popular || p.category === "Monthly").slice(0, 3);
+  const allPlans = useStore((s) => (s.plans.length ? s.plans : PLANS));
+  const recommended = allPlans.filter((p) => p.popular || p.category === "Monthly").slice(0, 3);
   const daysLeft = stb ? Math.ceil((new Date(stb.expiry).getTime() - Date.now()) / 86400000) : 0;
 
   return (
@@ -335,6 +321,7 @@ function StatusDot({ active }: { active: boolean }) {
     </div>
   );
 }
+
 function Meta({ label, value, accent }: { label: string; value: string; accent?: "ok" | "warn" }) {
   return (
     <div>
@@ -347,14 +334,13 @@ function Meta({ label, value, accent }: { label: string; value: string; accent?:
     </div>
   );
 }
+
 function AutoRechargeToggle() {
   const enabled = useStore((s) => s.autoRecharge.enabled);
   return (
     <button
       onClick={() =>
-        import("@/lib/store").then(({ setState, getState }) =>
-          setState({ autoRecharge: { ...getState().autoRecharge, enabled: !enabled } }),
-        )
+        setState({ autoRecharge: { ...getState().autoRecharge, enabled: !enabled } })
       }
       className={`relative h-7 w-12 rounded-full transition ${enabled ? "gradient-primary shadow-[var(--shadow-glow)]" : "bg-white/10"}`}
       aria-pressed={enabled}
@@ -365,6 +351,7 @@ function AutoRechargeToggle() {
     </button>
   );
 }
+
 function QuickAction({
   to,
   icon: Icon,
@@ -386,6 +373,7 @@ function QuickAction({
     </Link>
   );
 }
+
 function PlanMini({ plan }: { plan: (typeof PLANS)[number] }) {
   const navigate = useNavigate();
   return (
@@ -421,3 +409,5 @@ function PlanMini({ plan }: { plan: (typeof PLANS)[number] }) {
     </div>
   );
 }
+
+export default DashboardPage;

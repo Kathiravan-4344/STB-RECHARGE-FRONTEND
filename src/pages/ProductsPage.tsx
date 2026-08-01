@@ -1,13 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AppShell } from "@/components/AppShell";
+import { AppShell } from "../components/AppShell";
 import {
   useStore,
-  createProductRequest,
-  type Product,
-  type ProductRequest,
+  requestProduct,
   type ProductRequestStatus,
-} from "@/lib/store";
+} from "../services/store";
 import {
   Package,
   Wrench,
@@ -25,23 +23,8 @@ import {
   X,
   User,
   Phone,
-  Shield,
   Sparkles,
 } from "lucide-react";
-
-export const Route = createFileRoute("/products")({
-  head: () => ({
-    meta: [
-      { title: "STB Accessories & Services — STB RECHARGE" },
-      {
-        name: "description",
-        content:
-          "Request STB accessories, cables, replacement remotes and book installation services.",
-      },
-    ],
-  }),
-  component: ProductsPage,
-});
 
 function StatusBadge({ status }: { status: ProductRequestStatus }) {
   switch (status) {
@@ -86,7 +69,7 @@ function StatusBadge({ status }: { status: ProductRequestStatus }) {
   }
 }
 
-function ProductsPage() {
+export function ProductsPage() {
   const user = useStore((s) => s.user);
   const stb = useStore((s) => s.stb);
   const products = useStore((s) => s.products);
@@ -104,7 +87,7 @@ function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState<"all" | "accessory" | "service">("all");
 
   // Selection
-  const [selectedProductId, setSelectedProductId] = useState<string>("p1");
+  const [selectedProductId, setSelectedProductId] = useState<string>("prod-1");
   const [quantity, setQuantity] = useState<number>(1);
   const [stbIdInput, setStbIdInput] = useState<string>(stb?.id ?? "1234567890");
   const [nameInput, setNameInput] = useState<string>(user?.name || stb?.customerName || "");
@@ -171,10 +154,7 @@ function ProductsPage() {
       return;
     }
 
-    createProductRequest({
-      stbId: stbIdInput.trim(),
-      customerName: nameInput.trim(),
-      customerMobile: mobileInput.trim(),
+    requestProduct({
       productId: selectedProduct.id,
       quantity,
       description: description.trim(),
@@ -540,7 +520,7 @@ function ProductsPage() {
                   </div>
                 </div>
 
-                {/* ⭐ 1️⃣ Product Price Display Box */}
+                {/* ⭐ Product Price Display Box */}
                 <div className="rounded-2xl border border-[color:var(--neon-cyan)]/30 bg-[color:var(--neon-cyan)]/5 p-4 space-y-2">
                   <div className="text-xs font-bold uppercase tracking-widest text-[color:var(--neon-cyan)]">
                     ⭐ Product Price Display
@@ -694,3 +674,5 @@ function ProductsPage() {
     </AppShell>
   );
 }
+
+export default ProductsPage;

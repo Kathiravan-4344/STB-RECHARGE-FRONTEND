@@ -1,31 +1,16 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { AppShell } from "@/components/AppShell";
-import { PLANS } from "@/lib/store";
+import { AppShell } from "../components/AppShell";
+import { PLANS, useStore } from "../services/store";
 import { Check, Star } from "lucide-react";
-
-export const Route = createFileRoute("/plans")({
-  head: () => ({
-    meta: [
-      { title: "Recharge Plans — STB RECHARGE" },
-      {
-        name: "description",
-        content:
-          "Browse monthly packs, channel packs and add-ons. Find the perfect Set Top Box plan for you.",
-      },
-      { property: "og:title", content: "Recharge Plans — STB RECHARGE" },
-      { property: "og:description", content: "Monthly, channel packs and add-ons." },
-    ],
-  }),
-  component: Plans,
-});
 
 const TABS = ["All", "Monthly", "Channels", "Add-on"] as const;
 
-function Plans() {
+export function PlansPage() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("All");
   const navigate = useNavigate();
-  const list = PLANS.filter((p) => tab === "All" || p.category === tab);
+  const allPlans = useStore((s) => (s.plans.length ? s.plans : PLANS));
+  const list = allPlans.filter((p) => tab === "All" || p.category === tab);
 
   return (
     <AppShell>
@@ -92,3 +77,5 @@ function Plans() {
     </AppShell>
   );
 }
+
+export default PlansPage;

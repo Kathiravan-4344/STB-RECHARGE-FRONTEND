@@ -1,24 +1,17 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { AppShell } from "@/components/AppShell";
-import { useStore, useCountdown, approvePending, rejectPending } from "@/lib/store";
+import { AppShell } from "../components/AppShell";
+import { useStore, approveTxn, setState } from "../services/store";
+import { useCountdown } from "../hooks/useCountdown";
 import { Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
-
-export const Route = createFileRoute("/recharge/pending")({
-  head: () => ({
-    meta: [
-      { title: "Waiting for Operator — STB RECHARGE" },
-      { name: "description", content: "Your recharge is pending operator approval." },
-    ],
-  }),
-  component: Pending,
-});
 
 const FORTY_FIVE_MIN = 45 * 60 * 1000;
 
-function Pending() {
+export function PendingPage() {
   const pending = useStore((s) => s.pending);
   const txns = useStore((s) => s.txns);
+  const role = useStore((s) => s.user?.role);
+  const isStaff = role === "operator" || role === "admin";
   const navigate = useNavigate();
   const cd = useCountdown(pending?.startedAt ?? 0, FORTY_FIVE_MIN);
 
@@ -33,6 +26,15 @@ function Pending() {
 
   if (!pending) return null;
   const pct = Math.min(100, Math.max(0, cd.pct * 100));
+
+  function handleReject() {
+    if (pending) {
+      const updated = txns.map((t) =>
+        t.id === pending.txnId ? { ...t, status: "failed" as const } : t,
+      );
+      setState({ txns: updated, pending: null });
+    }
+  }
 
   return (
     <AppShell>
@@ -81,29 +83,38 @@ function Pending() {
             <Row k="Amount" v={`₹${pending.amount}`} />
           </div>
 
-          {/* Demo controls */}
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <button
-              onClick={() => approvePending(pending.txnId)}
-              className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--success)]/15 border border-[color:var(--success)]/40 px-4 py-2 text-sm font-semibold text-[color:var(--success)]"
-            >
-              <CheckCircle2 className="h-4 w-4" /> Simulate Operator Approval
-            </button>
-            <button
-              onClick={() => rejectPending(pending.txnId)}
-              className="inline-flex items-center gap-2 rounded-xl bg-destructive/15 border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive"
-            >
-              <XCircle className="h-4 w-4" /> Simulate Reject
-            </button>
-          </div>
-          <p className="mt-3 text-[11px] text-muted-foreground">
-            Demo: request auto-approves in ~12 seconds.
-          </p>
+          {/* Operator controls */}
+          {isStaff ? (
+            <>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <button
+                  onClick={() => approveTxn(pending.txnId)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--success)]/15 border border-[color:var(--success)]/40 px-4 py-2 text-sm font-semibold text-[color:var(--success)]"
+                >
+                  <CheckCircle2 className="h-4 w-4" /> Approve Recharge
+                </button>
+                <button
+                  onClick={handleReject}
+                  className="inline-flex items-center gap-2 rounded-xl bg-destructive/15 border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive"
+                >
+                  <XCircle className="h-4 w-4" /> Reject Recharge
+                </button>
+              </div>
+              <p className="mt-3 text-[11px] text-muted-foreground">
+                You are signed in as staff — this action updates the customer instantly.
+              </p>
+            </>
+          ) : (
+            <p className="mt-8 text-[11px] text-muted-foreground">
+              This page updates automatically the moment your operator approves the recharge.
+            </p>
+          )}
         </div>
       </div>
     </AppShell>
   );
 }
+
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
@@ -112,3 +123,5 @@ function Row({ k, v }: { k: string; v: string }) {
     </div>
   );
 }
+
+export default PendingPage;

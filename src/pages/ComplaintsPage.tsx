@@ -1,13 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AppShell } from "@/components/AppShell";
+import { AppShell } from "../components/AppShell";
 import {
   useStore,
-  createComplaint,
-  submitComplaintRating,
+  fileComplaint,
+  rateComplaint,
   type Complaint,
   type ComplaintStatus,
-} from "@/lib/store";
+} from "../services/store";
 import {
   Wrench,
   Tv,
@@ -15,35 +15,15 @@ import {
   Cable,
   CreditCard,
   CheckCircle2,
-  Clock,
   Car,
   Phone,
   Star,
   Upload,
   Send,
   X,
-  User,
-  AlertTriangle,
   Sparkles,
-  ChevronRight,
-  Shield,
-  FileText,
   History,
 } from "lucide-react";
-
-export const Route = createFileRoute("/complaints")({
-  head: () => ({
-    meta: [
-      { title: "Complaint & Service Management — STB RECHARGE" },
-      {
-        name: "description",
-        content:
-          "Raise complaints for TV, STB, cable, or recharge issues and track technician live.",
-      },
-    ],
-  }),
-  component: ComplaintsPage,
-});
 
 const CATEGORY_ISSUES: Record<
   string,
@@ -143,7 +123,7 @@ function ProgressTracker({ status }: { status: ComplaintStatus }) {
   );
 }
 
-function ComplaintsPage() {
+export function ComplaintsPage() {
   const user = useStore((s) => s.user);
   const stb = useStore((s) => s.stb);
   const complaints = useStore((s) => s.complaints);
@@ -212,10 +192,7 @@ function ComplaintsPage() {
       return;
     }
 
-    const created = createComplaint({
-      stbId: stbIdInput.trim(),
-      customerName: nameInput.trim(),
-      customerMobile: mobileInput.trim(),
+    fileComplaint({
       category: selectedCategory,
       issueType: selectedIssueType,
       description: description.trim(),
@@ -223,7 +200,7 @@ function ComplaintsPage() {
       preferredTime,
     });
 
-    setSuccessMsg(`Complaint ${created.id} submitted successfully! Operator notified.`);
+    setSuccessMsg(`Complaint submitted successfully! Operator notified.`);
     setDescription("");
     setMediaPreview(null);
 
@@ -235,7 +212,7 @@ function ComplaintsPage() {
   function handleSaveRating(e: React.FormEvent) {
     e.preventDefault();
     if (!ratingComplaint) return;
-    submitComplaintRating(ratingComplaint.id, starVal, feedbackVal.trim());
+    rateComplaint(ratingComplaint.id, starVal, feedbackVal.trim());
     setRatingComplaint(null);
     setFeedbackVal("");
     alert("Thank you for your rating & feedback!");
@@ -444,7 +421,7 @@ function ComplaintsPage() {
                     Selected Complaint
                   </div>
                   <strong className="text-white text-sm block mt-0.5">
-                    {selectedCategory} $\rightarrow$ {selectedIssueType}
+                    {selectedCategory} → {selectedIssueType}
                   </strong>
                 </div>
 
@@ -597,7 +574,7 @@ function ComplaintsPage() {
                     </div>
                   )}
 
-                  {/* 1. 📍 Live Technician Tracking Card */}
+                  {/* Live Technician Tracking Card */}
                   {(c.status === "Assigned" || c.status === "In Progress") && c.technicianName && (
                     <div className="group relative overflow-hidden rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/60 via-slate-900 to-slate-900 p-4 space-y-3 shadow-[0_0_20px_rgba(0,210,255,0.15)]">
                       <div className="flex items-center justify-between border-b border-white/10 pb-2">
@@ -657,7 +634,7 @@ function ComplaintsPage() {
         </div>
       )}
 
-      {/* TAB 3: 📜 Service History & ⭐ Rating View */}
+      {/* TAB 3: Service History & Rating View */}
       {activeTab === "history" && (
         <div className="mt-8 space-y-6">
           <div className="flex items-center justify-between">
@@ -709,7 +686,6 @@ function ComplaintsPage() {
                     <div className="mt-1 text-slate-400">Details: {c.description}</div>
                   </div>
 
-                  {/* ⭐ 2. Service Rating & Feedback */}
                   {c.rating ? (
                     <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 space-y-1">
                       <div className="flex items-center justify-between text-xs font-bold text-amber-400">
@@ -746,7 +722,7 @@ function ComplaintsPage() {
         </div>
       )}
 
-      {/* ⭐ Service Rating Modal */}
+      {/* Service Rating Modal */}
       {ratingComplaint && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[#0d121f] p-6 shadow-2xl space-y-4">
@@ -830,3 +806,5 @@ function ComplaintsPage() {
     </AppShell>
   );
 }
+
+export default ComplaintsPage;

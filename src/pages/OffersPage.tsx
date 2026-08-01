@@ -1,19 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "@/components/AppShell";
+import { AppShell } from "../components/AppShell";
 import { Gift } from "lucide-react";
-
-export const Route = createFileRoute("/offers")({
-  head: () => ({
-    meta: [
-      { title: "Offers & Cashback — STB RECHARGE" },
-      {
-        name: "description",
-        content: "Exclusive coupons, cashback and promo codes for your recharge.",
-      },
-    ],
-  }),
-  component: Offers,
-});
 
 const OFFERS = [
   {
@@ -39,7 +25,7 @@ const OFFERS = [
   },
 ];
 
-function Offers() {
+export function OffersPage() {
   return (
     <AppShell>
       <div className="mb-6">
@@ -64,3 +50,5 @@ function Offers() {
     </AppShell>
   );
 }
+
+export default OffersPage;

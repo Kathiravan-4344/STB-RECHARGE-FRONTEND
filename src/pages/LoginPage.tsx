@@ -1,26 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Tv, Shield, Zap, ArrowRight, Lock } from "lucide-react";
-import { sendOtp, verifyOtp, useStore, isOperatorApproved } from "@/lib/store";
+import { sendOtp, verifyOtp, useStore, isOperatorApproved } from "../services/store";
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "STB RECHARGE — Smart Cable TV Recharge & Admin Portal" },
-      {
-        name: "description",
-        content:
-          "Recharge your Set Top Box in seconds. Login with mobile OTP, choose a plan, pay, and track operator approval live.",
-      },
-      { property: "og:title", content: "STB RECHARGE — Smart Cable TV Recharge & Admin Portal" },
-      { property: "og:description", content: "Recharge your Set Top Box in seconds. Login with mobile OTP, choose a plan, pay, and track operator approval live." },
-      { property: "og:type", content: "website" },
-    ],
-  }),
-  component: LoginPage,
-});
-
-function LoginPage() {
+export function LoginPage() {
   const [role, setRole] = useState<"customer" | "operator">("customer");
   const [step, setStep] = useState<"details" | "otp">("details");
 
@@ -174,7 +157,7 @@ function LoginPage() {
         if (ok) {
           navigate({ to: "/admin" });
         } else {
-          setErr("Invalid OTP. Try 123456 for demo.");
+          setErr("Incorrect code. Your 6-digit code is set on first login — use the same one each time.");
         }
         return;
       }
@@ -182,7 +165,7 @@ function LoginPage() {
       // OPERATOR LOGIN
       if (!isOperatorApproved(contact)) {
         setLoading(false);
-        setErr("❌ You are not authorized. Contact Admin.");
+        setErr("❌ You are not authorized. Contact Admin (KATHIRAVAN V) to add your operator number.");
         return;
       }
       const isGmail = contact.includes("@");
@@ -201,7 +184,7 @@ function LoginPage() {
       if (ok) {
         navigate({ to: "/operator" });
       } else {
-        setErr("Invalid OTP. Try 123456 for demo.");
+        setErr("Incorrect code. Your 6-digit code is set on first login — use the same one each time.");
       }
     } else {
       const cleanedMobile = mobile.trim().replace(/\D/g, "");
@@ -221,7 +204,7 @@ function LoginPage() {
       if (ok) {
         navigate({ to: "/dashboard" });
       } else {
-        setErr("Invalid OTP. Try 123456 for demo.");
+        setErr("Incorrect code. Your 6-digit code is set on first login — use the same one each time.");
       }
     }
   }
@@ -483,3 +466,5 @@ function LoginPage() {
     </div>
   );
 }
+
+export default LoginPage;

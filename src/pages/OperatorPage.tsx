@@ -1,23 +1,20 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   useStore,
-  approvePending,
-  rejectPending,
+  approveTxn,
   logout,
   formatName,
-  updateProductRequestStatus,
-  updateProductStock,
-  addProduct,
+  updateProductStatus,
+  upsertProduct,
   updateComplaintStatus,
-  assignTechnicianToComplaint,
-  type Txn,
+  setState,
   type ProductRequest,
   type Product,
   type ProductRequestStatus,
   type Complaint,
   type ComplaintStatus,
-} from "@/lib/store";
+} from "../services/store";
 import {
   Tv,
   CheckCircle2,
@@ -27,11 +24,9 @@ import {
   Filter,
   RefreshCw,
   LogOut,
-  Eye,
   Shield,
   Zap,
   AlertTriangle,
-  Sparkles,
   Package,
   Wrench,
   Truck,
@@ -40,28 +35,10 @@ import {
   Edit3,
   Check,
   X,
-  User,
-  Calendar,
   ShoppingBag,
   MessageCircle,
   Car,
-  AlertCircle,
-  FileText,
 } from "lucide-react";
-
-export const Route = createFileRoute("/operator")({
-  head: () => ({
-    meta: [
-      { title: "STB RECHARGE – Operator Panel" },
-      {
-        name: "description",
-        content:
-          "Operator Control Center for STB Recharge Approvals, Accessories, Stock, and Complaint Management",
-      },
-    ],
-  }),
-  component: OperatorPanel,
-});
 
 function ProductStatusBadge({ status }: { status: ProductRequestStatus }) {
   switch (status) {
@@ -137,7 +114,7 @@ function ComplaintStatusBadge({ status }: { status: ComplaintStatus }) {
   }
 }
 
-function OperatorPanel() {
+export function OperatorPage() {
   const user = useStore((s) => s.user);
   const txns = useStore((s) => s.txns);
   const products = useStore((s) => s.products);
@@ -187,21 +164,19 @@ function OperatorPanel() {
   const [newProdStock, setNewProdStock] = useState<number>(10);
   const [newProdDesc, setNewProdDesc] = useState("");
 
-  // Live timer tick state
-  const [now, setNow] = useState(Date.now());
+  const [, setNow] = useState(Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Auth guard: Redirect if not logged in or not operator
   useEffect(() => {
-    if (!user || user.role !== "operator") {
+    if (!user || (user.role !== "operator" && user.role !== "admin")) {
       navigate({ to: "/" });
     }
   }, [user, navigate]);
 
-  if (!user || user.role !== "operator") {
+  if (!user) {
     return null;
   }
 
@@ -256,16 +231,27 @@ function OperatorPanel() {
     return matchesSearch && matchesStatus;
   });
 
+  function handleRejectTxn(id: string) {
+    const updated = txns.map((t) => (t.id === id ? { ...t, status: "failed" as const } : t));
+    setState({ txns: updated });
+  }
+
   function handleSaveStockUpdate() {
     if (!editingProduct) return;
-    updateProductStock(editingProduct.id, editStockVal, editPriceVal);
+    upsertProduct({
+      id: editingProduct.id,
+      name: editingProduct.name,
+      availableStock: editStockVal,
+      price: editPriceVal,
+    });
     setEditingProduct(null);
   }
 
   function handleCreateProduct(e: React.FormEvent) {
     e.preventDefault();
     if (!newProdName.trim()) return;
-    addProduct({
+    upsertProduct({
+      id: "prod-" + Date.now(),
       name: newProdName.trim(),
       category: newProdCategory,
       price: Number(newProdPrice),
@@ -280,7 +266,8 @@ function OperatorPanel() {
   function handleScheduleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!schedulingReq) return;
-    updateProductRequestStatus(schedulingReq.id, "Installation Scheduled", {
+    updateProductStatus(schedulingReq.id, {
+      status: "Installation Scheduled",
       technicianName: techName,
       technicianMobile: techPhone,
       scheduledDate: schedDate,
@@ -291,12 +278,13 @@ function OperatorPanel() {
   function handleAssignComplaintSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!assigningComplaint) return;
-    assignTechnicianToComplaint(
-      assigningComplaint.id,
-      cmpTechName.trim(),
-      cmpTechPhone.trim(),
-      cmpExpectedArrival.trim(),
-    );
+    updateComplaintStatus(assigningComplaint.id, {
+      status: "Assigned",
+      technicianName: cmpTechName.trim(),
+      technicianMobile: cmpTechPhone.trim(),
+      expectedArrival: cmpExpectedArrival.trim(),
+      assignedAt: new Date().toISOString(),
+    });
     setAssigningComplaint(null);
   }
 
@@ -381,7 +369,7 @@ function OperatorPanel() {
             </p>
           </div>
 
-          {/* 🧑‍💻 Operator Panel Navigation Menu Tabs */}
+          {/* Operator Panel Navigation Menu Tabs */}
           <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1.5 overflow-x-auto no-scrollbar max-w-full">
             <button
               onClick={() => setActiveMenu("txns")}
@@ -591,13 +579,13 @@ function OperatorPanel() {
                             {t.status === "pending" ? (
                               <div className="flex items-center justify-end gap-2">
                                 <button
-                                  onClick={() => approvePending(t.id)}
+                                  onClick={() => approveTxn(t.id)}
                                   className="flex items-center gap-1 rounded-xl bg-emerald-500 px-3 py-1.5 text-xs font-bold text-black hover:bg-emerald-400"
                                 >
                                   <Check className="h-3.5 w-3.5" /> Approve
                                 </button>
                                 <button
-                                  onClick={() => rejectPending(t.id)}
+                                  onClick={() => handleRejectTxn(t.id)}
                                   className="flex items-center gap-1 rounded-xl bg-red-500/20 border border-red-500/40 px-3 py-1.5 text-xs font-bold text-red-400 hover:bg-red-500/30"
                                 >
                                   <X className="h-3.5 w-3.5" /> Reject
@@ -617,7 +605,7 @@ function OperatorPanel() {
           </>
         )}
 
-        {/* MENU 2: 📦 Product & Service Requests View */}
+        {/* MENU 2: Product & Service Requests View */}
         {activeMenu === "product_requests" && (
           <div className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-[#0d121f]/80 p-4 backdrop-blur-xl">
@@ -779,10 +767,9 @@ function OperatorPanel() {
                         {req.status === "Pending" && (
                           <button
                             onClick={() =>
-                              updateProductRequestStatus(
-                                req.id,
-                                req.category === "service" ? "Processing" : "Out for Delivery",
-                              )
+                              updateProductStatus(req.id, {
+                                status: req.category === "service" ? "Processing" : "Out for Delivery",
+                              })
                             }
                             className="flex items-center gap-1 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-blue-500 shadow-md"
                           >
@@ -801,7 +788,7 @@ function OperatorPanel() {
 
                         {req.status !== "Completed" && (
                           <button
-                            onClick={() => updateProductRequestStatus(req.id, "Completed")}
+                            onClick={() => updateProductStatus(req.id, { status: "Completed" })}
                             className="flex items-center gap-1 rounded-xl bg-emerald-500 px-3.5 py-2 text-xs font-bold text-black hover:bg-emerald-400 shadow-md"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5" /> Mark Completed
@@ -810,7 +797,7 @@ function OperatorPanel() {
 
                         {req.status !== "Not Available" && req.status !== "Completed" && (
                           <button
-                            onClick={() => updateProductRequestStatus(req.id, "Not Available")}
+                            onClick={() => updateProductStatus(req.id, { status: "Not Available" })}
                             className="flex items-center gap-1 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20"
                           >
                             <X className="h-3.5 w-3.5" /> Not Available
@@ -825,7 +812,7 @@ function OperatorPanel() {
           </div>
         )}
 
-        {/* MENU 3: 📊 Stock & Inventory Management View */}
+        {/* MENU 3: Stock & Inventory Management View */}
         {activeMenu === "stock" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-4 rounded-3xl border border-white/10 bg-[#0d121f]/80 p-5 backdrop-blur-xl">
@@ -933,7 +920,7 @@ function OperatorPanel() {
           </div>
         )}
 
-        {/* MENU 4: 🔧 Complaint Management View (NEW) */}
+        {/* MENU 4: Complaint Management View */}
         {activeMenu === "complaints" && (
           <div className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-[#0d121f]/80 p-4 backdrop-blur-xl">
@@ -1058,7 +1045,6 @@ function OperatorPanel() {
 
                     {/* Operator Complaint Action Buttons */}
                     <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-white/10">
-                      {/* Action 1: Contact Customer */}
                       <a
                         href={`tel:${cmp.customerMobile}`}
                         className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white hover:bg-white/15"
@@ -1075,17 +1061,15 @@ function OperatorPanel() {
                         <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
                       </a>
 
-                      {/* Action 2: Accept Complaint */}
                       {cmp.status === "Pending" && (
                         <button
-                          onClick={() => updateComplaintStatus(cmp.id, "Assigned")}
+                          onClick={() => updateComplaintStatus(cmp.id, { status: "Assigned" })}
                           className="flex items-center gap-1 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-blue-500 shadow-md"
                         >
                           <Check className="h-3.5 w-3.5" /> ✅ Accept Complaint
                         </button>
                       )}
 
-                      {/* Action 3: Assign Technician */}
                       {cmp.status !== "Resolved" && (
                         <button
                           onClick={() => {
@@ -1100,10 +1084,9 @@ function OperatorPanel() {
                         </button>
                       )}
 
-                      {/* Action 4: Mark Resolved */}
                       {cmp.status !== "Resolved" && (
                         <button
-                          onClick={() => updateComplaintStatus(cmp.id, "Resolved")}
+                          onClick={() => updateComplaintStatus(cmp.id, { status: "Resolved" })}
                           className="flex items-center gap-1 rounded-xl bg-emerald-500 px-3.5 py-2 text-xs font-bold text-black hover:bg-emerald-400 shadow-md"
                         >
                           <CheckCircle2 className="h-3.5 w-3.5" /> 🟢 Mark Resolved
@@ -1451,3 +1434,5 @@ function OperatorPanel() {
     </div>
   );
 }
+
+export default OperatorPage;

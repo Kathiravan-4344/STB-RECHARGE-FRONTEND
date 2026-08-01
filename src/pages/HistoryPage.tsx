@@ -1,19 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "@/components/AppShell";
-import { useStore } from "@/lib/store";
+import { AppShell } from "../components/AppShell";
+import { useStore } from "../services/store";
 import { Receipt } from "lucide-react";
 
-export const Route = createFileRoute("/history")({
-  head: () => ({
-    meta: [
-      { title: "Transaction History — STB RECHARGE" },
-      { name: "description", content: "See all your recharge transactions." },
-    ],
-  }),
-  component: History,
-});
-
-function History() {
+export function HistoryPage() {
   const txns = useStore((s) => s.txns);
   return (
     <AppShell>
@@ -80,3 +69,5 @@ function StatusBadge({ status }: { status: "pending" | "success" | "failed" }) {
     </span>
   );
 }
+
+export default HistoryPage;

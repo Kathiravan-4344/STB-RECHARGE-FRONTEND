@@ -1,28 +1,17 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { z } from "zod";
-import { AppShell } from "@/components/AppShell";
-import { PLANS, startPayment, useStore, setState } from "@/lib/store";
+import { AppShell } from "../components/AppShell";
+import { PLANS, startPayment, useStore, setState } from "../services/store";
 import { CreditCard, ShieldCheck, Tv, Tag, ArrowRight } from "lucide-react";
-
-const searchSchema = z.object({ plan: z.string().optional() });
-
-export const Route = createFileRoute("/recharge/checkout")({
-  validateSearch: searchSchema,
-  head: () => ({
-    meta: [
-      { title: "Checkout — STB RECHARGE" },
-      { name: "description", content: "Complete your Set Top Box recharge." },
-    ],
-  }),
-  component: Checkout,
-});
 
 const COUPONS: Record<string, number> = { STB50: 50, NEW10: 10, WELCOME: 25 };
 
-function Checkout() {
-  const { plan: planId } = Route.useSearch();
-  const plan = useMemo(() => PLANS.find((p) => p.id === planId) ?? PLANS[1], [planId]);
+export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
+  const allPlans = useStore((s) => (s.plans.length ? s.plans : PLANS));
+  const plan = useMemo(
+    () => allPlans.find((p) => p.id === searchPlanId) ?? allPlans[1] ?? allPlans[0],
+    [allPlans, searchPlanId],
+  );
   const stb = useStore((s) => s.stb);
   const appliedCoupon = useStore((s) => s.appliedCoupon);
   const navigate = useNavigate();
@@ -194,3 +183,5 @@ function Row({
     </div>
   );
 }
+
+export default CheckoutPage;

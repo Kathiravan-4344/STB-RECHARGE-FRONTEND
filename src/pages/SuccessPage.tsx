@@ -1,23 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { z } from "zod";
-import { AppShell } from "@/components/AppShell";
-import { useStore } from "@/lib/store";
+import { Link } from "@tanstack/react-router";
+import { AppShell } from "../components/AppShell";
+import { useStore } from "../services/store";
 import { CheckCircle2, Home, Receipt } from "lucide-react";
 
-export const Route = createFileRoute("/recharge/success")({
-  validateSearch: z.object({ id: z.string().optional() }),
-  head: () => ({
-    meta: [
-      { title: "Recharge Successful — STB RECHARGE" },
-      { name: "description", content: "Your Set Top Box recharge is complete." },
-    ],
-  }),
-  component: Success,
-});
-
-function Success() {
-  const { id } = Route.useSearch();
-  const txn = useStore((s) => s.txns.find((t) => t.id === id) ?? s.txns[0]);
+export function SuccessPage({ searchId }: { searchId?: string }) {
+  const txn = useStore((s) => s.txns.find((t) => t.id === searchId) ?? s.txns[0]);
   const stb = useStore((s) => s.stb);
 
   if (!txn)
@@ -68,6 +55,7 @@ function Success() {
     </AppShell>
   );
 }
+
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
@@ -76,3 +64,5 @@ function Row({ k, v }: { k: string; v: string }) {
     </div>
   );
 }
+
+export default SuccessPage;
