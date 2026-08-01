@@ -52,8 +52,7 @@ type TabType =
   | "customers"
   | "recharges"
   | "complaints"
-  | "products"
-  | "system";
+  | "products";
 
 export function AdminPage() {
   const user = useStore((s) => s.user);
@@ -228,15 +227,6 @@ export function AdminPage() {
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setTab("system")}
-            className="flex items-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400 hover:bg-red-500/20 transition"
-          >
-            <Trash2 className="h-4 w-4" /> System Reset
-          </button>
-        </div>
       </div>
 
       {msg && (
@@ -263,7 +253,6 @@ export function AdminPage() {
           { id: "recharges", label: "💳 Recharges", icon: CreditCard },
           { id: "complaints", label: "🔧 Complaints", icon: Wrench },
           { id: "products", label: "📦 Products", icon: Package },
-          { id: "system", label: "⚙️ System", icon: Lock },
         ].map((t) => (
           <button
             key={t.id}
@@ -766,27 +755,7 @@ export function AdminPage() {
         </div>
       )}
 
-      {/* TAB 7: System Reset */}
-      {tab === "system" && (
-        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-8 space-y-4 max-w-xl mx-auto text-center">
-          <AlertTriangle className="mx-auto h-12 w-12 text-red-400" />
-          <h2 className="font-display text-2xl font-bold text-white">Reset Local System Data</h2>
-          <p className="text-xs text-slate-300">
-            This will clear all local transactions, complaints, product requests and restore default state.
-          </p>
-          <button
-            onClick={() => {
-              if (confirm("Are you sure you want to reset all local data?")) {
-                resetAllData();
-                alert("System reset completed.");
-              }
-            }}
-            className="rounded-xl bg-red-500 px-6 py-3 text-xs font-bold text-black"
-          >
-            Confirm System Reset
-          </button>
-        </div>
-      )}
+
 
       {/* Selected Operator Modal */}
       {selectedOperator && (
