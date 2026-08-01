@@ -245,7 +245,7 @@ export function AdminPage() {
       )}
 
       {/* Admin Tab Navigation */}
-      <div className="mb-6 flex gap-2 overflow-x-auto no-scrollbar rounded-xl border border-slate-700/60 bg-slate-800/80 p-1.5">
+      <div className="mb-6 flex gap-2 overflow-x-auto no-scrollbar rounded-2xl border border-slate-700/80 bg-slate-950 p-2 shadow-inner">
         {[
           { id: "dashboard", label: "📊 Overview", icon: Zap },
           { id: "operators", label: "🛡️ Operators", icon: Shield },
@@ -257,10 +257,10 @@ export function AdminPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id as TabType)}
-            className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
+            className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition whitespace-nowrap ${
               tab === t.id
-                ? "bg-slate-700 text-white font-bold border border-slate-600"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800"
+                ? "bg-slate-800 text-white font-extrabold border border-slate-600 shadow-md ring-1 ring-slate-500/50"
+                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-900"
             }`}
           >
             {t.label}
