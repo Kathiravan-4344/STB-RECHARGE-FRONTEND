@@ -41,7 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div
               className={`grid h-9 w-9 place-items-center rounded-xl shadow-[var(--shadow-glow)] ${
                 isAdminRoute
-                  ? "bg-emerald-500 text-black font-bold shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                  ? "bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)]"
                   : "gradient-primary text-primary-foreground"
               }`}
             >
@@ -51,7 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="font-display text-base font-bold tracking-tight flex items-center gap-2">
                 STB RECHARGE
                 {isAdminRoute && (
-                  <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-[10px] font-extrabold text-emerald-400 border border-emerald-500/40 uppercase tracking-wider">
+                  <span className="rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-extrabold text-white border border-white/30 uppercase tracking-wider">
                     ADMIN PORTAL
                   </span>
                 )}
@@ -85,7 +85,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {user?.role === "operator" && (
                 <Link
                   to="/operator"
-                  className="flex items-center gap-1.5 rounded-lg border border-[color:var(--neon-cyan)]/40 bg-[color:var(--neon-cyan)]/10 px-3 py-1.5 text-xs font-bold text-[color:var(--neon-cyan)] transition hover:bg-[color:var(--neon-cyan)] hover:text-black"
+                  className="flex items-center gap-1.5 rounded-lg border border-white/30 bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white hover:text-black"
                 >
                   <Shield className="h-3.5 w-3.5" /> Operator Panel
                 </Link>
@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </nav>
           ) : (
             <div className="hidden md:flex items-center gap-2">
-              <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">
+              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white">
                 👑 Super Admin: KATHIRAVAN V (9080864542)
               </span>
             </div>
