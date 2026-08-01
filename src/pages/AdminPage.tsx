@@ -209,19 +209,19 @@ export function AdminPage() {
   return (
     <AppShell>
       {/* Top Banner */}
-      <div className="mb-6 flex flex-col gap-4 rounded-3xl border border-white/20 bg-gradient-to-r from-zinc-900 via-zinc-950 to-zinc-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)] md:flex-row md:items-center md:justify-between">
+      <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-700/60 bg-slate-800 p-6 shadow-sm md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/10 border border-white/20 text-white shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-            <Shield className="h-7 w-7" />
+          <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30">
+            <Shield className="h-6 w-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-display text-2xl font-bold text-white">Super Admin Portal</h1>
-              <span className="rounded-md bg-white/15 px-2 py-0.5 text-xs font-extrabold text-white border border-white/30 uppercase tracking-wider">
+              <h1 className="font-display text-2xl font-bold text-slate-100">Super Admin Portal</h1>
+              <span className="rounded-md bg-blue-500/20 px-2 py-0.5 text-xs font-semibold text-blue-400 border border-blue-500/30 uppercase tracking-wider">
                 MASTER CONTROL
               </span>
             </div>
-            <p className="text-xs text-zinc-300 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               Logged in as 👑 <strong>Kathiravan V</strong> (9080864542) • Full Administrative
               Privileges
             </p>
@@ -231,7 +231,7 @@ export function AdminPage() {
 
       {msg && (
         <div
-          className={`mb-6 flex items-center justify-between rounded-2xl p-4 text-xs font-bold ${
+          className={`mb-6 flex items-center justify-between rounded-xl p-4 text-xs font-bold ${
             msg.error
               ? "border border-red-500/40 bg-red-500/10 text-red-400"
               : "border border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
@@ -245,7 +245,7 @@ export function AdminPage() {
       )}
 
       {/* Admin Tab Navigation */}
-      <div className="mb-6 flex gap-2 overflow-x-auto no-scrollbar rounded-2xl border border-white/10 bg-white/5 p-1.5">
+      <div className="mb-6 flex gap-2 overflow-x-auto no-scrollbar rounded-xl border border-slate-700/60 bg-slate-800/80 p-1.5">
         {[
           { id: "dashboard", label: "📊 Overview", icon: Zap },
           { id: "operators", label: "🛡️ Operators", icon: Shield },
@@ -257,10 +257,10 @@ export function AdminPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id as TabType)}
-            className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition whitespace-nowrap ${
+            className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
               tab === t.id
-                ? "bg-white text-black font-extrabold shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-                : "text-muted-foreground hover:text-white"
+                ? "bg-blue-600 text-white font-bold shadow-sm"
+                : "text-slate-400 hover:text-slate-100 hover:bg-slate-700/50"
             }`}
           >
             {t.label}
