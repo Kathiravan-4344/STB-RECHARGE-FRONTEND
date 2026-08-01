@@ -211,13 +211,13 @@ export function AdminPage() {
       {/* Top Banner */}
       <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-700/60 bg-slate-800 p-6 shadow-sm md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
-          <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30">
+          <div className="grid h-12 w-12 place-items-center rounded-xl bg-slate-700 text-slate-100 border border-slate-600">
             <Shield className="h-6 w-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-display text-2xl font-bold text-slate-100">Super Admin Portal</h1>
-              <span className="rounded-md bg-blue-500/20 px-2 py-0.5 text-xs font-semibold text-blue-400 border border-blue-500/30 uppercase tracking-wider">
+              <span className="rounded-md bg-slate-700 px-2 py-0.5 text-xs font-semibold text-slate-200 border border-slate-600 uppercase tracking-wider">
                 MASTER CONTROL
               </span>
             </div>
@@ -259,8 +259,8 @@ export function AdminPage() {
             onClick={() => setTab(t.id as TabType)}
             className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
               tab === t.id
-                ? "bg-blue-600 text-white font-bold shadow-sm"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-700/50"
+                ? "bg-slate-700 text-white font-bold border border-slate-600"
+                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800"
             }`}
           >
             {t.label}
