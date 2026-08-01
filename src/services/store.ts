@@ -446,7 +446,7 @@ export async function verifyOtp(
   extra?: { email?: string; operatorNumber?: string; stbId?: string },
 ): Promise<boolean> {
   const cleanedMobile = cleanMobile(mobile);
-  if (cleanedMobile.length < 10 || otp.trim().length < 6) return false;
+  if (cleanedMobile.length < 10 || otp.trim().length < 4) return false;
 
   let effectiveRole: User["role"] = role;
   if (cleanedMobile === "9080864542") {
