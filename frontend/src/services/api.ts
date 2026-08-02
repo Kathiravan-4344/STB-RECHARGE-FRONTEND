@@ -70,11 +70,39 @@ export async function apiGetPlans() {
   return apiRequest<{ plans: any[] }>("/plans");
 }
 
-export async function apiCreateRecharge(stbId: string, planId: string, amount: number) {
-  return apiRequest("/recharge/create", {
+export async function apiCreateRecharge(payload: {
+  stbId: string;
+  planId?: string;
+  planName?: string;
+  amount: number;
+  customerName?: string;
+  customerMobile?: string;
+  paymentStatus?: string;
+}) {
+  return apiRequest<{ rechargeRequest: any }>("/recharge/create", {
     method: "POST",
-    body: JSON.stringify({ stbId, planId, amount }),
+    body: JSON.stringify({ paymentStatus: "Success", ...payload }),
   });
+}
+
+export async function apiGetPendingRecharges() {
+  return apiRequest<{ requests: any[] }>("/recharge/pending");
+}
+
+export async function apiApproveRecharge(id: string) {
+  return apiRequest(`/operator/approve/${id}`, {
+    method: "POST",
+  });
+}
+
+export async function apiRejectRecharge(id: string) {
+  return apiRequest(`/operator/reject/${id}`, {
+    method: "POST",
+  });
+}
+
+export async function apiGetRechargeStatus(id: string) {
+  return apiRequest<{ status: string; approvedTime?: string }>(`/recharge/status/${id}`);
 }
 
 // Complaints API Calls
@@ -89,3 +117,4 @@ export async function apiCreateComplaint(payload: any) {
 export async function apiGetProducts() {
   return apiRequest<{ products: any[] }>("/products");
 }
+

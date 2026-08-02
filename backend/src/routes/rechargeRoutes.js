@@ -4,10 +4,13 @@ const {
   getPlans,
   createRechargeRequest,
   getRechargeStatus,
+  getPendingRecharges,
 } = require("../controllers/rechargeController");
 
 router.get("/plans", getPlans);
 router.post("/recharge/create", createRechargeRequest);
 router.get("/recharge/status/:id", getRechargeStatus);
+router.get("/recharge/pending", getPendingRecharges);
 
 module.exports = router;
+

@@ -6,11 +6,11 @@ const {
   approveRecharge,
   rejectRecharge,
 } = require("../controllers/operatorController");
-const { protectOperator } = require("../middleware/authMiddleware");
 
 router.post("/login", operatorLogin);
-router.get("/requests", protectOperator, getPendingRequests);
-router.post("/approve/:id", protectOperator, approveRecharge);
-router.post("/reject/:id", protectOperator, rejectRecharge);
+router.get("/requests", getPendingRequests);
+router.post("/approve/:id", approveRecharge);
+router.post("/reject/:id", rejectRecharge);
 
 module.exports = router;
+

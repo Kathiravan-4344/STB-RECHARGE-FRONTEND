@@ -1,7 +1,18 @@
 // In-memory data store for STB RECHARGE (Pure Frontend - Supabase removed).
 import { useSyncExternalStore } from "react";
 import { cleanMobile, mobileToEmail } from "../utils/utils";
-import { apiAddOperator, apiToggleOperator, apiDeleteOperator, apiGetOperators } from "./api";
+import {
+  apiAddOperator,
+  apiToggleOperator,
+  apiDeleteOperator,
+  apiGetOperators,
+  apiCreateRecharge,
+  apiGetPendingRecharges,
+  apiApproveRecharge,
+  apiRejectRecharge,
+  apiGetRechargeStatus,
+} from "./api";
+
 
 export type Plan = {
   id: string;
@@ -417,13 +428,97 @@ export async function syncOperatorsFromBackend() {
   }
 }
 
+export async function syncPendingRechargesFromBackend() {
+  try {
+    const res = await apiGetPendingRecharges();
+    if (res.success && res.data?.requests) {
+      const backendRequests = res.data.requests;
+      const backendTxns: Txn[] = backendRequests.map((r: any) => {
+        const id = r._id || r.id;
+        const planName = r.planId?.name || "STB Recharge";
+        const amount = r.amount || r.planId?.price || 0;
+        const status = r.status === "Approved" ? "success" : r.status === "Rejected" ? "failed" : "pending";
+        const date = r.requestTime || r.createdAt || new Date().toISOString();
+        const customerName = r.userId?.name || "Customer";
+        const customerMobile = r.userId?.mobileNumber || "";
+        const stbId = r.stbId || r.userId?.stbId || "";
+        return {
+          id,
+          planName,
+          amount,
+          date,
+          status,
+          approvedAt: r.approvedTime,
+          customerName,
+          customerMobile,
+          stbId,
+          startedAt: new Date(date).getTime(),
+        };
+      });
+
+      const currentTxns = [...state.txns];
+      const mergedMap = new Map<string, Txn>();
+
+      backendTxns.forEach((bt) => mergedMap.set(bt.id, bt));
+      currentTxns.forEach((ct) => {
+        if (!mergedMap.has(ct.id)) {
+          mergedMap.set(ct.id, ct);
+        } else {
+          // Update status if backend status differs
+          const b = mergedMap.get(ct.id)!;
+          if (b.status !== ct.status) {
+            mergedMap.set(ct.id, { ...ct, status: b.status, approvedAt: b.approvedAt });
+          }
+        }
+      });
+
+      const mergedTxns = Array.from(mergedMap.values()).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      );
+
+      let currentPending = state.pending;
+      if (currentPending) {
+        const match = mergedTxns.find((t) => t.id === currentPending?.txnId);
+        if (match && match.status !== "pending") {
+          currentPending = null;
+          if (match.status === "success" && state.stb) {
+            state = {
+              ...state,
+              stb: {
+                ...state.stb,
+                currentPlan: match.planName,
+                expiry: new Date(Date.now() + 30 * 86400000).toISOString(),
+                active: true,
+              },
+            };
+          }
+        }
+      }
+
+      setState({ txns: mergedTxns, pending: currentPending });
+    }
+  } catch (e) {
+    console.warn("Failed to sync pending recharges from backend", e);
+  }
+}
+
+let pollTimer: any = null;
+
 export async function initStore() {
   if (booted || typeof window === "undefined") return;
   booted = true;
   state = loadSavedState();
   setState({ ready: true });
   syncOperatorsFromBackend();
+  syncPendingRechargesFromBackend();
+
+  if (!pollTimer) {
+    pollTimer = setInterval(() => {
+      syncPendingRechargesFromBackend();
+    }, 4000);
+  }
 }
+
 
 export async function refreshUserData() {
   setState({ ready: true });
@@ -525,16 +620,16 @@ export async function fetchStb(id: string): Promise<STB | null> {
 }
 
 // Transactions & Recharge Flow
-export function startPayment(planId: string, amount: number, planName: string) {
-  const txnId = "TXN" + Math.floor(Math.random() * 900000 + 100000);
+export async function startPayment(planId: string, amount: number, planName: string) {
+  const localTxnId = "TXN" + Math.floor(Math.random() * 900000 + 100000);
   const now = Date.now();
   const user = state.user;
   const stb = state.stb;
 
-  const pending = { txnId, planName, amount, startedAt: now };
+  const pending = { txnId: localTxnId, planName, amount, startedAt: now };
 
   const newTxn: Txn = {
-    id: txnId,
+    id: localTxnId,
     planName,
     amount,
     date: new Date(now).toISOString(),
@@ -549,6 +644,33 @@ export function startPayment(planId: string, amount: number, planName: string) {
     pending,
     txns: [newTxn, ...state.txns],
   });
+
+  try {
+    const res = await apiCreateRecharge({
+      stbId: stb?.id || user?.stbId || "1234567890",
+      planId,
+      planName,
+      amount,
+      customerName: user?.name || "Customer",
+      customerMobile: user?.mobile || "",
+      paymentStatus: "Success",
+    });
+
+    if (res.success && res.data?.rechargeRequest?._id) {
+      const backendId = res.data.rechargeRequest._id;
+      const currentPending = state.pending;
+      const isPendingMatch = currentPending?.txnId === localTxnId;
+      const updatedTxns = state.txns.map((t) =>
+        t.id === localTxnId ? { ...t, id: backendId } : t,
+      );
+      setState({
+        txns: updatedTxns,
+        pending: isPendingMatch && currentPending ? { ...currentPending, txnId: backendId } : state.pending,
+      });
+    }
+  } catch (err) {
+    console.warn("Failed to save recharge to backend", err);
+  }
 }
 
 export async function approveTxn(txnId: string) {
@@ -574,7 +696,23 @@ export async function approveTxn(txnId: string) {
     stb: newStb,
     pending: isPendingCleared ? null : state.pending,
   });
+
+  apiApproveRecharge(txnId);
 }
+
+export async function rejectTxn(txnId: string) {
+  const updatedTxns = state.txns.map((t) =>
+    t.id === txnId ? { ...t, status: "failed" as const } : t,
+  );
+  const isPendingCleared = state.pending?.txnId === txnId;
+  setState({
+    txns: updatedTxns,
+    pending: isPendingCleared ? null : state.pending,
+  });
+
+  apiRejectRecharge(txnId);
+}
+
 
 // Product Requests
 export async function requestProduct(payload: {

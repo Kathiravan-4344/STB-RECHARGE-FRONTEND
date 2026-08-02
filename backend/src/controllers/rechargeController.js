@@ -59,40 +59,58 @@ const getPlans = async (req, res) => {
 // @route POST /api/recharge/create
 const createRechargeRequest = async (req, res) => {
   try {
-    const { userId, stbId, planId, amount, paymentStatus } = req.body;
+    const { userId, stbId, planId, planName, amount, paymentStatus, customerName, customerMobile } = req.body;
 
-    // Strict Rule: Payment MUST be SUCCESS
-    if (paymentStatus !== "Success") {
+    const pStatus = paymentStatus || "Success";
+    if (pStatus !== "Success") {
       return res.status(400).json({
         success: false,
         message: "Recharge request rejected: Payment status must be Success.",
       });
     }
 
-    if (!stbId || stbId.trim().length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid STB ID provided for recharge request.",
-      });
-    }
+    const cleanStbId = stbId ? stbId.trim().toUpperCase() : "STB-UNKNOWN";
 
-    const plan = await Plan.findById(planId);
+    // Find or create Plan
+    let plan = null;
+    if (planId && planId.match(/^[0-9a-fA-F]{24}$/)) {
+      plan = await Plan.findById(planId);
+    }
+    if (!plan && planName) {
+      plan = await Plan.findOne({ name: planName });
+    }
     if (!plan) {
-      return res.status(404).json({ success: false, message: "Selected plan not found" });
+      let plans = await Plan.find();
+      if (plans.length === 0) {
+        plans = await Plan.insertMany(DEFAULT_PLANS);
+      }
+      plan = plans[0];
     }
 
+    // Find or create User
     let user = null;
-    if (userId) {
+    if (userId && userId.match(/^[0-9a-fA-F]{24}$/)) {
       user = await User.findById(userId);
     }
+    if (!user && customerMobile) {
+      user = await User.findOne({ mobileNumber: customerMobile.trim() });
+    }
+    if (!user && cleanStbId) {
+      user = await User.findOne({ stbId: cleanStbId });
+    }
     if (!user) {
-      user = await User.findOne({ stbId: stbId.trim().toUpperCase() });
+      user = await User.create({
+        mobileNumber: customerMobile || "9000000000",
+        name: customerName || "Customer",
+        stbId: cleanStbId,
+        role: "customer",
+      });
     }
 
     // Create recharge request
     const rechargeRequest = await RechargeRequest.create({
-      userId: user ? user._id : req.user ? req.user._id : undefined,
-      stbId: stbId.trim().toUpperCase(),
+      userId: user._id,
+      stbId: cleanStbId,
       planId: plan._id,
       amount: amount || plan.price,
       paymentStatus: "Success",
@@ -100,10 +118,14 @@ const createRechargeRequest = async (req, res) => {
       requestTime: new Date(),
     });
 
+    const populated = await RechargeRequest.findById(rechargeRequest._id)
+      .populate("userId", "name mobileNumber stbId")
+      .populate("planId", "name price validity category");
+
     return res.status(201).json({
       success: true,
       message: "Recharge request submitted successfully. Awaiting operator approval.",
-      rechargeRequest,
+      rechargeRequest: populated,
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -115,9 +137,13 @@ const createRechargeRequest = async (req, res) => {
 const getRechargeStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const request = await RechargeRequest.findById(id)
-      .populate("userId", "name mobileNumber stbId")
-      .populate("planId", "name price validity");
+    let request = null;
+
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      request = await RechargeRequest.findById(id)
+        .populate("userId", "name mobileNumber stbId")
+        .populate("planId", "name price validity");
+    }
 
     if (!request) {
       return res.status(404).json({ success: false, message: "Recharge request not found" });
@@ -149,8 +175,29 @@ const getRechargeStatus = async (req, res) => {
   }
 };
 
+// @desc Get all pending recharge requests for operator polling
+// @route GET /api/recharge/pending
+const getPendingRecharges = async (req, res) => {
+  try {
+    const requests = await RechargeRequest.find()
+      .populate("userId", "name mobileNumber stbId")
+      .populate("planId", "name price validity category")
+      .sort({ requestTime: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: requests.length,
+      requests,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getPlans,
   createRechargeRequest,
   getRechargeStatus,
+  getPendingRecharges,
 };
+
