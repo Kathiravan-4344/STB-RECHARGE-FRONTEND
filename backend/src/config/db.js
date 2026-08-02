@@ -1,11 +1,13 @@
 const mongoose = require("mongoose");
 const dns = require("dns");
 
-// Set Google Public DNS for Node.js SRV resolution on Windows
-try {
-  dns.setServers(["8.8.8.8", "8.8.4.4"]);
-} catch (e) {
-  console.warn("Unable to override DNS servers:", e.message);
+// Set Google Public DNS for Node.js SRV resolution on Windows only
+if (process.platform === "win32") {
+  try {
+    dns.setServers(["8.8.8.8", "8.8.4.4"]);
+  } catch (e) {
+    console.warn("Unable to override DNS servers:", e.message);
+  }
 }
 
 const connectDB = async () => {
