@@ -10,11 +10,13 @@ if (process.platform === "win32") {
   }
 }
 
+const DEFAULT_ATLAS_URI =
+  "mongodb+srv://kathir_stb_recharge:V.Kathiravan.4344@cluster0.eusikww.mongodb.net/stb_recharge?retryWrites=true&w=majority&appName=Cluster0";
+
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(
-      process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/stb_recharge",
-    );
+    const mongoUri = process.env.MONGODB_URI || DEFAULT_ATLAS_URI;
+    const conn = await mongoose.connect(mongoUri);
     console.log(`[MongoDB] Successfully Connected to Atlas Host: ${conn.connection.host}`);
   } catch (error) {
     console.error(`[MongoDB Error] ${error.message}`);
@@ -23,5 +25,6 @@ const connectDB = async () => {
     }
   }
 };
+
 
 module.exports = connectDB;
