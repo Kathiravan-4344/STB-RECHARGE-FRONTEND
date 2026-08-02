@@ -1,7 +1,6 @@
 {
   "name": "stb-recharge-workspace",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "npm --prefix backend start & npm --prefix frontend run dev",
     "server": "npm --prefix backend start",
