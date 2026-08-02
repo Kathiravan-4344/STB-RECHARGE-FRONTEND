@@ -6,6 +6,7 @@ import {
   upsertOperator,
   setOperatorActive,
   removeApprovedOperator,
+  refreshAdminData,
   blockCustomer,
   unblockCustomer,
   approveTxn,
