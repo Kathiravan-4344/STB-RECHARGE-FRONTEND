@@ -94,6 +94,8 @@ export function AdminPage() {
   useEffect(() => {
     if (!user || user.role !== "admin") {
       navigate({ to: "/" });
+    } else {
+      refreshAdminData();
     }
   }, [user, navigate]);
 

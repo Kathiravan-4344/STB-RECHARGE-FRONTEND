@@ -44,11 +44,12 @@ const seedInitialData = async () => {
     // Seed Operators
     const opCount = await Operator.countDocuments();
     if (opCount === 0) {
-      await Operator.insertMany([
-        { mobileNumber: "9080864542", name: "Kathiravan V", isActive: true },
-        { mobileNumber: "9876543210", name: "Operator One", isActive: true },
-      ]);
-      console.log("[DB Seed] Default Operators seeded.");
+      await Operator.create({
+        mobileNumber: "9080864542",
+        name: "Kathiravan V",
+        isActive: true,
+      });
+      console.log("[DB Seed] Default Admin Operator (9080864542) created.");
     }
   } catch (err) {
     console.error("[DB Seed Error]", err.message);

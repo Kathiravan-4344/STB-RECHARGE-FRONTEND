@@ -1,7 +1,7 @@
 // In-memory data store for STB RECHARGE (Pure Frontend - Supabase removed).
 import { useSyncExternalStore } from "react";
 import { cleanMobile, mobileToEmail } from "../utils/utils";
-import { apiAddOperator, apiToggleOperator, apiDeleteOperator } from "./api";
+import { apiAddOperator, apiToggleOperator, apiDeleteOperator, apiGetOperators } from "./api";
 
 export type Plan = {
   id: string;
@@ -397,11 +397,32 @@ export function useStore<T>(selector: (s: State) => T): T {
 // Booting and session
 let booted = false;
 
+export async function syncOperatorsFromBackend() {
+  try {
+    const res = await apiGetOperators();
+    if (res.success && res.data?.operators) {
+      const fetched: ApprovedOperator[] = res.data.operators.map((op: any) => ({
+        id: op._id || op.id || "op-" + op.mobileNumber,
+        mobile: op.mobileNumber || op.mobile,
+        name: op.name || "Operator",
+        addedAt: op.createdAt || op.addedAt || new Date().toISOString(),
+        active: op.isActive !== undefined ? op.isActive : true,
+      }));
+      if (fetched.length > 0) {
+        setState({ approvedOperators: fetched });
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to sync operators from backend", e);
+  }
+}
+
 export async function initStore() {
   if (booted || typeof window === "undefined") return;
   booted = true;
   state = loadSavedState();
   setState({ ready: true });
+  syncOperatorsFromBackend();
 }
 
 export async function refreshUserData() {
@@ -410,6 +431,7 @@ export async function refreshUserData() {
 
 export async function refreshAdminData() {
   setState({ ready: true });
+  syncOperatorsFromBackend();
 }
 
 export async function refreshCatalogue() {
