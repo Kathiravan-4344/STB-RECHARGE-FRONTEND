@@ -33,24 +33,24 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isAdminRoute = pathname.startsWith("/admin") || user?.role === "admin";
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A]">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#CBD5E1] shadow-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-slate-700 text-slate-100 font-bold border border-slate-600">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#2563EB] text-white font-bold shadow-md shadow-blue-500/20">
               <Tv className="h-5 w-5" />
             </div>
             <div className="leading-tight">
-              <div className="font-display text-base font-bold tracking-tight flex items-center gap-2 text-slate-100">
+              <div className="font-display text-base font-bold tracking-tight flex items-center gap-2 text-[#0F172A]">
                 STB RECHARGE
                 {isAdminRoute && (
-                  <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-200 border border-slate-700 uppercase tracking-wider">
+                  <span className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-[#2563EB] border border-blue-200 uppercase tracking-wider">
                     ADMIN PORTAL
                   </span>
                 )}
               </div>
-              <div className="text-[10px] uppercase tracking-widest text-slate-400">
+              <div className="text-[10px] uppercase tracking-widest text-[#64748B] font-medium">
                 {isAdminRoute
                   ? "Master Control • KATHIRAVAN V"
                   : "Smart Recharge · Operator Control"}
@@ -66,10 +66,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Link
                     key={n.to}
                     to={n.to}
-                    className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                    className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition-all ${
                       active
-                        ? "bg-slate-700 text-white font-semibold border border-slate-600"
-                        : "text-slate-400 hover:text-slate-100 hover:bg-slate-800"
+                        ? "bg-[#2563EB] text-white shadow-sm shadow-blue-500/20"
+                        : "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]"
                     }`}
                   >
                     {n.label}
@@ -79,7 +79,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               {user?.role === "operator" && (
                 <Link
                   to="/operator"
-                  className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700 hover:text-white"
+                  className={`flex items-center gap-1.5 rounded-xl border border-[#CBD5E1] px-3.5 py-2 text-xs font-bold transition ${
+                    pathname.startsWith("/operator")
+                      ? "bg-[#2563EB] text-white border-[#2563EB]"
+                      : "bg-[#E2E8F0] text-[#0F172A] hover:bg-[#2563EB] hover:text-white"
+                  }`}
                 >
                   <Shield className="h-3.5 w-3.5" /> Operator Panel
                 </Link>
@@ -87,7 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </nav>
           ) : (
             <div className="hidden md:flex items-center gap-2">
-              <span className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-medium text-slate-300">
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-3.5 py-1 text-xs font-bold text-[#2563EB]">
                 👑 Super Admin: KATHIRAVAN V (9080864542)
               </span>
             </div>
@@ -95,9 +99,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-2">
             {user && !isAdminRoute && (
-              <span className="hidden rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-muted-foreground sm:inline flex items-center gap-1.5">
+              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1 text-xs font-semibold text-[#64748B]">
                 {user.role === "operator" && (
-                  <Shield className="h-3 w-3 text-[color:var(--neon-cyan)]" />
+                  <Shield className="h-3 w-3 text-[#2563EB]" />
                 )}
                 +91 {user.mobile}
               </span>
@@ -107,7 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 logout();
                 navigate({ to: "/" });
               }}
-              className="flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-400 transition hover:bg-red-500/20"
+              className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-100"
               aria-label="Sign out"
             >
               <LogOut className="h-4 w-4" /> Sign Out
@@ -121,7 +125,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Bottom nav mobile (For Customers & Operators) */}
       {!isAdminRoute && (
         <nav className="fixed bottom-3 left-1/2 z-50 w-[95vw] max-w-lg -translate-x-1/2 md:hidden">
-          <div className="glass-strong flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-white/10 px-2 py-2 shadow-2xl backdrop-blur-xl no-scrollbar">
+          <div className="bg-white/95 border border-[#CBD5E1] shadow-xl p-1.5 rounded-2xl flex items-center justify-around backdrop-blur-xl">
             {nav.map((n) => {
               const Icon = n.icon;
               const active = pathname.startsWith(n.to);
@@ -129,28 +133,28 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Link
                   key={n.to}
                   to={n.to}
-                  className={`flex shrink-0 flex-col items-center rounded-xl px-2.5 py-1.5 text-[10px] font-semibold transition-all ${
+                  className={`flex flex-col items-center rounded-xl px-3 py-1.5 text-[10px] font-bold transition-all ${
                     active
-                      ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)] font-bold"
-                      : "text-muted-foreground hover:text-white"
+                      ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
+                      : "text-[#64748B] hover:text-[#0F172A]"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="whitespace-nowrap">{n.label}</span>
+                  <span className="whitespace-nowrap mt-0.5">{n.label}</span>
                 </Link>
               );
             })}
             {user?.role === "operator" && (
               <Link
                 to="/operator"
-                className={`flex shrink-0 flex-col items-center rounded-xl px-2.5 py-1.5 text-[10px] font-bold transition-all ${
+                className={`flex flex-col items-center rounded-xl px-3 py-1.5 text-[10px] font-bold transition-all ${
                   pathname.startsWith("/operator")
-                    ? "bg-[color:var(--neon-cyan)] text-black shadow-[0_0_12px_rgba(0,210,255,0.5)]"
-                    : "text-[color:var(--neon-cyan)] border border-[color:var(--neon-cyan)]/30 bg-[color:var(--neon-cyan)]/10"
+                    ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
+                    : "text-[#2563EB] bg-blue-50 border border-blue-200"
                 }`}
               >
                 <Shield className="h-4 w-4" />
-                <span className="whitespace-nowrap">Operator</span>
+                <span className="whitespace-nowrap mt-0.5">Operator</span>
               </Link>
             )}
           </div>
@@ -162,7 +166,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <>
           <button
             onClick={() => setChatOpen((v) => !v)}
-            className="fixed bottom-24 right-4 z-40 grid h-14 w-14 place-items-center rounded-full gradient-primary text-primary-foreground shadow-[var(--shadow-glow)] transition hover:scale-105 md:bottom-6"
+            className="fixed bottom-24 right-4 z-40 grid h-13 w-13 place-items-center rounded-full bg-[#2563EB] text-white shadow-lg shadow-blue-500/30 transition hover:bg-[#1D4ED8] hover:scale-105 md:bottom-6"
             aria-label="Live support"
           >
             <MessageCircle className="h-6 w-6" />

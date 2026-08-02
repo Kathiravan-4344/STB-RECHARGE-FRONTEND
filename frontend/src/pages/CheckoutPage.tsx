@@ -39,121 +39,129 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
   return (
     <AppShell>
       <div className="mb-6">
-        <h1 className="font-display text-3xl font-bold">Checkout</h1>
-        <p className="text-sm text-muted-foreground">Secure payment · operator-approved recharge</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A]">Payment & Recharge</h1>
+        <p className="text-sm font-semibold text-[#64748B] mt-1">
+          Review your selected plan and confirm payment.
+        </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="space-y-6">
-          {/* STB summary */}
-          <div className="card-3d rounded-3xl p-5">
+          {/* STB Summary Card */}
+          <div className="bg-white rounded-2xl border border-[#CBD5E1] p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-xl gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]">
-                  <Tv className="h-5 w-5" />
+                <div className="h-11 w-11 rounded-xl bg-blue-50 text-[#2563EB] flex items-center justify-center font-bold">
+                  <Tv className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Recharge for
+                  <div className="text-xs font-semibold uppercase text-[#64748B]">
+                    Recharge For STB ID
                   </div>
-                  <div className="font-semibold">
-                    {stb?.customerName ?? "Guest"} · STB {stb?.id ?? "—"}
+                  <div className="text-base font-bold text-[#0F172A] mt-0.5">
+                    {stb?.customerName ?? "Customer"} · <span className="font-mono">{stb?.id ?? "123456789012"}</span>
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => navigate({ to: "/dashboard" })}
-                className="text-sm text-[color:var(--neon-cyan)]"
+                className="text-xs font-bold text-[#2563EB] hover:underline"
               >
-                Change
+                Change STB
               </button>
             </div>
           </div>
 
-          {/* Payment methods */}
-          <div className="card-3d rounded-3xl p-5">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <CreditCard className="h-4 w-4" /> Payment method
+          {/* Payment Method Cards */}
+          <div className="bg-white rounded-2xl border border-[#CBD5E1] p-6 shadow-sm">
+            <div className="flex items-center gap-2 text-sm font-bold text-[#0F172A]">
+              <CreditCard className="h-4 w-4 text-[#2563EB]" /> Select Payment Method
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {(["upi", "card", "netbanking"] as const).map((m) => (
                 <button
                   key={m}
                   onClick={() => setMethod(m)}
-                  className={`rounded-2xl border p-4 text-left text-sm transition ${method === m ? "border-primary/60 bg-primary/10 shadow-[var(--shadow-glow)]" : "border-white/10 bg-white/5 hover:border-white/20"}`}
+                  className={`rounded-xl border p-4 text-left transition-all ${
+                    method === m
+                      ? "border-[#2563EB] bg-blue-50/70 shadow-sm"
+                      : "border-[#CBD5E1] bg-[#F8FAFC] hover:border-slate-400"
+                  }`}
                 >
-                  <div className="font-semibold uppercase">
+                  <div className={`font-bold text-sm uppercase ${method === m ? "text-[#2563EB]" : "text-[#0F172A]"}`}>
                     {m === "upi" ? "UPI" : m === "card" ? "Card" : "Net Banking"}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-[#64748B] mt-1">
                     {m === "upi"
                       ? "GPay, PhonePe, Paytm"
                       : m === "card"
                         ? "Credit / Debit Card"
-                        : "All major banks"}
+                        : "All Major Banks"}
                   </div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Coupon */}
-          <div className="card-3d rounded-3xl p-5">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Tag className="h-4 w-4" /> Apply coupon
+          {/* Coupon Code Section */}
+          <div className="bg-white rounded-2xl border border-[#CBD5E1] p-6 shadow-sm">
+            <div className="flex items-center gap-2 text-sm font-bold text-[#0F172A]">
+              <Tag className="h-4 w-4 text-[#2563EB]" /> Apply Promo Coupon
             </div>
             <div className="mt-3 flex gap-2">
               <input
                 value={coupon}
                 onChange={(e) => setCoupon(e.target.value)}
-                placeholder="Try STB50, NEW10, WELCOME"
-                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-primary/60"
+                placeholder="Enter coupon (e.g. STB50, NEW10)"
+                className="flex-1 bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl px-4 py-3 text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none focus:border-[#2563EB]"
               />
               <button
                 onClick={apply}
-                className="rounded-xl gradient-cyan px-4 text-sm font-semibold text-primary-foreground"
+                className="rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-3 text-sm font-bold text-white shadow-sm"
               >
                 Apply
               </button>
             </div>
             {appliedCoupon && discount > 0 && (
-              <p className="mt-2 text-sm text-[color:var(--success)]">
-                Coupon <b>{appliedCoupon}</b> applied — ₹{discount} off
+              <p className="mt-2 text-xs font-bold text-[#22C55E]">
+                ✅ Coupon "{appliedCoupon}" applied! Saved ₹{discount}.
               </p>
             )}
           </div>
         </div>
 
-        {/* Order summary */}
-        <div className="card-3d h-fit rounded-3xl p-5">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground">
-            Order summary
+        {/* Selected Plan Summary Card */}
+        <div className="bg-white rounded-2xl border border-[#CBD5E1] p-6 shadow-sm h-fit">
+          <div className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+            Selected Plan Summary
           </div>
-          <div className="mt-1 font-display text-lg font-semibold">{plan.name}</div>
-          <div className="mt-4 space-y-2 text-sm">
-            <Row label="Plan price" value={`₹${plan.price}`} />
-            <Row label="Validity" value={`${plan.validityDays} days`} />
+          <div className="mt-2 text-xl font-bold text-[#0F172A]">{plan.name}</div>
+          <div className="mt-4 space-y-2.5 text-sm">
+            <Row label="Base Price" value={`₹${plan.price}`} />
+            <Row label="Validity Period" value={`${plan.validityDays} Days`} />
             {discount > 0 && (
-              <Row label={`Coupon (${appliedCoupon})`} value={`− ₹${discount}`} accent />
+              <Row label={`Discount (${appliedCoupon})`} value={`- ₹${discount}`} accent />
             )}
-            <div className="my-3 border-t border-white/10" />
-            <Row label="Total payable" value={`₹${total}`} big />
+            <div className="my-3 border-t border-[#CBD5E1]" />
+            <Row label="Total Amount" value={`₹${total}`} big />
           </div>
+
+          {/* Big Button */}
           <button
             onClick={pay}
             disabled={processing}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl gradient-primary py-3.5 font-semibold text-primary-foreground shadow-[var(--shadow-glow)] transition hover:scale-[1.02] disabled:opacity-60"
+            className="mt-6 w-full rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] py-4 px-4 text-base font-extrabold text-white shadow-md shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {processing ? (
-              "Processing payment…"
+              "Processing Payment…"
             ) : (
               <>
-                Pay ₹{total} <ArrowRight className="h-4 w-4" />
+                Pay & Request Recharge <ArrowRight className="h-5 w-5" />
               </>
             )}
           </button>
-          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="h-3.5 w-3.5" /> 100% secure · Payment protected
+          <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-[#64748B]">
+            <ShieldCheck className="h-4 w-4 text-[#22C55E]" /> 100% Encrypted & Operator Protected
           </div>
         </div>
       </div>
@@ -174,9 +182,11 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-muted-foreground">{label}</span>
+      <span className="text-xs font-semibold text-[#64748B]">{label}</span>
       <span
-        className={`${big ? "text-xl font-bold text-gradient" : "font-medium"} ${accent ? "text-[color:var(--success)]" : ""}`}
+        className={`${
+          big ? "text-2xl font-extrabold text-[#2563EB]" : "text-sm font-bold text-[#0F172A]"
+        } ${accent ? "text-[#22C55E]" : ""}`}
       >
         {value}
       </span>

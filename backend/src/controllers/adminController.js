@@ -38,6 +38,17 @@ const addOperator = async (req, res) => {
   }
 };
 
+// @desc Get Operators
+// @route GET /api/admin/operators
+const getOperators = async (req, res) => {
+  try {
+    const operators = await Operator.find().sort({ createdAt: -1 });
+    return res.status(200).json({ success: true, count: operators.length, operators });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc Toggle Operator Active Status
 // @route POST /api/admin/operator/toggle
 const toggleOperator = async (req, res) => {
@@ -60,6 +71,22 @@ const toggleOperator = async (req, res) => {
       message: `Operator ${operator.isActive ? "activated" : "deactivated"} successfully`,
       operator,
     });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc Remove Operator
+// @route DELETE /api/admin/operator/:id
+const removeOperator = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (id.startsWith("op-")) {
+      await Operator.deleteMany({ id });
+    } else {
+      await Operator.findByIdAndDelete(id);
+    }
+    return res.status(200).json({ success: true, message: "Operator removed successfully" });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -171,7 +198,9 @@ const clearAllData = async (req, res) => {
 
 module.exports = {
   addOperator,
+  getOperators,
   toggleOperator,
+  removeOperator,
   getCustomers,
   getRecharges,
   deleteRecharge,

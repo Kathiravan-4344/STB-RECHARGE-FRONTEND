@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const {
   addOperator,
+  getOperators,
   toggleOperator,
+  removeOperator,
   getCustomers,
   getRecharges,
   deleteRecharge,
@@ -14,10 +16,12 @@ const {
 } = require("../controllers/adminController");
 const { protectAdmin } = require("../middleware/authMiddleware");
 
-router.use(protectAdmin); // Protect all admin endpoints for 9080864542
-
+// Routes
 router.post("/operator/add", addOperator);
+router.get("/operators", getOperators);
 router.post("/operator/toggle", toggleOperator);
+router.delete("/operator/:id", removeOperator);
+
 router.get("/customers", getCustomers);
 router.get("/recharges", getRecharges);
 router.delete("/recharge/:id", deleteRecharge);

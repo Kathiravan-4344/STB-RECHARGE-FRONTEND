@@ -39,74 +39,75 @@ export function PendingPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl">
-        <div className="card-3d relative overflow-hidden rounded-3xl p-8 text-center">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_300px_at_50%_-20%,var(--neon)/20,transparent_60%)]" />
-
-          <div className="relative mx-auto grid h-24 w-24 place-items-center">
-            <div className="absolute inset-0 rounded-full border-2 border-white/10" />
+        <div className="bg-white rounded-2xl border border-[#CBD5E1] p-8 sm:p-10 text-center shadow-sm">
+          {/* Animated Spinner Icon */}
+          <div className="relative mx-auto grid h-20 w-20 place-items-center">
+            <div className="absolute inset-0 rounded-full border-4 border-slate-100" />
             <div
-              className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary"
-              style={{ animation: "ring-spin 1.6s linear infinite" }}
+              className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#2563EB]"
+              style={{ animation: "ring-spin 1.2s linear infinite" }}
             />
-            <Loader2 className="h-8 w-8 animate-spin text-[color:var(--neon-cyan)]" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#2563EB]" />
           </div>
 
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[color:var(--warning)]/40 bg-[color:var(--warning)]/10 px-3 py-1 text-xs font-medium text-[color:var(--warning)]">
-            <Clock className="h-3.5 w-3.5" /> Waiting for Operator Approval
+          {/* Status Badge (Yellow) */}
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-amber-100 border border-amber-300 px-4 py-1.5 text-xs sm:text-sm font-bold text-amber-800">
+            <Clock className="h-4 w-4 text-amber-600 shrink-0" />
+            Waiting for Operator Approval
           </div>
 
-          <h1 className="mt-4 font-display text-3xl font-bold">Recharge Pending</h1>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Your request has been sent to the operator. Recharge will be completed shortly.
+          <h1 className="mt-4 text-2xl sm:text-3xl font-extrabold text-[#0F172A]">Recharge Pending</h1>
+          <p className="mx-auto mt-2 max-w-md text-xs sm:text-sm font-semibold text-[#64748B]">
+            Your payment was received. Your local cable TV operator is verifying & activating your STB pack.
           </p>
 
-          {/* Countdown */}
-          <div className="mx-auto mt-6 max-w-sm">
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">
-              Auto-completes in
+          {/* Timer Section (Highlighted) */}
+          <div className="mx-auto mt-6 max-w-sm bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-5">
+            <div className="text-xs font-bold uppercase tracking-wider text-[#64748B]">
+              Auto-Approves In
             </div>
-            <div className="mt-1 font-display text-5xl font-bold tabular-nums text-gradient">
+            <div className="mt-1 text-4xl sm:text-5xl font-extrabold tabular-nums text-[#2563EB]">
               {cd.label}
             </div>
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
+            <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
               <div
-                className="h-full gradient-primary transition-[width] duration-1000"
+                className="h-full bg-[#2563EB] transition-[width] duration-1000"
                 style={{ width: `${pct}%` }}
               />
             </div>
           </div>
 
           {/* Details */}
-          <div className="mx-auto mt-8 grid max-w-md gap-3 text-left">
+          <div className="mx-auto mt-6 grid max-w-md gap-2.5 text-left">
             <Row k="Transaction ID" v={pending.txnId} />
-            <Row k="Plan" v={pending.planName} />
-            <Row k="Amount" v={`₹${pending.amount}`} />
+            <Row k="Selected Plan" v={pending.planName} />
+            <Row k="Amount Paid" v={`₹${pending.amount}`} />
           </div>
 
           {/* Operator controls */}
           {isStaff ? (
-            <>
-              <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <div className="mt-8 pt-6 border-t border-[#CBD5E1]">
+              <div className="flex flex-wrap justify-center gap-3">
                 <button
                   onClick={() => approveTxn(pending.txnId)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--success)]/15 border border-[color:var(--success)]/40 px-4 py-2 text-sm font-semibold text-[color:var(--success)]"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] px-5 py-3 text-sm font-bold text-white shadow-md shadow-green-500/20 transition"
                 >
                   <CheckCircle2 className="h-4 w-4" /> Approve Recharge
                 </button>
                 <button
                   onClick={handleReject}
-                  className="inline-flex items-center gap-2 rounded-xl bg-destructive/15 border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive"
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-3 text-sm font-bold text-white shadow-md shadow-red-500/20 transition"
                 >
                   <XCircle className="h-4 w-4" /> Reject Recharge
                 </button>
               </div>
-              <p className="mt-3 text-[11px] text-muted-foreground">
-                You are signed in as staff — this action updates the customer instantly.
+              <p className="mt-3 text-xs font-semibold text-[#64748B]">
+                Staff portal action — approving will instantly complete the recharge.
               </p>
-            </>
+            </div>
           ) : (
-            <p className="mt-8 text-[11px] text-muted-foreground">
-              This page updates automatically the moment your operator approves the recharge.
+            <p className="mt-6 text-xs text-[#64748B]">
+              This page automatically redirects the moment operator confirms your recharge.
             </p>
           )}
         </div>
@@ -117,9 +118,9 @@ export function PendingPage() {
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
-      <span className="text-muted-foreground">{k}</span>
-      <span className="font-medium">{v}</span>
+    <div className="flex items-center justify-between rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2.5 text-xs font-bold">
+      <span className="text-[#64748B]">{k}</span>
+      <span className="text-[#0F172A] font-mono">{v}</span>
     </div>
   );
 }

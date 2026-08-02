@@ -93,9 +93,13 @@ app.use((req, res) => {
 });
 
 // Start Express Server
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(` 🚀 STB RECHARGE Backend running on port ${PORT}`);
-  console.log(` 🔗 URL: http://localhost:${PORT}`);
-  console.log(`====================================================`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(` 🚀 STB RECHARGE Backend running on port ${PORT}`);
+    console.log(` 🔗 URL: http://localhost:${PORT}`);
+    console.log(`====================================================`);
+  });
+}
+
+module.exports = app;

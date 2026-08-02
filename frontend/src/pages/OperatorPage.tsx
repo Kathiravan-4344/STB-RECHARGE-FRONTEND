@@ -44,37 +44,37 @@ function ProductStatusBadge({ status }: { status: ProductRequestStatus }) {
   switch (status) {
     case "Pending":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400">
-          <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" /> 🟡 Pending
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+          <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" /> 🟡 Pending
         </span>
       );
     case "Processing":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/40 bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-400">
-          <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" /> 🔵 Processing
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-300 bg-blue-100 px-3 py-1 text-xs font-bold text-blue-800">
+          <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" /> 🔵 Processing
         </span>
       );
     case "Out for Delivery":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/40 bg-purple-500/10 px-3 py-1 text-xs font-bold text-purple-300">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-300 bg-purple-100 px-3 py-1 text-xs font-bold text-purple-800">
           <Truck className="h-3.5 w-3.5" /> 🚚 Out for Delivery
         </span>
       );
     case "Installation Scheduled":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-1 text-xs font-bold text-[color:var(--neon-cyan)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300 bg-cyan-100 px-3 py-1 text-xs font-bold text-cyan-800">
           <Wrench className="h-3.5 w-3.5" /> 🛠️ Installation Scheduled
         </span>
       );
     case "Completed":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">
-          <CheckCircle2 className="h-3.5 w-3.5" /> 🟢 Completed
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
+          <CheckCircle2 className="h-3.5 w-3.5 text-[#22C55E]" /> 🟢 Completed
         </span>
       );
     case "Not Available":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1 text-xs font-bold text-red-400">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-100 px-3 py-1 text-xs font-bold text-red-800">
           <AlertTriangle className="h-3.5 w-3.5" /> 🔴 Not Available
         </span>
       );
@@ -87,26 +87,26 @@ function ComplaintStatusBadge({ status }: { status: ComplaintStatus }) {
   switch (status) {
     case "Pending":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400">
-          <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" /> 🟡 Pending
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+          <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" /> 🟡 Pending
         </span>
       );
     case "Assigned":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/40 bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-400">
-          <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" /> 🔵 Assigned
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-300 bg-blue-100 px-3 py-1 text-xs font-bold text-blue-800">
+          <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" /> 🔵 Assigned
         </span>
       );
     case "In Progress":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-300">
-          <Car className="h-3.5 w-3.5 animate-bounce text-amber-400" /> 🟠 In Progress
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+          <Car className="h-3.5 w-3.5 animate-bounce text-amber-600" /> 🟠 In Progress
         </span>
       );
     case "Resolved":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">
-          <CheckCircle2 className="h-3.5 w-3.5" /> 🟢 Resolved
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
+          <CheckCircle2 className="h-3.5 w-3.5 text-[#22C55E]" /> 🟢 Resolved
         </span>
       );
     default:
@@ -141,14 +141,14 @@ export function OperatorPage() {
 
   // Scheduling Product Modal State
   const [schedulingReq, setSchedulingReq] = useState<ProductRequest | null>(null);
-  const [techName, setTechName] = useState("Ramesh Kumar");
-  const [techPhone, setTechPhone] = useState("9840192837");
+  const [techName, setTechName] = useState(user?.name || "");
+  const [techPhone, setTechPhone] = useState(user?.mobile || "");
   const [schedDate, setSchedDate] = useState("Tomorrow at 11:00 AM");
 
   // Complaint Technician Assignment Modal State
   const [assigningComplaint, setAssigningComplaint] = useState<Complaint | null>(null);
-  const [cmpTechName, setCmpTechName] = useState("Ramesh Kumar");
-  const [cmpTechPhone, setCmpTechPhone] = useState("9840192837");
+  const [cmpTechName, setCmpTechName] = useState(user?.name || "");
+  const [cmpTechPhone, setCmpTechPhone] = useState(user?.mobile || "");
   const [cmpExpectedArrival, setCmpExpectedArrival] = useState("In 20 Minutes");
 
   // Edit Stock State
@@ -289,38 +289,34 @@ export function OperatorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-foreground font-sans selection:bg-primary/30 selection:text-primary">
-      {/* Floating background glowing orbs */}
-      <div className="pointer-events-none fixed -left-32 -top-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl animate-float" />
-      <div className="pointer-events-none fixed -bottom-32 -right-32 h-[30rem] w-[30rem] rounded-full bg-[color:var(--neon-purple)]/20 blur-3xl animate-float" />
-
+    <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] font-sans antialiased">
       {/* Header Bar */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0b0e17]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 bg-white border-b border-[#CBD5E1] shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl gradient-primary shadow-[0_0_20px_rgba(0,210,255,0.4)]">
-              <Shield className="h-5 w-5 text-primary-foreground" />
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#2563EB] text-white shadow-md shadow-blue-500/20 font-bold">
+              <Shield className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-display text-lg font-bold tracking-tight text-white flex items-center gap-2">
+              <div className="font-display text-lg font-bold tracking-tight text-[#0F172A] flex items-center gap-2">
                 STB RECHARGE
-                <span className="rounded-md border border-[color:var(--neon-cyan)]/40 bg-[color:var(--neon-cyan)]/10 px-2 py-0.5 text-[10px] uppercase font-bold text-[color:var(--neon-cyan)]">
+                <span className="rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] uppercase font-bold text-[#2563EB]">
                   Operator Control Center
                 </span>
               </div>
-              <div className="text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
+              <div className="text-[11px] text-[#64748B] flex items-center gap-2 flex-wrap font-medium">
                 <span>
                   Logged in:{" "}
-                  <strong className="font-normal text-white">
+                  <strong className="font-bold text-[#0F172A]">
                     {formatName(user.name || "Operator Admin")}
                   </strong>{" "}
                   ({user.operatorNumber || "OP-ADMIN"} · +91 {user.mobile})
                 </span>
                 <span>•</span>
-                <span className="flex items-center gap-1 text-[color:var(--neon-cyan)]">
+                <span className="flex items-center gap-1 text-[#22C55E] font-bold">
                   <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[color:var(--neon-cyan)] opacity-75"></span>
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[color:var(--neon-cyan)]"></span>
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#22C55E] opacity-75"></span>
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[#22C55E]"></span>
                   </span>
                   Live Sync Active
                 </span>
@@ -331,7 +327,7 @@ export function OperatorPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setNow(Date.now())}
-              className="hidden sm:flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-muted-foreground transition hover:bg-white/10 hover:text-white"
+              className="hidden sm:flex items-center gap-1.5 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-xs font-bold text-[#64748B] transition hover:bg-slate-100 hover:text-[#0F172A]"
             >
               <RefreshCw className="h-3.5 w-3.5" /> Sync Now
             </button>
@@ -340,7 +336,7 @@ export function OperatorPage() {
                 logout();
                 navigate({ to: "/" });
               }}
-              className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3.5 py-2 text-xs font-bold text-red-400 transition hover:bg-red-500/20 hover:text-red-300"
+              className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100"
             >
               <LogOut className="h-4 w-4" /> Logout
             </button>
@@ -350,33 +346,28 @@ export function OperatorPage() {
 
       {/* Main Container */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        {/* Top greeting & Navigation Menu Tabs */}
-        <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-center">
+        {/* Top Header & Global Toggle Tabs */}
+        <div className="mb-6 flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-[color:var(--neon-cyan)] font-extrabold">
-              Welcome back, Operator
+            <p className="text-xs uppercase tracking-wider text-[#2563EB] font-bold">
+              Operator Dashboard
             </p>
-            <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight sm:text-4xl text-white">
-              Hi{" "}
-              <span className="font-normal text-white">
-                {formatName(user.name || "Operator Admin")}
-              </span>{" "}
-              👋
+            <h1 className="mt-1 font-display text-2xl sm:text-3xl font-extrabold text-[#0F172A]">
+              Welcome, {formatName(user.name || "Operator")} 👋
             </h1>
-            <p className="mt-1 text-sm text-slate-300">
-              Manage recharge transactions, product requests, stock inventory & customer service
-              complaints.
+            <p className="mt-1 text-xs sm:text-sm font-medium text-[#64748B]">
+              Manage customer recharges, product requests, inventory stock & support complaints.
             </p>
           </div>
 
-          {/* Operator Panel Navigation Menu Tabs */}
-          <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1.5 overflow-x-auto no-scrollbar max-w-full">
+          {/* GLOBAL TAB FIX (Inactive #E2E8F0 / Active #2563EB) */}
+          <div className="flex items-center gap-1.5 rounded-xl border border-[#CBD5E1] bg-[#F1F5F9] p-1.5 overflow-x-auto no-scrollbar max-w-full">
             <button
               onClick={() => setActiveMenu("txns")}
-              className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out whitespace-nowrap ${
                 activeMenu === "txns"
-                  ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                  : "text-muted-foreground hover:text-white"
+                  ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
+                  : "bg-[#E2E8F0] text-[#334155] hover:bg-slate-300/70 hover:text-[#0F172A]"
               }`}
             >
               <Zap className="h-4 w-4" /> Recharge Txns ({pendingCount})
@@ -384,15 +375,15 @@ export function OperatorPage() {
 
             <button
               onClick={() => setActiveMenu("product_requests")}
-              className={`relative flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap ${
+              className={`relative flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out whitespace-nowrap ${
                 activeMenu === "product_requests"
-                  ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                  : "text-muted-foreground hover:text-white"
+                  ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
+                  : "bg-[#E2E8F0] text-[#334155] hover:bg-slate-300/70 hover:text-[#0F172A]"
               }`}
             >
-              <Package className="h-4 w-4" /> 📦 Product Requests
+              <Package className="h-4 w-4" /> Product Requests
               {pendingProductReqsCount > 0 && (
-                <span className="ml-1 rounded-full bg-yellow-400 px-1.5 py-0.5 text-[10px] font-black text-black">
+                <span className="ml-1 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-black text-black">
                   {pendingProductReqsCount}
                 </span>
               )}
@@ -400,15 +391,15 @@ export function OperatorPage() {
 
             <button
               onClick={() => setActiveMenu("stock")}
-              className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out whitespace-nowrap ${
                 activeMenu === "stock"
-                  ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                  : "text-muted-foreground hover:text-white"
+                  ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
+                  : "bg-[#E2E8F0] text-[#334155] hover:bg-slate-300/70 hover:text-[#0F172A]"
               }`}
             >
               <ShoppingBag className="h-4 w-4" /> Stock Management
               {lowStockCount > 0 && (
-                <span className="ml-1 rounded-full bg-amber-500/30 border border-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-amber-300">
+                <span className="ml-1 rounded-full bg-amber-100 border border-amber-300 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">
                   ⚠️ {lowStockCount}
                 </span>
               )}
@@ -416,13 +407,13 @@ export function OperatorPage() {
 
             <button
               onClick={() => setActiveMenu("complaints")}
-              className={`relative flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap ${
+              className={`relative flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out whitespace-nowrap ${
                 activeMenu === "complaints"
-                  ? "bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.4)]"
-                  : "text-muted-foreground hover:text-white"
+                  ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
+                  : "bg-[#E2E8F0] text-[#334155] hover:bg-slate-300/70 hover:text-[#0F172A]"
               }`}
             >
-              <Wrench className="h-4 w-4" /> 🔧 Complaint Management
+              <Wrench className="h-4 w-4" /> Complaints
               {pendingComplaintsCount > 0 && (
                 <span className="ml-1 rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-black text-black">
                   {pendingComplaintsCount}
@@ -436,81 +427,75 @@ export function OperatorPage() {
         {activeMenu === "txns" && (
           <>
             {/* Summary Cards */}
-            <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-[#0d121f]/90 p-6 backdrop-blur-xl shadow-xl">
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="bg-white rounded-2xl border border-[#CBD5E1] p-5 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
+                  <span className="text-xs uppercase tracking-wider font-semibold text-[#64748B]">
                     Total Requests
                   </span>
-                  <Tv className="h-5 w-5 text-primary" />
+                  <Tv className="h-5 w-5 text-[#2563EB]" />
                 </div>
-                <div className="mt-4 font-display text-4xl font-black text-white">{totalCount}</div>
-                <div className="mt-1 text-xs text-muted-foreground">All customer transactions</div>
+                <div className="mt-3 text-3xl font-extrabold text-[#0F172A]">{totalCount}</div>
+                <div className="mt-1 text-xs text-[#64748B]">All customer transactions</div>
               </div>
 
-              <div className="group relative overflow-hidden rounded-3xl border border-yellow-500/20 bg-[#0d121f]/90 p-6 backdrop-blur-xl shadow-xl">
+              <div className="bg-white rounded-2xl border border-[#CBD5E1] p-5 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-widest font-semibold text-yellow-400/90">
+                  <span className="text-xs uppercase tracking-wider font-semibold text-amber-700">
                     Pending
                   </span>
-                  <Clock className="h-5 w-5 text-yellow-400 animate-pulse" />
+                  <Clock className="h-5 w-5 text-amber-600 animate-pulse" />
                 </div>
-                <div className="mt-4 font-display text-4xl font-black text-yellow-400">
-                  {pendingCount}
-                </div>
-                <div className="mt-1 text-xs text-yellow-400/70">Awaiting operator action</div>
+                <div className="mt-3 text-3xl font-extrabold text-amber-600">{pendingCount}</div>
+                <div className="mt-1 text-xs text-amber-700">Awaiting operator approval</div>
               </div>
 
-              <div className="group relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-[#0d121f]/90 p-6 backdrop-blur-xl shadow-xl">
+              <div className="bg-white rounded-2xl border border-[#CBD5E1] p-5 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-widest font-semibold text-emerald-400/90">
+                  <span className="text-xs uppercase tracking-wider font-semibold text-[#22C55E]">
                     Approved
                   </span>
-                  <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                  <CheckCircle2 className="h-5 w-5 text-[#22C55E]" />
                 </div>
-                <div className="mt-4 font-display text-4xl font-black text-emerald-400">
-                  {approvedCount}
-                </div>
-                <div className="mt-1 text-xs text-emerald-400/70">Successfully activated</div>
+                <div className="mt-3 text-3xl font-extrabold text-[#22C55E]">{approvedCount}</div>
+                <div className="mt-1 text-xs text-emerald-700">Successfully activated</div>
               </div>
 
-              <div className="group relative overflow-hidden rounded-3xl border border-red-500/20 bg-[#0d121f]/90 p-6 backdrop-blur-xl shadow-xl">
+              <div className="bg-white rounded-2xl border border-[#CBD5E1] p-5 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-widest font-semibold text-red-400/90">
+                  <span className="text-xs uppercase tracking-wider font-semibold text-red-600">
                     Failed
                   </span>
-                  <XCircle className="h-5 w-5 text-red-400" />
+                  <XCircle className="h-5 w-5 text-red-600" />
                 </div>
-                <div className="mt-4 font-display text-4xl font-black text-red-400">
-                  {failedCount}
-                </div>
-                <div className="mt-1 text-xs text-red-400/70">Rejected or cancelled</div>
+                <div className="mt-3 text-3xl font-extrabold text-red-600">{failedCount}</div>
+                <div className="mt-1 text-xs text-red-700">Rejected transactions</div>
               </div>
             </div>
 
             {/* Filter Bar */}
-            <div className="mb-6 rounded-3xl border border-white/10 bg-[#0d121f]/80 p-4 backdrop-blur-xl">
+            <div className="mb-6 bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-sm">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#64748B]" />
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search STB ID, Customer Name, Mobile or Txn ID..."
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-muted-foreground outline-none focus:border-[color:var(--neon-cyan)]"
+                    className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl py-2 pl-10 pr-4 text-xs sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none focus:border-[#2563EB]"
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Filter className="h-4 w-4 text-[#64748B]" />
                   {(["all", "pending", "success", "failed"] as const).map((st) => (
                     <button
                       key={st}
                       onClick={() => setStatusFilter(st)}
-                      className={`rounded-xl px-3 py-1.5 text-xs font-bold capitalize transition ${
+                      className={`rounded-lg px-3 py-1.5 text-xs font-bold capitalize transition ${
                         statusFilter === st
-                          ? "bg-white/20 text-white"
-                          : "text-muted-foreground hover:text-white"
+                          ? "bg-[#2563EB] text-white"
+                          : "bg-[#E2E8F0] text-[#334155] hover:bg-slate-300"
                       }`}
                     >
                       {st}
@@ -520,57 +505,57 @@ export function OperatorPage() {
               </div>
             </div>
 
-            {/* Txn Table */}
-            <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#0d121f]/90 backdrop-blur-xl shadow-2xl">
+            {/* Txn Cards & Table */}
+            <div className="bg-white rounded-2xl border border-[#CBD5E1] shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-muted-foreground">
-                  <thead className="border-b border-white/10 bg-white/5 text-xs uppercase text-slate-300">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b border-[#CBD5E1] bg-[#F8FAFC] text-xs uppercase text-[#64748B] font-bold">
                     <tr>
-                      <th className="px-6 py-4 font-bold">Transaction ID</th>
-                      <th className="px-6 py-4 font-bold">STB ID & Customer</th>
-                      <th className="px-6 py-4 font-bold">Plan Name</th>
-                      <th className="px-6 py-4 font-bold">Amount</th>
-                      <th className="px-6 py-4 font-bold">Status</th>
-                      <th className="px-6 py-4 font-bold text-right">Actions</th>
+                      <th className="px-6 py-4">Transaction ID</th>
+                      <th className="px-6 py-4">STB ID & Customer</th>
+                      <th className="px-6 py-4">Plan Name</th>
+                      <th className="px-6 py-4">Amount</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-[#CBD5E1]">
                     {filteredTxns.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                          No transactions found.
+                        <td colSpan={6} className="px-6 py-12 text-center text-[#64748B] font-medium">
+                          No recharge transactions found.
                         </td>
                       </tr>
                     ) : (
                       filteredTxns.map((t) => (
-                        <tr key={t.id} className="hover:bg-white/5 transition">
-                          <td className="px-6 py-4 font-mono font-bold text-white">{t.id}</td>
+                        <tr key={t.id} className="hover:bg-slate-50 transition">
+                          <td className="px-6 py-4 font-mono font-bold text-[#0F172A]">{t.id}</td>
                           <td className="px-6 py-4">
-                            <div className="font-bold text-white">
+                            <div className="font-bold text-[#0F172A]">
                               {t.customerName || "Customer"}
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              STB: {t.stbId} · +91 {t.customerMobile}
+                            <div className="text-xs font-semibold text-[#64748B]">
+                              STB: <span className="font-mono text-[#0F172A]">{t.stbId}</span> · +91 {t.customerMobile}
                             </div>
                           </td>
-                          <td className="px-6 py-4 font-medium text-white">{t.planName}</td>
-                          <td className="px-6 py-4 font-mono font-bold text-[color:var(--neon-cyan)]">
+                          <td className="px-6 py-4 font-bold text-[#0F172A]">{t.planName}</td>
+                          <td className="px-6 py-4 font-mono font-extrabold text-[#2563EB]">
                             ₹{t.amount}
                           </td>
                           <td className="px-6 py-4">
                             {t.status === "pending" && (
-                              <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow-500/40 bg-yellow-500/10 px-3 py-1 text-xs font-bold text-yellow-400">
-                                <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />{" "}
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+                                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />{" "}
                                 Pending Approval
                               </span>
                             )}
                             {t.status === "success" && (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">
-                                <CheckCircle2 className="h-3.5 w-3.5" /> Approved
+                              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
+                                <CheckCircle2 className="h-3.5 w-3.5 text-[#22C55E]" /> Approved
                               </span>
                             )}
                             {t.status === "failed" && (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1 text-xs font-bold text-red-400">
+                              <span className="inline-flex items-center gap-1 rounded-full border border-red-300 bg-red-100 px-3 py-1 text-xs font-bold text-red-800">
                                 <XCircle className="h-3.5 w-3.5" /> Rejected
                               </span>
                             )}
@@ -580,19 +565,19 @@ export function OperatorPage() {
                               <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => approveTxn(t.id)}
-                                  className="flex items-center gap-1 rounded-xl bg-emerald-500 px-3 py-1.5 text-xs font-bold text-black hover:bg-emerald-400"
+                                  className="flex items-center gap-1 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition"
                                 >
                                   <Check className="h-3.5 w-3.5" /> Approve
                                 </button>
                                 <button
                                   onClick={() => handleRejectTxn(t.id)}
-                                  className="flex items-center gap-1 rounded-xl bg-red-500/20 border border-red-500/40 px-3 py-1.5 text-xs font-bold text-red-400 hover:bg-red-500/30"
+                                  className="flex items-center gap-1 rounded-xl bg-red-600 hover:bg-red-700 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition"
                                 >
                                   <X className="h-3.5 w-3.5" /> Reject
                                 </button>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-500 font-mono">Completed</span>
+                              <span className="text-xs text-[#64748B] font-mono font-semibold">Completed</span>
                             )}
                           </td>
                         </tr>
@@ -608,20 +593,20 @@ export function OperatorPage() {
         {/* MENU 2: Product & Service Requests View */}
         {activeMenu === "product_requests" && (
           <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-[#0d121f]/80 p-4 backdrop-blur-xl">
+            <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-sm">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#64748B]" />
                   <input
                     type="text"
                     value={productReqSearch}
                     onChange={(e) => setProductReqSearch(e.target.value)}
                     placeholder="Search Customer Name, STB ID, Product Name, or Mobile..."
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-muted-foreground outline-none focus:border-[color:var(--neon-cyan)]"
+                    className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl py-2 pl-10 pr-4 text-xs sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none focus:border-[#2563EB]"
                   />
                 </div>
                 <div className="flex items-center gap-2 flex-wrap text-xs">
-                  <span className="text-slate-400 font-bold">Status Filter:</span>
+                  <span className="text-[#64748B] font-bold">Status Filter:</span>
                   {[
                     "all",
                     "Pending",
@@ -634,10 +619,10 @@ export function OperatorPage() {
                     <button
                       key={s}
                       onClick={() => setProductReqStatusFilter(s)}
-                      className={`rounded-xl px-3 py-1.5 font-bold transition ${
+                      className={`rounded-lg px-3 py-1.5 font-bold transition ${
                         productReqStatusFilter === s
-                          ? "bg-[color:var(--neon-cyan)]/20 text-[color:var(--neon-cyan)] border border-[color:var(--neon-cyan)]/40"
-                          : "bg-white/5 text-muted-foreground hover:text-white"
+                          ? "bg-[#2563EB] text-white"
+                          : "bg-[#E2E8F0] text-[#334155] hover:bg-slate-300"
                       }`}
                     >
                       {s}
@@ -649,9 +634,9 @@ export function OperatorPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               {filteredProductRequests.length === 0 ? (
-                <div className="md:col-span-2 rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
-                  <Package className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-3 font-display text-lg font-bold text-white">
+                <div className="md:col-span-2 bg-white rounded-2xl border border-dashed border-[#CBD5E1] p-12 text-center shadow-sm">
+                  <Package className="mx-auto h-12 w-12 text-[#64748B]" />
+                  <h3 className="mt-3 font-bold text-lg text-[#0F172A]">
                     No product requests found
                   </h3>
                 </div>
@@ -663,45 +648,45 @@ export function OperatorPage() {
                   return (
                     <div
                       key={req.id}
-                      className="rounded-3xl border border-white/15 bg-[#0d121f]/90 p-6 backdrop-blur-xl shadow-xl space-y-4 hover:border-white/30 transition"
+                      className="bg-white rounded-2xl border border-[#CBD5E1] p-6 shadow-sm space-y-4 hover:border-[#2563EB] transition"
                     >
-                      <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-4">
+                      <div className="flex items-start justify-between gap-3 border-b border-[#CBD5E1] pb-4">
                         <div>
-                          <div className="text-[11px] font-mono font-bold text-[color:var(--neon-cyan)]">
+                          <div className="text-xs font-mono font-bold text-[#2563EB]">
                             REQ ID: {req.id}
                           </div>
-                          <h3 className="font-display text-xl font-bold text-white mt-0.5">
+                          <h3 className="text-lg font-bold text-[#0F172A] mt-0.5">
                             {req.customerName}
                           </h3>
-                          <div className="text-xs text-slate-300 flex items-center gap-2 mt-1">
+                          <div className="text-xs text-[#64748B] flex items-center gap-2 mt-1">
                             <span>
-                              STB ID: <strong className="text-white font-mono">{req.stbId}</strong>
+                              STB ID: <strong className="text-[#0F172A] font-mono">{req.stbId}</strong>
                             </span>
                             <span>•</span>
                             <span>
-                              Mobile: <strong className="text-white">{req.customerMobile}</strong>
+                              Mobile: <strong className="text-[#0F172A]">{req.customerMobile}</strong>
                             </span>
                           </div>
                         </div>
                         <ProductStatusBadge status={req.status} />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 rounded-2xl bg-white/5 p-4 text-xs">
+                      <div className="grid grid-cols-2 gap-3 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] p-4 text-xs">
                         <div>
-                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">
+                          <span className="text-[#64748B] block text-[10px] uppercase font-bold">
                             Product / Service
                           </span>
-                          <strong className="text-white font-display text-sm">
+                          <strong className="text-[#0F172A] text-sm">
                             {req.productName}
                           </strong>
                         </div>
                         <div>
-                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">
+                          <span className="text-[#64748B] block text-[10px] uppercase font-bold">
                             Stock Availability
                           </span>
                           <strong
                             className={
-                              isStockAvailable ? "text-emerald-400" : "text-red-400 font-bold"
+                              isStockAvailable ? "text-[#22C55E]" : "text-red-600 font-bold"
                             }
                           >
                             {req.category === "service"
@@ -712,54 +697,43 @@ export function OperatorPage() {
                           </strong>
                         </div>
                         <div>
-                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">
+                          <span className="text-[#64748B] block text-[10px] uppercase font-bold">
                             Quantity & Price
                           </span>
-                          <strong className="text-white">
+                          <strong className="text-[#0F172A]">
                             {req.quantity} x ₹{req.unitPrice}
                           </strong>
                         </div>
                         <div>
-                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">
+                          <span className="text-[#64748B] block text-[10px] uppercase font-bold">
                             Total Price
                           </span>
-                          <strong className="text-[color:var(--neon-cyan)] text-sm font-mono">
+                          <strong className="text-[#2563EB] text-sm font-mono font-bold">
                             ₹{req.totalAmount}
                           </strong>
                         </div>
                       </div>
 
                       {req.description && (
-                        <div className="text-xs text-slate-300 bg-black/30 p-3 rounded-xl border border-white/5">
-                          <strong className="text-muted-foreground">Requirement Notes: </strong>{" "}
+                        <div className="text-xs text-[#0F172A] bg-[#F8FAFC] p-3 rounded-xl border border-[#CBD5E1]">
+                          <strong className="text-[#64748B]">Notes: </strong>{" "}
                           {req.description}
                         </div>
                       )}
 
-                      {req.imageUrl && (
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={req.imageUrl}
-                            alt="Attached"
-                            className="h-16 w-16 rounded-xl object-cover border border-white/20"
-                          />
-                          <span className="text-xs text-slate-400">Attached photo</span>
-                        </div>
-                      )}
-
-                      <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-white/10">
+                      <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-[#CBD5E1]">
                         <a
                           href={`tel:${req.customerMobile}`}
-                          className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white hover:bg-white/15"
+                          className="flex items-center gap-1 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-xs font-bold text-[#0F172A] hover:bg-slate-100"
                         >
-                          <Phone className="h-3.5 w-3.5 text-emerald-400" /> Call
+                          <Phone className="h-3.5 w-3.5 text-[#22C55E]" /> Call
                         </a>
 
                         <a
                           href={`https://wa.me/91${req.customerMobile}?text=Hi%20${encodeURIComponent(req.customerName)},%20regarding%20your%20request%20${encodeURIComponent(req.productName)}...`}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex items-center gap-1 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20"
+                          className="flex items-center gap-1 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100"
                         >
                           <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
                         </a>
@@ -771,7 +745,7 @@ export function OperatorPage() {
                                 status: req.category === "service" ? "Processing" : "Out for Delivery",
                               })
                             }
-                            className="flex items-center gap-1 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-blue-500 shadow-md"
+                            className="flex items-center gap-1 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-3.5 py-2 text-xs font-bold text-white shadow-sm"
                           >
                             <Check className="h-3.5 w-3.5" /> Accept Request
                           </button>
@@ -780,7 +754,7 @@ export function OperatorPage() {
                         {req.category === "service" && req.status !== "Completed" && (
                           <button
                             onClick={() => setSchedulingReq(req)}
-                            className="flex items-center gap-1 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3.5 py-2 text-xs font-bold text-[color:var(--neon-cyan)] hover:bg-cyan-500/20"
+                            className="flex items-center gap-1 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-xs font-bold text-[#2563EB] hover:bg-blue-100"
                           >
                             <Wrench className="h-3.5 w-3.5" /> Schedule Tech
                           </button>
@@ -789,7 +763,7 @@ export function OperatorPage() {
                         {req.status !== "Completed" && (
                           <button
                             onClick={() => updateProductStatus(req.id, { status: "Completed" })}
-                            className="flex items-center gap-1 rounded-xl bg-emerald-500 px-3.5 py-2 text-xs font-bold text-black hover:bg-emerald-400 shadow-md"
+                            className="flex items-center gap-1 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] px-3.5 py-2 text-xs font-bold text-white shadow-sm"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5" /> Mark Completed
                           </button>
@@ -798,7 +772,7 @@ export function OperatorPage() {
                         {req.status !== "Not Available" && req.status !== "Completed" && (
                           <button
                             onClick={() => updateProductStatus(req.id, { status: "Not Available" })}
-                            className="flex items-center gap-1 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20"
+                            className="flex items-center gap-1 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100"
                           >
                             <X className="h-3.5 w-3.5" /> Not Available
                           </button>
@@ -815,29 +789,29 @@ export function OperatorPage() {
         {/* MENU 3: Stock & Inventory Management View */}
         {activeMenu === "stock" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between flex-wrap gap-4 rounded-3xl border border-white/10 bg-[#0d121f]/80 p-5 backdrop-blur-xl">
+            <div className="flex items-center justify-between flex-wrap gap-4 bg-white rounded-2xl border border-[#CBD5E1] p-5 shadow-sm">
               <div>
-                <h2 className="font-display text-2xl font-bold text-white flex items-center gap-2">
-                  📦 Operator Stock & Inventory Management
+                <h2 className="text-xl font-bold text-[#0F172A] flex items-center gap-2">
+                  📦 Stock & Inventory Management
                 </h2>
-                <p className="text-xs text-slate-300 mt-1">
+                <p className="text-xs text-[#64748B] mt-0.5">
                   Maintain product availability, update price & stock quantity.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowAddProduct(true)}
-                className="flex items-center gap-2 rounded-xl gradient-primary px-5 py-2.5 text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition hover:scale-105"
+                className="flex items-center gap-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20"
               >
                 <Plus className="h-4 w-4" /> Add New Product / Service
               </button>
             </div>
 
-            <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#0d121f]/90 backdrop-blur-xl shadow-2xl">
+            <div className="bg-white rounded-2xl border border-[#CBD5E1] shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-300">
-                  <tbody className="divide-y divide-white/5">
-                    <tr className="bg-white/5 text-xs uppercase text-slate-300 font-bold border-b border-white/10">
+                <table className="w-full text-left text-sm text-[#0F172A]">
+                  <tbody className="divide-y divide-[#CBD5E1]">
+                    <tr className="bg-[#F8FAFC] text-xs uppercase text-[#64748B] font-bold border-b border-[#CBD5E1]">
                       <td className="px-6 py-4">Product Name</td>
                       <td className="px-6 py-4">Category</td>
                       <td className="px-6 py-4">Price</td>
@@ -850,16 +824,16 @@ export function OperatorPage() {
                     {products.map((p) => {
                       const isLowStock = p.category === "accessory" && p.availableStock <= 5;
                       return (
-                        <tr key={p.id} className="hover:bg-white/5 transition">
-                          <td className="px-6 py-4 font-bold text-white flex items-center gap-2">
+                        <tr key={p.id} className="hover:bg-slate-50 transition">
+                          <td className="px-6 py-4 font-bold text-[#0F172A] flex items-center gap-2">
                             {p.category === "service" ? (
-                              <Wrench className="h-4 w-4 text-[color:var(--neon-purple)]" />
+                              <Wrench className="h-4 w-4 text-[#2563EB]" />
                             ) : (
-                              <Package className="h-4 w-4 text-[color:var(--neon-cyan)]" />
+                              <Package className="h-4 w-4 text-[#2563EB]" />
                             )}
                             <div>
                               <div>{p.name}</div>
-                              <span className="text-[10px] text-slate-400 font-normal">
+                              <span className="text-[11px] text-[#64748B] font-normal">
                                 {p.description}
                               </span>
                             </div>
@@ -868,31 +842,31 @@ export function OperatorPage() {
                             <span
                               className={`capitalize rounded-full px-2.5 py-0.5 font-bold ${
                                 p.category === "service"
-                                  ? "bg-purple-500/20 text-purple-300"
-                                  : "bg-cyan-500/20 text-cyan-300"
+                                  ? "bg-purple-100 text-purple-800 border border-purple-200"
+                                  : "bg-blue-100 text-blue-800 border border-blue-200"
                               }`}
                             >
                               {p.category}
                             </span>
                           </td>
-                          <td className="px-6 py-4 font-mono font-bold text-white">₹{p.price}</td>
-                          <td className="px-6 py-4 font-mono font-bold text-emerald-400">
+                          <td className="px-6 py-4 font-mono font-bold text-[#0F172A]">₹{p.price}</td>
+                          <td className="px-6 py-4 font-mono font-bold text-[#22C55E]">
                             {p.availableStock}
                           </td>
-                          <td className="px-6 py-4 font-mono text-slate-400">{p.soldQuantity}</td>
+                          <td className="px-6 py-4 font-mono text-[#64748B]">{p.soldQuantity}</td>
                           <td className="px-6 py-4">
                             {p.category === "accessory" ? (
                               isLowStock ? (
-                                <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400">
+                                <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
                                   ⚠️ Low Stock ({p.availableStock} left)
                                 </span>
                               ) : (
-                                <span className="font-mono text-emerald-400 font-bold">
+                                <span className="font-mono text-[#22C55E] font-bold">
                                   {p.availableStock} units
                                 </span>
                               )
                             ) : (
-                              <span className="text-xs text-purple-300 font-medium">
+                              <span className="text-xs text-[#2563EB] font-bold">
                                 Service Available
                               </span>
                             )}
@@ -904,10 +878,9 @@ export function OperatorPage() {
                                 setEditStockVal(p.availableStock);
                                 setEditPriceVal(p.price);
                               }}
-                              className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/15"
+                              className="inline-flex items-center gap-1 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1.5 text-xs font-bold text-[#0F172A] hover:bg-slate-100"
                             >
-                              <Edit3 className="h-3.5 w-3.5 text-[color:var(--neon-cyan)]" /> Edit
-                              Price / Stock
+                              <Edit3 className="h-3.5 w-3.5 text-[#2563EB]" /> Edit Price / Stock
                             </button>
                           </td>
                         </tr>
@@ -923,28 +896,28 @@ export function OperatorPage() {
         {/* MENU 4: Complaint Management View */}
         {activeMenu === "complaints" && (
           <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-[#0d121f]/80 p-4 backdrop-blur-xl">
+            <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-sm">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#64748B]" />
                   <input
                     type="text"
                     value={complaintSearch}
                     onChange={(e) => setComplaintSearch(e.target.value)}
                     placeholder="Search Complaint ID, Customer Name, STB ID, Category or Mobile..."
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-muted-foreground outline-none focus:border-amber-400"
+                    className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl py-2 pl-10 pr-4 text-xs sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none focus:border-[#2563EB]"
                   />
                 </div>
                 <div className="flex items-center gap-2 flex-wrap text-xs">
-                  <span className="text-slate-400 font-bold">Status Filter:</span>
+                  <span className="text-[#64748B] font-bold">Status Filter:</span>
                   {["all", "Pending", "Assigned", "In Progress", "Resolved"].map((s) => (
                     <button
                       key={s}
                       onClick={() => setComplaintStatusFilter(s)}
-                      className={`rounded-xl px-3 py-1.5 font-bold transition ${
+                      className={`rounded-lg px-3 py-1.5 font-bold transition ${
                         complaintStatusFilter === s
-                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                          : "bg-white/5 text-muted-foreground hover:text-white"
+                          ? "bg-[#2563EB] text-white"
+                          : "bg-[#E2E8F0] text-[#334155] hover:bg-slate-300"
                       }`}
                     >
                       {s}
@@ -957,9 +930,9 @@ export function OperatorPage() {
             {/* Complaints List Grid */}
             <div className="grid gap-4 md:grid-cols-2">
               {filteredComplaints.length === 0 ? (
-                <div className="md:col-span-2 rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
-                  <Wrench className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-3 font-display text-lg font-bold text-white">
+                <div className="md:col-span-2 bg-white rounded-2xl border border-dashed border-[#CBD5E1] p-12 text-center shadow-sm">
+                  <Wrench className="mx-auto h-12 w-12 text-[#64748B]" />
+                  <h3 className="mt-3 font-bold text-lg text-[#0F172A]">
                     No complaints found
                   </h3>
                 </div>
@@ -967,96 +940,79 @@ export function OperatorPage() {
                 filteredComplaints.map((cmp) => (
                   <div
                     key={cmp.id}
-                    className="rounded-3xl border border-white/15 bg-[#0d121f]/90 p-6 backdrop-blur-xl shadow-xl space-y-4 hover:border-white/30 transition"
+                    className="bg-white rounded-2xl border border-[#CBD5E1] p-6 shadow-sm space-y-4 hover:border-[#2563EB] transition"
                   >
-                    <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                    <div className="flex items-start justify-between gap-3 border-b border-[#CBD5E1] pb-3">
                       <div>
-                        <div className="text-[11px] font-mono font-bold text-amber-400">
+                        <div className="text-xs font-mono font-bold text-[#2563EB]">
                           CMP ID: {cmp.id}
                         </div>
-                        <h3 className="font-display text-xl font-bold text-white mt-0.5">
+                        <h3 className="text-lg font-bold text-[#0F172A] mt-0.5">
                           {cmp.customerName}
                         </h3>
-                        <div className="text-xs text-slate-300 flex items-center gap-2 mt-1">
+                        <div className="text-xs text-[#64748B] flex items-center gap-2 mt-1">
                           <span>
-                            STB ID: <strong className="text-white font-mono">{cmp.stbId}</strong>
+                            STB ID: <strong className="text-[#0F172A] font-mono">{cmp.stbId}</strong>
                           </span>
                           <span>•</span>
                           <span>
-                            Mobile: <strong className="text-white">{cmp.customerMobile}</strong>
+                            Mobile: <strong className="text-[#0F172A]">{cmp.customerMobile}</strong>
                           </span>
                         </div>
                       </div>
                       <ComplaintStatusBadge status={cmp.status} />
                     </div>
 
-                    <div className="rounded-2xl bg-white/5 p-3.5 text-xs space-y-1">
-                      <div className="text-amber-400 font-bold uppercase text-[10px]">
+                    <div className="rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] p-3.5 text-xs space-y-1">
+                      <div className="text-[#2563EB] font-bold uppercase text-[10px]">
                         Issue Type & Category
                       </div>
-                      <div className="text-white font-display text-base font-bold">
+                      <div className="text-[#0F172A] text-base font-bold">
                         {cmp.category} – {cmp.issueType}
                       </div>
-                      <div className="text-slate-400 text-[11px] mt-1">
-                        Preferred Time: <strong className="text-white">{cmp.preferredTime}</strong>{" "}
+                      <div className="text-[#64748B] text-[11px] mt-1">
+                        Preferred Time: <strong className="text-[#0F172A]">{cmp.preferredTime}</strong>{" "}
                         · Created {new Date(cmp.createdAt).toLocaleString()}
                       </div>
                     </div>
 
-                    <div className="text-xs text-slate-300 bg-black/30 p-3 rounded-xl border border-white/5">
-                      <strong className="text-muted-foreground">Description: </strong>{" "}
+                    <div className="text-xs text-[#0F172A] bg-[#F8FAFC] p-3 rounded-xl border border-[#CBD5E1]">
+                      <strong className="text-[#64748B]">Description: </strong>{" "}
                       {cmp.description}
                     </div>
 
-                    {cmp.mediaUrl && (
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={cmp.mediaUrl}
-                          alt="Complaint Media"
-                          className="h-16 w-16 rounded-xl object-cover border border-white/20"
-                        />
-                        <span className="text-xs text-slate-400">Uploaded image/video proof</span>
-                      </div>
-                    )}
-
                     {/* Technician details if assigned */}
                     {cmp.technicianName && (
-                      <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-3 text-xs text-white space-y-1">
-                        <div className="font-bold text-[color:var(--neon-cyan)] flex items-center gap-1.5">
-                          <Car className="h-4 w-4 text-cyan-400" /> Assigned Technician Details
+                      <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs text-[#0F172A] space-y-1">
+                        <div className="font-bold text-[#2563EB] flex items-center gap-1.5">
+                          <Car className="h-4 w-4 text-[#2563EB]" /> Assigned Technician Details
                         </div>
                         <div>
                           Name: <strong>{cmp.technicianName}</strong> (+91 {cmp.technicianMobile})
                         </div>
                         <div>
                           Expected Arrival:{" "}
-                          <strong className="text-emerald-400">
+                          <strong className="text-[#22C55E]">
                             {cmp.expectedArrival || "In 20 Minutes"}
                           </strong>
                         </div>
                       </div>
                     )}
 
-                    {cmp.rating && (
-                      <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
-                        <strong>Customer Star Rating: </strong> ⭐ {cmp.rating}/5 – "{cmp.feedback}"
-                      </div>
-                    )}
-
                     {/* Operator Complaint Action Buttons */}
-                    <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-white/10">
+                    <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-[#CBD5E1]">
                       <a
                         href={`tel:${cmp.customerMobile}`}
-                        className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white hover:bg-white/15"
+                        className="flex items-center gap-1 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-xs font-bold text-[#0F172A] hover:bg-slate-100"
                       >
-                        <Phone className="h-3.5 w-3.5 text-emerald-400" /> Call
+                        <Phone className="h-3.5 w-3.5 text-[#22C55E]" /> Call
                       </a>
 
                       <a
                         href={`https://wa.me/91${cmp.customerMobile}?text=Hello%20${encodeURIComponent(cmp.customerName)},%20regarding%20your%20STB%20complaint%20${encodeURIComponent(cmp.id)}...`}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center gap-1 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20"
+                        className="flex items-center gap-1 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100"
                       >
                         <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
                       </a>
@@ -1064,9 +1020,9 @@ export function OperatorPage() {
                       {cmp.status === "Pending" && (
                         <button
                           onClick={() => updateComplaintStatus(cmp.id, { status: "Assigned" })}
-                          className="flex items-center gap-1 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-blue-500 shadow-md"
+                          className="flex items-center gap-1 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-3.5 py-2 text-xs font-bold text-white shadow-sm"
                         >
-                          <Check className="h-3.5 w-3.5" /> ✅ Accept Complaint
+                          <Check className="h-3.5 w-3.5" /> Accept Complaint
                         </button>
                       )}
 
@@ -1074,22 +1030,22 @@ export function OperatorPage() {
                         <button
                           onClick={() => {
                             setAssigningComplaint(cmp);
-                            setCmpTechName(cmp.technicianName || "Ramesh Kumar");
-                            setCmpTechPhone(cmp.technicianMobile || "9840192837");
+                            setCmpTechName(cmp.technicianName || user?.name || "");
+                            setCmpTechPhone(cmp.technicianMobile || user?.mobile || "");
                             setCmpExpectedArrival(cmp.expectedArrival || "In 20 Minutes");
                           }}
-                          className="flex items-center gap-1 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3.5 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/20"
+                          className="flex items-center gap-1 rounded-xl border border-amber-300 bg-amber-100 px-3.5 py-2 text-xs font-bold text-amber-800 hover:bg-amber-200"
                         >
-                          <Car className="h-3.5 w-3.5" /> 👨‍🔧 Assign Technician
+                          <Car className="h-3.5 w-3.5" /> Assign Technician
                         </button>
                       )}
 
                       {cmp.status !== "Resolved" && (
                         <button
                           onClick={() => updateComplaintStatus(cmp.id, { status: "Resolved" })}
-                          className="flex items-center gap-1 rounded-xl bg-emerald-500 px-3.5 py-2 text-xs font-bold text-black hover:bg-emerald-400 shadow-md"
+                          className="flex items-center gap-1 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] px-3.5 py-2 text-xs font-bold text-white shadow-sm"
                         >
-                          <CheckCircle2 className="h-3.5 w-3.5" /> 🟢 Mark Resolved
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Mark Resolved
                         </button>
                       )}
                     </div>
@@ -1101,44 +1057,41 @@ export function OperatorPage() {
         )}
       </main>
 
-      {/* Modal 1: Assign Technician to Complaint Modal */}
+      {/* Modal: Assign Technician to Complaint */}
       {assigningComplaint && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[#0d121f] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
-                <Car className="h-5 w-5 text-amber-400" /> Assign Technician to Complaint
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[#CBD5E1] bg-white p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#CBD5E1] pb-3">
+              <h3 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+                <Car className="h-5 w-5 text-[#2563EB]" /> Assign Technician to Complaint
               </h3>
               <button
                 onClick={() => setAssigningComplaint(null)}
-                className="rounded-lg p-1 text-slate-400 hover:text-white"
+                className="rounded-lg p-1 text-[#64748B] hover:text-[#0F172A]"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <form onSubmit={handleAssignComplaintSubmit} className="space-y-3 text-xs">
-              <div className="rounded-xl bg-white/5 p-3 text-white">
-                <strong>{assigningComplaint.customerName}</strong> (
-                {assigningComplaint.customerMobile})<br />
-                Complaint: {assigningComplaint.category} – {assigningComplaint.issueType}
-                <br />
-                STB ID: {assigningComplaint.stbId}
+              <div className="rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] p-3 text-[#0F172A]">
+                <strong>{assigningComplaint.customerName}</strong> ({assigningComplaint.customerMobile})<br />
+                Issue: {assigningComplaint.category} – {assigningComplaint.issueType}
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Technician Full Name</label>
+                <label className="block font-bold text-[#64748B] mb-1">Technician Full Name</label>
                 <input
                   type="text"
                   required
                   value={cmpTechName}
                   onChange={(e) => setCmpTechName(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-amber-400"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">
+                <label className="block font-bold text-[#64748B] mb-1">
                   Technician Mobile Number
                 </label>
                 <input
@@ -1146,18 +1099,18 @@ export function OperatorPage() {
                   required
                   value={cmpTechPhone}
                   onChange={(e) => setCmpTechPhone(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-amber-400"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Expected Arrival Time</label>
+                <label className="block font-bold text-[#64748B] mb-1">Expected Arrival Time</label>
                 <input
                   type="text"
                   required
                   value={cmpExpectedArrival}
                   onChange={(e) => setCmpExpectedArrival(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-amber-400"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -1165,15 +1118,15 @@ export function OperatorPage() {
                 <button
                   type="button"
                   onClick={() => setAssigningComplaint(null)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white"
+                  className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-[#0F172A]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-amber-500 px-5 py-2 text-xs font-extrabold text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                  className="rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-2 text-xs font-bold text-white shadow-sm"
                 >
-                  Assign & Dispatch Technician
+                  Assign Technician
                 </button>
               </div>
             </form>
@@ -1181,31 +1134,30 @@ export function OperatorPage() {
         </div>
       )}
 
-      {/* Modal 2: Schedule Product Modal */}
+      {/* Modal: Schedule Product */}
       {schedulingReq && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[#0d121f] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
-                <Wrench className="h-5 w-5 text-[color:var(--neon-cyan)]" /> Schedule Product
-                Technician
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[#CBD5E1] bg-white p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#CBD5E1] pb-3">
+              <h3 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+                <Wrench className="h-5 w-5 text-[#2563EB]" /> Schedule Technician
               </h3>
               <button
                 onClick={() => setSchedulingReq(null)}
-                className="rounded-lg p-1 text-slate-400 hover:text-white"
+                className="rounded-lg p-1 text-[#64748B] hover:text-[#0F172A]"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <form onSubmit={handleScheduleSubmit} className="space-y-3 text-xs">
-              <div className="rounded-xl bg-white/5 p-3 text-white">
+              <div className="rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] p-3 text-[#0F172A]">
                 <strong>{schedulingReq.customerName}</strong> ({schedulingReq.customerMobile})<br />
-                Service: {schedulingReq.productName} · STB: {schedulingReq.stbId}
+                Service: {schedulingReq.productName}
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">
+                <label className="block font-bold text-[#64748B] mb-1">
                   Assign Technician Name
                 </label>
                 <input
@@ -1213,31 +1165,31 @@ export function OperatorPage() {
                   required
                   value={techName}
                   onChange={(e) => setTechName(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-[color:var(--neon-cyan)]"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Technician Mobile</label>
+                <label className="block font-bold text-[#64748B] mb-1">Technician Mobile</label>
                 <input
                   type="text"
                   required
                   value={techPhone}
                   onChange={(e) => setTechPhone(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-[color:var(--neon-cyan)]"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">
-                  Scheduled Date & Time Slot
+                <label className="block font-bold text-[#64748B] mb-1">
+                  Scheduled Date & Slot
                 </label>
                 <input
                   type="text"
                   required
                   value={schedDate}
                   onChange={(e) => setSchedDate(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-[color:var(--neon-cyan)]"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -1245,13 +1197,13 @@ export function OperatorPage() {
                 <button
                   type="button"
                   onClick={() => setSchedulingReq(null)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white"
+                  className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-[#0F172A]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl gradient-primary px-5 py-2 text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)]"
+                  className="rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-2 text-xs font-bold text-white shadow-sm"
                 >
                   Confirm Schedule
                 </button>
@@ -1261,17 +1213,17 @@ export function OperatorPage() {
         </div>
       )}
 
-      {/* Modal 3: Edit Stock Modal */}
+      {/* Modal: Edit Stock */}
       {editingProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[#0d121f] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
-                <Edit3 className="h-5 w-5 text-[color:var(--neon-cyan)]" /> Update Stock & Price
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[#CBD5E1] bg-white p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#CBD5E1] pb-3">
+              <h3 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+                <Edit3 className="h-5 w-5 text-[#2563EB]" /> Update Stock & Price
               </h3>
               <button
                 onClick={() => setEditingProduct(null)}
-                className="rounded-lg p-1 text-slate-400 hover:text-white"
+                className="rounded-lg p-1 text-[#64748B] hover:text-[#0F172A]"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1279,29 +1231,29 @@ export function OperatorPage() {
 
             <div className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Product Name</label>
+                <label className="block font-bold text-[#64748B] mb-1">Product Name</label>
                 <input
                   type="text"
                   readOnly
                   value={editingProduct.name}
-                  className="w-full rounded-xl border border-white/10 bg-white/10 p-2.5 text-sm font-bold text-white outline-none cursor-not-allowed"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm font-bold text-[#0F172A] outline-none cursor-not-allowed"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Update Price (₹)</label>
+                <label className="block font-bold text-[#64748B] mb-1">Update Price (₹)</label>
                 <input
                   type="number"
                   required
                   min={0}
                   value={editPriceVal}
                   onChange={(e) => setEditPriceVal(Number(e.target.value))}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-[color:var(--neon-cyan)]"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">
+                <label className="block font-bold text-[#64748B] mb-1">
                   Available Stock Quantity
                 </label>
                 <input
@@ -1310,7 +1262,7 @@ export function OperatorPage() {
                   min={0}
                   value={editStockVal}
                   onChange={(e) => setEditStockVal(Number(e.target.value))}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-[color:var(--neon-cyan)]"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -1318,14 +1270,14 @@ export function OperatorPage() {
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white"
+                  className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-[#0F172A]"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveStockUpdate}
-                  className="rounded-xl gradient-primary px-5 py-2 text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)]"
+                  className="rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-2 text-xs font-bold text-white shadow-sm"
                 >
                   Save Stock Updates
                 </button>
@@ -1335,17 +1287,17 @@ export function OperatorPage() {
         </div>
       )}
 
-      {/* Modal 4: Add New Product Modal */}
+      {/* Modal: Add New Product */}
       {showAddProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[#0d121f] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
-                <Plus className="h-5 w-5 text-[color:var(--neon-cyan)]" /> Add New Inventory Product
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[#CBD5E1] bg-white p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#CBD5E1] pb-3">
+              <h3 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+                <Plus className="h-5 w-5 text-[#2563EB]" /> Add New Inventory Product
               </h3>
               <button
                 onClick={() => setShowAddProduct(false)}
-                className="rounded-lg p-1 text-slate-400 hover:text-white"
+                className="rounded-lg p-1 text-[#64748B] hover:text-[#0F172A]"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1353,23 +1305,23 @@ export function OperatorPage() {
 
             <form onSubmit={handleCreateProduct} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Product Name</label>
+                <label className="block font-bold text-[#64748B] mb-1">Product Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Optical HDMI Cable"
                   value={newProdName}
                   onChange={(e) => setNewProdName(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-[color:var(--neon-cyan)]"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Category</label>
+                <label className="block font-bold text-[#64748B] mb-1">Category</label>
                 <select
                   value={newProdCategory}
                   onChange={(e) => setNewProdCategory(e.target.value as "accessory" | "service")}
-                  className="w-full rounded-xl border border-white/10 bg-[#161c2e] p-2.5 text-sm text-white outline-none focus:border-[color:var(--neon-cyan)]"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 >
                   <option value="accessory">📦 Accessory</option>
                   <option value="service">🔧 Installation Service</option>
@@ -1378,37 +1330,37 @@ export function OperatorPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Price (₹)</label>
+                  <label className="block font-bold text-[#64748B] mb-1">Price (₹)</label>
                   <input
                     type="number"
                     required
                     min={0}
                     value={newProdPrice}
                     onChange={(e) => setNewProdPrice(Number(e.target.value))}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-[color:var(--neon-cyan)]"
+                    className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Initial Stock</label>
+                  <label className="block font-bold text-[#64748B] mb-1">Initial Stock</label>
                   <input
                     type="number"
                     required
                     min={0}
                     value={newProdStock}
                     onChange={(e) => setNewProdStock(Number(e.target.value))}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-[color:var(--neon-cyan)]"
+                    className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Description</label>
+                <label className="block font-bold text-[#64748B] mb-1">Description</label>
                 <textarea
                   rows={2}
-                  placeholder="Short description of the product or service..."
+                  placeholder="Short description..."
                   value={newProdDesc}
                   onChange={(e) => setNewProdDesc(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white outline-none focus:border-[color:var(--neon-cyan)]"
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -1416,13 +1368,13 @@ export function OperatorPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddProduct(false)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white"
+                  className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-[#0F172A]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl gradient-primary px-5 py-2 text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)]"
+                  className="rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-2 text-xs font-bold text-white shadow-sm"
                 >
                   Add Product
                 </button>

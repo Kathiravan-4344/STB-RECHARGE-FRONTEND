@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
+    "dev": "npm --prefix backend start & npm --prefix frontend run dev",
+    "server": "npm --prefix backend start",
+    "client": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview"
   },

@@ -1,6 +1,7 @@
 // In-memory data store for STB RECHARGE (Pure Frontend - Supabase removed).
 import { useSyncExternalStore } from "react";
 import { cleanMobile, mobileToEmail } from "../utils/utils";
+import { apiAddOperator, apiToggleOperator, apiDeleteOperator } from "./api";
 
 export type Plan = {
   id: string;
@@ -424,7 +425,6 @@ export function sendOtp(mobile: string) {
 export function isOperatorApproved(contact: string): boolean {
   const digitsOnly = cleanMobile(contact);
   if (digitsOnly === "9080864542") return true;
-  if (state.approvedOperators.length === 0) return true;
   return state.approvedOperators.some(
     (op) =>
       op.active &&
@@ -484,10 +484,7 @@ export async function verifyOtp(
 }
 
 export async function logout() {
-  setState({ ...defaultState, ready: true });
-  if (typeof window !== "undefined") {
-    localStorage.removeItem(STORAGE_KEY);
-  }
+  setState({ user: null, stb: null, pending: null, appliedCoupon: null, ready: true });
 }
 
 // STB management
@@ -676,15 +673,22 @@ export async function upsertOperator(mobile: string, name: string, active = true
     ];
   }
   setState({ approvedOperators: updatedOps });
+  // Sync with MongoDB backend API asynchronously
+  apiAddOperator(cleaned, name);
 }
 
 export async function setOperatorActive(id: string, active: boolean) {
+  const op = state.approvedOperators.find((o) => o.id === id);
   const updated = state.approvedOperators.map((o) => (o.id === id ? { ...o, active } : o));
   setState({ approvedOperators: updated });
+  if (op) {
+    apiToggleOperator(op.mobile);
+  }
 }
 
 export async function removeApprovedOperator(id: string) {
   setState({ approvedOperators: state.approvedOperators.filter((o) => o.id !== id) });
+  apiDeleteOperator(id);
 }
 
 export async function blockCustomer(identifier: string) {

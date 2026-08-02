@@ -210,145 +210,148 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
-      {/* Floating orbs */}
-      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-primary/30 blur-3xl animate-float" />
-      <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-[color:var(--neon-purple)]/30 blur-3xl animate-float" />
-
-      <div className="grid w-full max-w-5xl gap-8 md:grid-cols-2">
-        {/* Left brand panel */}
-        <div className="hidden flex-col justify-between rounded-3xl glass-strong p-8 md:flex">
+    <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans antialiased text-[#0F172A]">
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-center">
+        {/* LEFT SIDE BRAND PANEL */}
+        <div className="bg-gradient-to-b from-[#2563EB] to-[#1E3A8A] text-white rounded-3xl p-8 lg:p-10 flex flex-col justify-between min-h-[440px] md:min-h-[500px] shadow-xl shadow-blue-950/10 border border-blue-500/20">
           <div>
             <div className="flex items-center gap-3">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl gradient-primary shadow-[var(--shadow-glow)]">
-                <Tv className="h-6 w-6 text-primary-foreground" />
+              <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-sm">
+                <Tv className="h-6 w-6 text-white" />
               </div>
               <div>
-                <div className="font-display text-2xl font-bold">STB RECHARGE</div>
-                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Smart Recharge & Admin Management
-                </div>
+                <span className="text-2xl font-bold tracking-tight block">STB RECHARGE</span>
+                <span className="text-xs text-blue-100/80 font-medium tracking-wide uppercase">
+                  Recharge your Set Top Box easily
+                </span>
               </div>
             </div>
-            <h1 className="mt-10 text-4xl font-bold leading-tight">
-              {role === "operator" ? (
-                <>
-                  Operator <span className="text-gradient">Control Center</span> Portal
-                </>
-              ) : (
-                <>
-                  Recharge your <span className="text-gradient">Set Top Box</span> in seconds.
-                </>
-              )}
-            </h1>
-            <p className="mt-3 text-muted-foreground">
-              {role === "operator"
-                ? "Manage customer recharges, approve pending transactions, and monitor real-time cable TV service requests."
-                : "Pay instantly and track live operator approval. Real-time status, smart reminders, and AI-picked plans."}
-            </p>
+
+            <div className="mt-10 lg:mt-12 space-y-3">
+              <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">
+                {role === "operator" ? (
+                  <>Operator Control Portal</>
+                ) : (
+                  <>Recharge your Set Top Box easily</>
+                )}
+              </h1>
+              <p className="text-blue-100/90 text-sm leading-relaxed max-w-md">
+                {role === "operator"
+                  ? "Manage customer subscriptions, review instant approvals, and oversee cable TV operator operations smoothly."
+                  : "Enjoy instant set top box top-ups, live operator verification, and round-the-clock service reliability."}
+              </p>
+            </div>
           </div>
+
+          {/* Feature List (3 Items) */}
           <div className="mt-8 grid grid-cols-3 gap-3">
             {[
-              { icon: Zap, t: "Instant Pay" },
-              { icon: Shield, t: "Operator Verified" },
-              { icon: Lock, t: "Admin Secure" },
-            ].map(({ icon: Icon, t }) => (
-              <div key={t} className="card-3d rounded-2xl p-3 text-center">
-                <Icon className="mx-auto h-5 w-5 text-[color:var(--neon-cyan)]" />
-                <div className="mt-1 text-xs text-muted-foreground">{t}</div>
+              { icon: Zap, label: "Instant Pay" },
+              { icon: Shield, label: "Operator Verified" },
+              { icon: Lock, label: "Secure System" },
+            ].map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-3 text-center flex flex-col items-center justify-center gap-1.5 transition hover:bg-white/15"
+              >
+                <Icon className="h-5 w-5 text-blue-200" />
+                <span className="text-[11px] font-semibold text-white/95 leading-tight">{label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Right auth card */}
-        <div className="rounded-3xl glass-strong p-6 sm:p-8">
-          {/* Role Switcher Tabs */}
-          <div className="mb-6 flex rounded-2xl bg-slate-950 p-1.5 border border-slate-700/80 gap-1.5 shadow-inner">
+        {/* RIGHT SIDE LOGIN CARD */}
+        <div className="bg-white rounded-[16px] shadow-xl shadow-slate-200/70 border border-[#CBD5E1] p-6 sm:p-8 lg:p-10">
+          {/* TAB DESIGN (Toggle Tabs) */}
+          <div className="mb-6 bg-[#F1F5F9] p-1.5 rounded-xl flex gap-1.5 border border-[#CBD5E1]">
             <button
+              type="button"
               onClick={() => handleSwitchRole("customer")}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold transition ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
                 role === "customer"
-                  ? "bg-slate-800 text-white border border-slate-600 shadow-md ring-1 ring-slate-500/50"
-                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-900"
+                  ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
+                  : "bg-[#E2E8F0] text-[#334155] hover:bg-slate-300/70 hover:text-[#0F172A]"
               }`}
             >
-              <Tv className="h-4 w-4" /> Customer Login
+              <Tv className="h-4 w-4" />
+              Customer Login
             </button>
             <button
+              type="button"
               onClick={() => handleSwitchRole("operator")}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold transition ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
                 role === "operator"
-                  ? "bg-slate-800 text-white border border-slate-600 shadow-md ring-1 ring-slate-500/50"
-                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-900"
+                  ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
+                  : "bg-[#E2E8F0] text-[#334155] hover:bg-slate-300/70 hover:text-[#0F172A]"
               }`}
             >
-              <Shield className="h-4 w-4" /> Operator / Admin Login
+              <Shield className="h-4 w-4" />
+              Operator Login
             </button>
           </div>
 
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="font-display text-2xl font-bold">
-                {step === "details"
-                  ? role === "operator"
-                    ? "Operator Login"
-                    : "Welcome back"
-                  : "Verify OTP"}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {step === "details"
-                  ? role === "operator"
-                    ? "Enter approved operator mobile number or Gmail"
-                    : "Login with your mobile number & STB ID"
-                  : `We sent a 4-digit code to ${
-                      role === "operator" ? operatorContact : "+91 " + mobile
-                    }`}
-              </p>
-            </div>
-            <div className="grid h-10 w-10 place-items-center rounded-xl gradient-primary text-primary-foreground shadow-[var(--shadow-glow)] md:hidden">
-              {role === "operator" ? <Shield className="h-5 w-5" /> : <Tv className="h-5 w-5" />}
-            </div>
+          {/* Form Header */}
+          <div className="mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#0F172A]">
+              {step === "details"
+                ? role === "operator"
+                  ? "Operator Login"
+                  : "Customer Login"
+                : "Verify OTP"}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#64748B] mt-1">
+              {step === "details"
+                ? role === "operator"
+                  ? "Enter registered operator mobile number or Gmail"
+                  : "Enter your mobile number and STB ID to proceed"
+                : `We sent a 4-digit verification OTP code to ${
+                    role === "operator" ? operatorContact : "+91 " + mobile
+                  }`}
+            </p>
           </div>
 
           {step === "details" ? (
             <div className="space-y-4">
+              {/* Name Field */}
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">
                   Name
                 </label>
                 <input
                   autoFocus
                   value={name}
                   onChange={(e) => {
-                    setName(e.target.value);
+                    setName(e.target.value.toUpperCase());
                     setErr(null);
                   }}
                   placeholder="ENTER YOUR NAME"
-                  className="mt-1.5 w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 px-4 text-sm outline-none focus:border-primary/60 focus:shadow-[var(--shadow-glow)]"
+                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-[10px] px-4 py-3 text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none transition focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/15 uppercase font-bold"
                 />
               </div>
 
               {role === "operator" ? (
+                /* Operator Contact Field */
                 <div>
-                  <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">
                     Mobile Number or Gmail
                   </label>
                   <input
                     value={operatorContact}
                     onChange={(e) => handleOperatorContactChange(e.target.value)}
                     placeholder="ENTER OPERATOR MOBILE NUMBER OR GMAIL"
-                    className="mt-1.5 w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 px-4 text-sm outline-none focus:border-primary/60 focus:shadow-[var(--shadow-glow)]"
+                    className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-[10px] px-4 py-3 text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none transition focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/15"
                   />
                 </div>
               ) : (
+                /* Customer Fields */
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">
                       Mobile Number
                     </label>
-                    <div className="mt-1.5 flex overflow-hidden rounded-2xl border border-white/10 bg-white/5 focus-within:border-primary/60 focus-within:shadow-[var(--shadow-glow)]">
-                      <span className="grid place-items-center px-4 text-sm text-muted-foreground">
+                    <div className="flex bg-[#F8FAFC] border border-[#CBD5E1] rounded-[10px] overflow-hidden focus-within:border-[#2563EB] focus-within:ring-4 focus-within:ring-[#2563EB]/15 transition">
+                      <span className="flex items-center px-4 bg-slate-100 text-xs font-bold text-[#64748B] border-r border-[#CBD5E1]">
                         +91
                       </span>
                       <input
@@ -360,17 +363,21 @@ export function LoginPage() {
                           setErr(null);
                         }}
                         placeholder="ENTER YOUR MOBILE NUMBER"
-                        className="w-full bg-transparent py-3.5 pr-4 text-sm outline-none"
+                        className="w-full bg-transparent px-4 py-3 text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#64748B]">
                         12-Digit STB ID / Smart Card Number *
                       </label>
-                      <span className={`text-[11px] font-mono font-bold ${stbId.length === 12 ? "text-emerald-400" : "text-amber-400"}`}>
+                      <span
+                        className={`text-xs font-mono font-bold ${
+                          stbId.length === 12 ? "text-emerald-600" : "text-amber-600"
+                        }`}
+                      >
                         {stbId.length}/12
                       </span>
                     </div>
@@ -383,10 +390,10 @@ export function LoginPage() {
                         setErr(null);
                       }}
                       placeholder="ENTER 12-DIGIT STB ID"
-                      className="mt-1.5 w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 px-4 text-sm outline-none focus:border-primary/60 focus:shadow-[var(--shadow-glow)] font-mono font-bold placeholder:font-sans placeholder:font-normal"
+                      className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-[10px] px-4 py-3 text-sm text-[#0F172A] font-mono font-semibold placeholder:font-sans placeholder:font-normal placeholder:text-[#94A3B8] outline-none transition focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/15"
                     />
                     {stbId.length > 0 && stbId.length < 12 && (
-                      <p className="mt-1.5 text-xs text-amber-400/90 font-medium">
+                      <p className="mt-1.5 text-xs text-amber-700 font-medium flex items-center gap-1">
                         ⚠️ Enter remaining {12 - stbId.length} digits to unlock OTP verification.
                       </p>
                     )}
@@ -394,70 +401,76 @@ export function LoginPage() {
                 </div>
               )}
 
-              {err && <p className="text-sm text-destructive">{err}</p>}
+              {/* Error Message */}
+              {err && (
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+                  {err}
+                </div>
+              )}
 
+              {/* Primary Button */}
               <button
+                type="button"
                 onClick={handleSend}
                 disabled={loading || !isFormValid}
-                className={`group flex w-full items-center justify-center gap-2 rounded-2xl py-4 font-semibold shadow-[var(--shadow-glow)] transition hover:scale-[1.01] disabled:opacity-40 disabled:pointer-events-none ${
-                  role === "operator"
-                    ? "bg-[color:var(--neon-cyan)] text-black font-bold shadow-[0_0_20px_rgba(0,210,255,0.4)]"
-                    : "gradient-primary text-primary-foreground"
-                }`}
+                className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-[12px] py-3.5 px-4 text-base shadow-md shadow-blue-500/20 transition-all duration-200 ease-in-out flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none active:scale-[0.99]"
               >
                 {loading ? (
                   "Sending Verification OTP…"
-                ) : role === "operator" ? (
-                  <>
-                    VERIFY OTP{" "}
-                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-                  </>
                 ) : (
                   <>
-                    Send OTP <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                    Send OTP <ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </button>
 
-              <p className="text-center text-xs text-muted-foreground">
+              <p className="text-center text-[11px] text-[#64748B]">
                 By continuing you agree to our Terms & Operator Authorization Policy.
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              <label className="block text-xs uppercase tracking-widest text-muted-foreground">
-                Enter Verification OTP
-              </label>
-              <input
-                autoFocus
-                inputMode="numeric"
-                maxLength={4}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                placeholder="••••"
-                className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 text-center text-3xl tracking-[0.6em] outline-none focus:border-primary/60 focus:shadow-[var(--shadow-glow)]"
-              />
-              {err && <p className="text-sm text-destructive">{err}</p>}
+            /* OTP Step */
+            <div className="space-y-5">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#64748B] mb-2 text-center">
+                  Enter 4-Digit Verification OTP
+                </label>
+                <input
+                  autoFocus
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                  placeholder="••••"
+                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-[10px] py-3.5 text-center text-3xl font-bold tracking-[0.5em] text-[#0F172A] placeholder:text-[#94A3B8] outline-none transition focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/15"
+                />
+              </div>
+
+              {err && (
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold text-center">
+                  {err}
+                </div>
+              )}
+
               <button
+                type="button"
                 onClick={handleVerify}
                 disabled={loading || otp.length !== 4}
-                className={`w-full rounded-2xl py-4 font-semibold shadow-[var(--shadow-glow)] transition hover:scale-[1.01] disabled:opacity-40 disabled:pointer-events-none ${
-                  role === "operator"
-                    ? "bg-[color:var(--neon-cyan)] text-black font-bold shadow-[0_0_20px_rgba(0,210,255,0.4)]"
-                    : "gradient-primary text-primary-foreground"
-                }`}
+                className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-[12px] py-3.5 px-4 text-base shadow-md shadow-blue-500/20 transition-all duration-200 ease-in-out flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none active:scale-[0.99]"
               >
                 {loading
-                  ? "Verifying…"
+                  ? "Verifying OTP…"
                   : role === "operator"
                     ? "Verify OTP & Open Operator Panel"
                     : "Verify & Continue"}
               </button>
+
               <button
+                type="button"
                 onClick={() => setStep("details")}
-                className="w-full text-center text-sm text-muted-foreground hover:text-foreground"
+                className="w-full text-center text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition"
               >
-                Back to details
+                ← Back to details
               </button>
             </div>
           )}
@@ -468,3 +481,4 @@ export function LoginPage() {
 }
 
 export default LoginPage;
+

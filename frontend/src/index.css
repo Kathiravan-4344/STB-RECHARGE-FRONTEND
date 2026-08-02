@@ -41,43 +41,43 @@
 
 :root {
   --radius: 0.75rem;
-  /* Clean Neutral Slate & Charcoal Theme (Zero Overpowering Colors) */
-  --background: #0f172a;        /* Soft Dark Navy/Slate Background */
-  --foreground: #f8fafc;        /* Clear White Text */
-  --card: #1e293b;              /* Smooth Slate Surface */
-  --card-foreground: #f8fafc;
-  --popover: #1e293b;
-  --popover-foreground: #f8fafc;
-  --primary: #334155;           /* Neutral Slate Graphite (NO bright blue!) */
-  --primary-foreground: #ffffff;
-  --secondary: #334155;         /* Muted Slate Gray */
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;  /* Soft Muted Slate Text */
-  --accent: #475569;            /* Muted Slate Accent */
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #475569;
+  /* Clean Light Grey & Blue Paytm-Style Recharge Theme */
+  --background: #F1F5F9;        /* Light Grey Page Background */
+  --foreground: #0F172A;        /* Dark Primary Text */
+  --card: #FFFFFF;              /* Pure White Card Surface */
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+  --primary: #2563EB;           /* Primary Blue Accent */
+  --primary-foreground: #FFFFFF;
+  --secondary: #22C55E;         /* Success Green Accent */
+  --secondary-foreground: #FFFFFF;
+  --muted: #F8FAFC;
+  --muted-foreground: #64748B;  /* Muted Secondary Text */
+  --accent: #E2E8F0;            /* Soft Neutral Accent */
+  --accent-foreground: #0F172A;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #CBD5E1;            /* Border Color */
+  --input: #F8FAFC;
+  --ring: #2563EB;
 
-  --neon: #334155;
-  --neon-cyan: #64748b;
-  --neon-purple: #475569;
-  --success: #22c55e;
-  --warning: #f59e0b;
+  --neon: #2563EB;
+  --neon-cyan: #0284C7;
+  --neon-purple: #2563EB;
+  --success: #22C55E;
+  --warning: #F59E0B;
 
-  --gradient-primary: #334155;
-  --gradient-cyan: #475569;
+  --gradient-primary: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  --gradient-cyan: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
   --gradient-radial: none;
-  --shadow-glow: none;
-  --shadow-glow-cyan: none;
-  --shadow-glow-success: none;
-  --shadow-glow-danger: none;
-  --shadow-elev: 0 4px 12px rgba(0, 0, 0, 0.2);
-  --glass-bg: #1e293b;
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --shadow-glow: 0 4px 14px 0 rgba(37, 99, 235, 0.25);
+  --shadow-glow-cyan: 0 4px 14px 0 rgba(2, 132, 199, 0.25);
+  --shadow-glow-success: 0 4px 14px 0 rgba(34, 197, 94, 0.25);
+  --shadow-glow-danger: 0 4px 14px 0 rgba(239, 68, 68, 0.25);
+  --shadow-elev: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --glass-bg: #FFFFFF;
+  --glass-border: #CBD5E1;
 }
 
 @layer base {
@@ -85,8 +85,8 @@
     border-color: var(--color-border);
   }
   html, body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: #F1F5F9;
+    color: #0F172A;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
@@ -97,36 +97,36 @@
 }
 
 @utility glass {
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: var(--shadow-elev);
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 @utility glass-strong {
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: var(--shadow-elev);
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
 }
 
 @utility neon-border {
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid #CBD5E1;
 }
 
 @utility gradient-primary {
-  background: #334155;
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
 }
 @utility gradient-cyan {
-  background: #475569;
+  background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
 }
 @utility text-gradient {
-  color: #f8fafc;
+  color: #2563EB;
 }
 
 @utility card-3d {
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: border-color 150ms ease, background-color 150ms ease;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 @utility no-scrollbar {
   -ms-overflow-style: none;
@@ -137,8 +137,8 @@
 }
 
 @utility card-3d-hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background-color: #334155;
+  border-color: #2563EB;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
 }
 
 @keyframes pulse-glow {
