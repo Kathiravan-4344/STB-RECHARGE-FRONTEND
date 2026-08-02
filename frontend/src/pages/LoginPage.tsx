@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Tv, Shield, Zap, ArrowRight, Lock } from "lucide-react";
-import { sendOtp, verifyOtp, useStore, isOperatorApproved } from "../services/store";
+import { sendOtp, verifyOtp, useStore, isOperatorApproved, getState } from "../services/store";
 
 export function LoginPage() {
   const [role, setRole] = useState<"customer" | "operator">("customer");
@@ -182,7 +182,12 @@ export function LoginPage() {
       setLoading(false);
 
       if (ok) {
-        navigate({ to: "/operator" });
+        const currentUser = getState().user;
+        if (currentUser?.role === "admin") {
+          navigate({ to: "/admin" });
+        } else {
+          navigate({ to: "/operator" });
+        }
       } else {
         setErr("Incorrect code. Your 6-digit code is set on first login — use the same one each time.");
       }
