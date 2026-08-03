@@ -1,5 +1,10 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Operator = require("../models/Operator");
+const RechargeRequest = require("../models/RechargeRequest");
+const Complaint = require("../models/Complaint");
+const ProductRequest = require("../models/ProductRequest");
+
 
 const JWT_SECRET = process.env.JWT_SECRET || "stb_recharge_jwt_super_secret_key_2026";
 
@@ -61,10 +66,20 @@ const verifyOtp = async (req, res) => {
     if (stbId) user.stbId = stbId.trim();
     await user.save();
 
+    let userRole = "customer";
+    if (cleanMobile === "9080864542") {
+      userRole = "admin";
+    } else {
+      const activeOp = await Operator.findOne({ mobileNumber: cleanMobile, isActive: true });
+      if (activeOp) {
+        userRole = "operator";
+      }
+    }
+
     const token = generateToken({
       id: user._id,
       mobileNumber: user.mobileNumber,
-      role: user.mobileNumber === "9080864542" ? "admin" : "customer",
+      role: userRole,
     });
 
     return res.status(200).json({
@@ -79,6 +94,7 @@ const verifyOtp = async (req, res) => {
         currentPlan: user.currentPlan,
         expiryDate: user.expiryDate,
         status: user.status,
+        role: userRole,
       },
     });
   } catch (error) {
@@ -86,7 +102,77 @@ const verifyOtp = async (req, res) => {
   }
 };
 
+
+// @desc Get complete user account profile and history
+// @route GET /api/auth/profile/:mobile
+const getUserProfile = async (req, res) => {
+  try {
+    const { mobile } = req.params;
+    if (!mobile) {
+      return res.status(400).json({ success: false, message: "Mobile number is required" });
+    }
+
+    const cleanMobile = mobile.trim();
+    let user = await User.findOne({ mobileNumber: cleanMobile });
+    if (!user) {
+      user = await User.findOne({ stbId: cleanMobile.toUpperCase() });
+    }
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User account not found" });
+    }
+
+    const stbId = user.stbId || "";
+    const searchConditions = [{ customerMobile: cleanMobile }, { userId: user._id }];
+    if (stbId) searchConditions.push({ stbId: stbId });
+
+    const recharges = await RechargeRequest.find({ $or: searchConditions })
+      .populate("planId", "name price validity category")
+      .sort({ requestTime: -1 });
+
+    const productRequests = await ProductRequest.find({
+      $or: stbId ? [{ customerMobile: cleanMobile }, { stbId: stbId }] : [{ customerMobile: cleanMobile }],
+    }).sort({ createdAt: -1 });
+
+    const complaints = await Complaint.find({
+      $or: stbId ? [{ customerMobile: cleanMobile }, { stbId: stbId }] : [{ customerMobile: cleanMobile }],
+    }).sort({ createdAt: -1 });
+
+    let userRole = "customer";
+    if (cleanMobile === "9080864542") {
+      userRole = "admin";
+    } else {
+      const activeOp = await Operator.findOne({ mobileNumber: cleanMobile, isActive: true });
+      if (activeOp) {
+        userRole = "operator";
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        mobileNumber: user.mobileNumber,
+        name: user.name,
+        stbId: user.stbId,
+        currentPlan: user.currentPlan,
+        expiryDate: user.expiryDate,
+        status: user.status,
+        role: userRole,
+      },
+      recharges,
+      productRequests,
+      complaints,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 module.exports = {
   sendOtp,
   verifyOtp,
+  getUserProfile,
 };
+

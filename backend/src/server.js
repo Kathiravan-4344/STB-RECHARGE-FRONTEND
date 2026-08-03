@@ -72,7 +72,7 @@ connectDB().then(() => {
 });
 
 // Root Health Check Route
-app.get("/", (req, res) => {
+app.get(["/", "/api", "/api/health"], (req, res) => {
   res.json({
     status: "online",
     server: "STB RECHARGE API Server",
@@ -88,6 +88,7 @@ app.get("/", (req, res) => {
     },
   });
 });
+
 
 // Mount Routes
 app.use("/api/auth", authRoutes);

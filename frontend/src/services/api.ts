@@ -34,11 +34,21 @@ export async function apiSendOtp(mobileNumber: string) {
 }
 
 export async function apiVerifyOtp(mobileNumber: string, otp: string, name?: string, stbId?: string) {
-  return apiRequest("/auth/verify-otp", {
+  return apiRequest<{ token: string; user: any }>("/auth/verify-otp", {
     method: "POST",
     body: JSON.stringify({ mobileNumber, otp, name, stbId }),
   });
 }
+
+export async function apiGetUserProfile(mobileNumber: string) {
+  return apiRequest<{
+    user: any;
+    recharges: any[];
+    productRequests: any[];
+    complaints: any[];
+  }>(`/auth/profile/${encodeURIComponent(mobileNumber)}`);
+}
+
 
 // Admin API Calls
 export async function apiAddOperator(mobileNumber: string, name: string) {

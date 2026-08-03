@@ -9,12 +9,19 @@ import {
   upsertProduct,
   updateComplaintStatus,
   setState,
+  syncPendingRechargesFromBackend,
+  syncProductRequestsFromBackend,
+  syncComplaintsFromBackend,
+  syncOperatorsFromBackend,
+  isOperatorApproved,
   type ProductRequest,
   type Product,
   type ProductRequestStatus,
   type Complaint,
   type ComplaintStatus,
 } from "../services/store";
+
+
 import {
   Tv,
   CheckCircle2,
@@ -171,14 +178,39 @@ export function OperatorPage() {
   }, []);
 
   useEffect(() => {
-    if (!user || (user.role !== "operator" && user.role !== "admin")) {
-      navigate({ to: "/" });
+    if (!user) {
+      navigate({ to: "/login" });
+      return;
+    }
+    const isOp = isOperatorApproved(user.mobile);
+    if (user.role !== "operator" && user.role !== "admin" && !isOp) {
+      // If customer role and not approved operator, send to login
+      navigate({ to: "/login" });
     }
   }, [user, navigate]);
 
   if (!user) {
-    return null;
+    return (
+      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl border border-[#CBD5E1] p-8 max-w-md w-full text-center shadow-lg">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-[#2563EB] mx-auto font-bold mb-4">
+            <Shield className="h-6 w-6" />
+          </div>
+          <h2 className="text-xl font-extrabold text-[#0F172A]">Operator Login Required</h2>
+          <p className="text-xs text-[#64748B] mt-2 leading-relaxed">
+            Please log in with your registered Operator Mobile Number to access the Control Center.
+          </p>
+          <button
+            onClick={() => navigate({ to: "/login" })}
+            className="mt-6 w-full rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] py-3 text-sm font-bold text-white shadow-md transition"
+          >
+            Go to Operator Login
+          </button>
+        </div>
+      </div>
+    );
   }
+
 
   // Summary counts
   const totalCount = txns.length;
@@ -334,11 +366,18 @@ export function OperatorPage() {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setNow(Date.now())}
+              onClick={() => {
+                syncPendingRechargesFromBackend();
+                syncProductRequestsFromBackend();
+                syncComplaintsFromBackend();
+                syncOperatorsFromBackend();
+                setNow(Date.now());
+              }}
               className="hidden sm:flex items-center gap-1.5 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-xs font-bold text-[#64748B] transition hover:bg-slate-100 hover:text-[#0F172A]"
             >
               <RefreshCw className="h-3.5 w-3.5" /> Sync Now
             </button>
+
             <button
               onClick={() => {
                 logout();

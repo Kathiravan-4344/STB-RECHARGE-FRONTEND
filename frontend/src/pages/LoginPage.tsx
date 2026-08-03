@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Tv, Shield, Zap, ArrowRight, Lock } from "lucide-react";
-import { sendOtp, verifyOtp, useStore, isOperatorApproved, getState } from "../services/store";
+import { sendOtp, verifyOtp, useStore, isOperatorApproved, getState, syncOperatorsFromBackend } from "../services/store";
+
 
 export function LoginPage() {
   const [role, setRole] = useState<"customer" | "operator">("customer");
@@ -93,12 +94,17 @@ export function LoginPage() {
       }
 
       // STRICT OPERATOR WHITELIST CHECK FOR OTHERS
+      setLoading(true);
+      await syncOperatorsFromBackend();
+      setLoading(false);
+
       if (!isOperatorApproved(contact)) {
         setErr(
           "❌ You are not authorized. Contact Admin (KATHIRAVAN V) to add your operator number.",
         );
         return;
       }
+
 
       if (!isOperatorValidEmail && !isOperatorValidMobile) {
         if (isOperatorEmail) {

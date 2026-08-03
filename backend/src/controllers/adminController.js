@@ -28,6 +28,25 @@ const addOperator = async (req, res) => {
       });
     }
 
+    // Also sync User collection in MongoDB
+    try {
+      let userDoc = await User.findOne({ mobileNumber: cleanMobile });
+      if (userDoc) {
+        userDoc.role = "operator";
+        if (name) userDoc.name = name;
+        await userDoc.save();
+      } else {
+        await User.create({
+          mobileNumber: cleanMobile,
+          name: name || "Operator",
+          role: "operator",
+          stbId: `OP-${cleanMobile.slice(-6)}`,
+        });
+      }
+    } catch (e) {
+      console.warn("User doc sync warning for operator:", e.message);
+    }
+
     return res.status(200).json({
       success: true,
       message: "Operator added/activated successfully",
@@ -37,6 +56,7 @@ const addOperator = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // @desc Get Operators
 // @route GET /api/admin/operators
