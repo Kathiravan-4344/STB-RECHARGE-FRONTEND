@@ -817,8 +817,13 @@ export async function startPayment(
         txns: updatedTxns,
         pending: isPendingMatch && currentPending ? { ...currentPending, txnId: backendId } : state.pending,
       });
+    } else {
+      console.warn("apiCreateRecharge error:", res.error);
+      if (typeof window !== "undefined" && res.error) {
+        alert(`Server Error: ${res.error}`);
+      }
     }
-  } catch (err) {
+  } catch (err: any) {
     console.warn("Failed to save recharge to backend", err);
   }
 }

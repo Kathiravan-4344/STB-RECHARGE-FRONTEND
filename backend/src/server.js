@@ -27,7 +27,16 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === "string") {
+    try {
+      req.body = JSON.parse(req.body);
+    } catch (e) {}
+  }
+  next();
+});
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Seed initial database defaults
 const seedInitialData = async () => {
