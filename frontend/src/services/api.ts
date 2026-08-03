@@ -107,9 +107,20 @@ export async function apiGetRechargeStatus(id: string) {
 
 // Complaints API Calls
 export async function apiCreateComplaint(payload: any) {
-  return apiRequest("/complaint/create", {
+  return apiRequest<{ complaint: any }>("/complaint/create", {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+}
+
+export async function apiGetComplaints() {
+  return apiRequest<{ complaints: any[] }>("/complaint/all");
+}
+
+export async function apiUpdateComplaintStatus(id: string, patch: any) {
+  return apiRequest<{ complaint: any }>(`/complaint/update/${id}`, {
+    method: "POST",
+    body: JSON.stringify(patch),
   });
 }
 
@@ -117,4 +128,24 @@ export async function apiCreateComplaint(payload: any) {
 export async function apiGetProducts() {
   return apiRequest<{ products: any[] }>("/products");
 }
+
+// Product Requests API Calls
+export async function apiCreateProductRequest(payload: any) {
+  return apiRequest<{ productRequest: any }>("/product-request/create", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiGetProductRequests() {
+  return apiRequest<{ requests: any[] }>("/product-request/all");
+}
+
+export async function apiUpdateProductRequestStatus(id: string, patch: any) {
+  return apiRequest<{ productRequest: any }>(`/product-request/update/${id}`, {
+    method: "POST",
+    body: JSON.stringify(patch),
+  });
+}
+
 

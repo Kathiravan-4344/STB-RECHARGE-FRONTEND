@@ -11,6 +11,12 @@ import {
   apiApproveRecharge,
   apiRejectRecharge,
   apiGetRechargeStatus,
+  apiCreateProductRequest,
+  apiGetProductRequests,
+  apiUpdateProductRequestStatus,
+  apiCreateComplaint,
+  apiGetComplaints,
+  apiUpdateComplaintStatus,
 } from "./api";
 
 
@@ -368,13 +374,46 @@ function loadSavedState(): State {
   return defaultState;
 }
 
-function saveState() {
+const syncChannel =
+  typeof window !== "undefined" && "BroadcastChannel" in window
+    ? new BroadcastChannel("stb_recharge_sync_channel")
+    : null;
+
+function saveState(broadcast = true) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (broadcast && syncChannel) {
+      syncChannel.postMessage({ type: "STATE_UPDATED" });
+    }
   } catch (e) {
     console.error("Failed to save local state", e);
   }
+}
+
+// Listen for instant cross-tab / multi-window sync
+if (typeof window !== "undefined") {
+  if (syncChannel) {
+    syncChannel.onmessage = (event) => {
+      if (event.data?.type === "STATE_UPDATED") {
+        const saved = loadSavedState();
+        state = { ...state, ...saved };
+        listeners.forEach((l) => l());
+      }
+    };
+  }
+
+  window.addEventListener("storage", (event) => {
+    if (event.key === STORAGE_KEY && event.newValue) {
+      try {
+        const parsed = JSON.parse(event.newValue);
+        state = { ...state, ...parsed };
+        listeners.forEach((l) => l());
+      } catch (e) {
+        console.warn("Failed to sync storage event", e);
+      }
+    }
+  });
 }
 
 function emit() {
@@ -502,6 +541,106 @@ export async function syncPendingRechargesFromBackend() {
   }
 }
 
+export async function syncProductRequestsFromBackend() {
+  try {
+    const res = await apiGetProductRequests();
+    if (res.success && res.data?.requests) {
+      const backendReqs: ProductRequest[] = res.data.requests.map((r: any) => ({
+        id: r._id || r.id,
+        stbId: r.stbId || "STB-UNKNOWN",
+        customerName: r.customerName || "Customer",
+        customerMobile: r.customerMobile || "",
+        productId: r.productId,
+        productName: r.productName,
+        category: r.category || "accessory",
+        quantity: r.quantity || 1,
+        unitPrice: r.unitPrice || 0,
+        totalAmount: r.totalAmount || 0,
+        description: r.description || "",
+        imageUrl: r.imageUrl || "",
+        status: r.status || "Pending",
+        createdAt: r.createdAt || new Date().toISOString(),
+        technicianName: r.technicianName,
+        technicianMobile: r.technicianMobile,
+        scheduledDate: r.scheduledDate,
+        operatorNote: r.operatorNote,
+      }));
+
+      const current = [...state.productRequests];
+      const mergedMap = new Map<string, ProductRequest>();
+      backendReqs.forEach((br) => mergedMap.set(br.id, br));
+      current.forEach((cr) => {
+        if (!mergedMap.has(cr.id)) {
+          mergedMap.set(cr.id, cr);
+        } else {
+          // Update status if backend has updated
+          const b = mergedMap.get(cr.id)!;
+          if (b.status !== cr.status || b.technicianName !== cr.technicianName) {
+            mergedMap.set(cr.id, { ...cr, ...b });
+          }
+        }
+      });
+
+      const merged = Array.from(mergedMap.values()).sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+      setState({ productRequests: merged });
+    }
+  } catch (e) {
+    console.warn("Failed to sync product requests from backend", e);
+  }
+}
+
+export async function syncComplaintsFromBackend() {
+  try {
+    const res = await apiGetComplaints();
+    if (res.success && res.data?.complaints) {
+      const backendCmps: Complaint[] = res.data.complaints.map((c: any) => ({
+        id: c._id || c.id,
+        stbId: c.stbId || "STB-UNKNOWN",
+        customerName: c.customerName || "Customer",
+        customerMobile: c.customerMobile || "",
+        category: c.category || "General Issues",
+        issueType: c.issueType || "",
+        description: c.description || "",
+        mediaUrl: c.mediaUrl || "",
+        preferredTime: c.preferredTime || "Anytime",
+        status: c.status || "Pending",
+        createdAt: c.createdAt || new Date().toISOString(),
+        technicianName: c.technicianName,
+        technicianMobile: c.technicianMobile,
+        assignedAt: c.assignedAt,
+        expectedArrival: c.expectedArrival,
+        resolvedAt: c.resolvedAt,
+        rating: c.rating,
+        feedback: c.feedback,
+      }));
+
+      const current = [...state.complaints];
+      const mergedMap = new Map<string, Complaint>();
+      backendCmps.forEach((bc) => mergedMap.set(bc.id, bc));
+      current.forEach((cc) => {
+        if (!mergedMap.has(cc.id)) {
+          mergedMap.set(cc.id, cc);
+        } else {
+          // Update status if backend has updated
+          const b = mergedMap.get(cc.id)!;
+          if (b.status !== cc.status || b.technicianName !== cc.technicianName) {
+            mergedMap.set(cc.id, { ...cc, ...b });
+          }
+        }
+      });
+
+      const merged = Array.from(mergedMap.values()).sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+      setState({ complaints: merged });
+    }
+  } catch (e) {
+    console.warn("Failed to sync complaints from backend", e);
+  }
+}
+
 let pollTimer: any = null;
 
 export async function initStore() {
@@ -511,10 +650,14 @@ export async function initStore() {
   setState({ ready: true });
   syncOperatorsFromBackend();
   syncPendingRechargesFromBackend();
+  syncProductRequestsFromBackend();
+  syncComplaintsFromBackend();
 
   if (!pollTimer) {
     pollTimer = setInterval(() => {
       syncPendingRechargesFromBackend();
+      syncProductRequestsFromBackend();
+      syncComplaintsFromBackend();
     }, 4000);
   }
 }
@@ -725,8 +868,9 @@ export async function requestProduct(payload: {
   const stb = state.stb;
   const prod = state.products.find((p) => p.id === payload.productId);
 
+  const localId = "REQ" + Math.floor(Math.random() * 900000 + 100000);
   const req: ProductRequest = {
-    id: "REQ" + Math.floor(Math.random() * 900000 + 100000),
+    id: localId,
     stbId: stb?.id || u?.stbId || "1234567890",
     customerName: u?.name || "Customer",
     customerMobile: u?.mobile || "",
@@ -743,6 +887,17 @@ export async function requestProduct(payload: {
   };
 
   setState({ productRequests: [req, ...state.productRequests] });
+
+  try {
+    const res = await apiCreateProductRequest(req);
+    if (res.success && res.data?.productRequest?._id) {
+      const backendId = res.data.productRequest._id;
+      const updated = state.productRequests.map((r) => (r.id === localId ? { ...r, id: backendId } : r));
+      setState({ productRequests: updated });
+    }
+  } catch (err) {
+    console.warn("Failed to save product request to backend", err);
+  }
 }
 
 export async function updateProductStatus(
@@ -751,6 +906,12 @@ export async function updateProductStatus(
 ) {
   const updated = state.productRequests.map((r) => (r.id === id ? { ...r, ...patch } : r));
   setState({ productRequests: updated });
+
+  try {
+    await apiUpdateProductRequestStatus(id, patch);
+  } catch (err) {
+    console.warn("Failed to update product request status on backend", err);
+  }
 }
 
 // Complaints
@@ -764,8 +925,9 @@ export async function fileComplaint(payload: {
   const u = state.user;
   const stb = state.stb;
 
+  const localId = "CMP" + Math.floor(Math.random() * 900000 + 100000);
   const cmp: Complaint = {
-    id: "CMP" + Math.floor(Math.random() * 900000 + 100000),
+    id: localId,
     stbId: stb?.id || u?.stbId || "1234567890",
     customerName: u?.name || "Customer",
     customerMobile: u?.mobile || "",
@@ -779,6 +941,17 @@ export async function fileComplaint(payload: {
   };
 
   setState({ complaints: [cmp, ...state.complaints] });
+
+  try {
+    const res = await apiCreateComplaint(cmp);
+    if (res.success && res.data?.complaint?._id) {
+      const backendId = res.data.complaint._id;
+      const updated = state.complaints.map((c) => (c.id === localId ? { ...c, id: backendId } : c));
+      setState({ complaints: updated });
+    }
+  } catch (err) {
+    console.warn("Failed to save complaint to backend", err);
+  }
 }
 
 export async function updateComplaintStatus(
@@ -787,11 +960,23 @@ export async function updateComplaintStatus(
 ) {
   const updated = state.complaints.map((c) => (c.id === id ? { ...c, ...patch } : c));
   setState({ complaints: updated });
+
+  try {
+    await apiUpdateComplaintStatus(id, patch);
+  } catch (err) {
+    console.warn("Failed to update complaint status on backend", err);
+  }
 }
 
 export async function rateComplaint(id: string, rating: number, feedback?: string) {
   const updated = state.complaints.map((c) => (c.id === id ? { ...c, rating, feedback } : c));
   setState({ complaints: updated });
+
+  try {
+    await apiUpdateComplaintStatus(id, { rating, feedback });
+  } catch (err) {
+    console.warn("Failed to submit rating on backend", err);
+  }
 }
 
 // Settings & Coupons

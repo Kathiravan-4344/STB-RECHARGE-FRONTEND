@@ -17,6 +17,7 @@ const operatorRoutes = require("./routes/operatorRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const complaintRoutes = require("./routes/complaintRoutes");
 const productRoutes = require("./routes/productRoutes");
+const productRequestRoutes = require("./routes/productRequestRoutes");
 
 // Load environment variables
 dotenv.config();
@@ -87,6 +88,7 @@ app.use("/api/operator", operatorRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/complaint", complaintRoutes);
 app.use("/api", productRoutes);
+app.use("/api", productRequestRoutes);
 
 // Global 404 Route
 app.use((req, res) => {
@@ -95,10 +97,10 @@ app.use((req, res) => {
 
 // Start Express Server
 if (require.main === module) {
-  app.listen(PORT, () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`====================================================`);
     console.log(` 🚀 STB RECHARGE Backend running on port ${PORT}`);
-    console.log(` 🔗 URL: http://localhost:${PORT}`);
+    console.log(` 🔗 Local: http://localhost:${PORT}`);
     console.log(`====================================================`);
   });
 }

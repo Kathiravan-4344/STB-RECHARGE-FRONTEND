@@ -2,12 +2,12 @@ const express = require("express");
 const router = express.Router();
 const {
   createComplaint,
-  getUserComplaints,
+  getAllComplaints,
   updateComplaintStatus,
 } = require("../controllers/complaintController");
 
 router.post("/create", createComplaint);
-router.get("/user/:id", getUserComplaints);
+router.get("/all", getAllComplaints);
 router.post("/update/:id", updateComplaintStatus);
 
 module.exports = router;

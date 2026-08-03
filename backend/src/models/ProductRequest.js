@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const complaintSchema = new mongoose.Schema(
+const productRequestSchema = new mongoose.Schema(
   {
     stbId: {
       type: String,
@@ -14,30 +14,49 @@ const complaintSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    category: {
+    productId: {
       type: String,
       required: true,
-      default: "General Issues",
     },
-    issueType: {
+    productName: {
       type: String,
-      default: "",
+      required: true,
+    },
+    category: {
+      type: String,
+      enum: ["accessory", "service"],
+      default: "accessory",
+    },
+    quantity: {
+      type: Number,
+      default: 1,
+    },
+    unitPrice: {
+      type: Number,
+      default: 0,
+    },
+    totalAmount: {
+      type: Number,
+      default: 0,
     },
     description: {
       type: String,
-      required: true,
+      default: "",
     },
-    mediaUrl: {
+    imageUrl: {
       type: String,
       default: "",
     },
-    preferredTime: {
-      type: String,
-      default: "Anytime",
-    },
     status: {
       type: String,
-      enum: ["Pending", "Assigned", "In Progress", "Resolved"],
+      enum: [
+        "Pending",
+        "Processing",
+        "Out for Delivery",
+        "Installation Scheduled",
+        "Completed",
+        "Not Available",
+      ],
       default: "Pending",
     },
     technicianName: {
@@ -48,23 +67,11 @@ const complaintSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    assignedAt: {
+    scheduledDate: {
       type: String,
       default: "",
     },
-    expectedArrival: {
-      type: String,
-      default: "",
-    },
-    resolvedAt: {
-      type: String,
-      default: "",
-    },
-    rating: {
-      type: Number,
-      default: 0,
-    },
-    feedback: {
+    operatorNote: {
       type: String,
       default: "",
     },
@@ -72,4 +79,4 @@ const complaintSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Complaint", complaintSchema);
+module.exports = mongoose.model("ProductRequest", productRequestSchema);
