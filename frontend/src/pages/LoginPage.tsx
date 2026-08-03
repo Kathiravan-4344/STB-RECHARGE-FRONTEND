@@ -63,7 +63,7 @@ export function LoginPage() {
   const isCustomerValid =
     name.trim().length > 0 &&
     /^\d{10}$/.test(mobile.trim()) &&
-    /^\d{12}$/.test(stbId.trim());
+    /^[A-Za-z0-9\-\_]{4,20}$/.test(stbId.trim());
 
   const isFormValid = role === "operator" ? isOperatorValid : isCustomerValid;
 
@@ -126,8 +126,8 @@ export function LoginPage() {
         return;
       }
 
-      if (!/^\d{12}$/.test(stbId.trim())) {
-        setErr("Enter a valid 12-digit STB ID / Smart Card Number");
+      if (!/^[A-Za-z0-9\-\_]{4,20}$/.test(stbId.trim())) {
+        setErr("Enter a valid STB ID / Customer ID (4 to 20 characters)");
         return;
       }
 

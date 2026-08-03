@@ -478,8 +478,8 @@ export async function syncPendingRechargesFromBackend() {
         const amount = r.amount || r.planId?.price || 0;
         const status = r.status === "Approved" ? "success" : r.status === "Rejected" ? "failed" : "pending";
         const date = r.requestTime || r.createdAt || new Date().toISOString();
-        const customerName = r.userId?.name || "Customer";
-        const customerMobile = r.userId?.mobileNumber || "";
+        const customerName = r.customerName || r.userId?.name || "Customer";
+        const customerMobile = r.customerMobile || r.userId?.mobileNumber || "";
         const stbId = r.stbId || r.userId?.stbId || "";
         return {
           id,
@@ -505,9 +505,7 @@ export async function syncPendingRechargesFromBackend() {
         } else {
           // Update status if backend status differs
           const b = mergedMap.get(ct.id)!;
-          if (b.status !== ct.status) {
-            mergedMap.set(ct.id, { ...ct, status: b.status, approvedAt: b.approvedAt });
-          }
+          mergedMap.set(ct.id, { ...ct, ...b });
         }
       });
 
@@ -763,11 +761,20 @@ export async function fetchStb(id: string): Promise<STB | null> {
 }
 
 // Transactions & Recharge Flow
-export async function startPayment(planId: string, amount: number, planName: string) {
+export async function startPayment(
+  planId: string,
+  amount: number,
+  planName: string,
+  customDetails?: { stbId?: string; customerName?: string; customerMobile?: string },
+) {
   const localTxnId = "TXN" + Math.floor(Math.random() * 900000 + 100000);
   const now = Date.now();
   const user = state.user;
   const stb = state.stb;
+
+  const targetStbId = customDetails?.stbId || stb?.id || user?.stbId || "1234567890";
+  const targetCustomerName = customDetails?.customerName || user?.name || "Customer";
+  const targetCustomerMobile = customDetails?.customerMobile || user?.mobile || "";
 
   const pending = { txnId: localTxnId, planName, amount, startedAt: now };
 
@@ -777,9 +784,9 @@ export async function startPayment(planId: string, amount: number, planName: str
     amount,
     date: new Date(now).toISOString(),
     status: "pending",
-    customerName: user?.name || "Customer",
-    customerMobile: user?.mobile || "",
-    stbId: stb?.id || "",
+    customerName: targetCustomerName,
+    customerMobile: targetCustomerMobile,
+    stbId: targetStbId,
     startedAt: now,
   };
 
@@ -790,12 +797,12 @@ export async function startPayment(planId: string, amount: number, planName: str
 
   try {
     const res = await apiCreateRecharge({
-      stbId: stb?.id || user?.stbId || "1234567890",
+      stbId: targetStbId,
       planId,
       planName,
       amount,
-      customerName: user?.name || "Customer",
-      customerMobile: user?.mobile || "",
+      customerName: targetCustomerName,
+      customerMobile: targetCustomerMobile,
       paymentStatus: "Success",
     });
 
@@ -863,6 +870,9 @@ export async function requestProduct(payload: {
   quantity?: number;
   description: string;
   imageUrl?: string;
+  stbId?: string;
+  customerName?: string;
+  customerMobile?: string;
 }) {
   const u = state.user;
   const stb = state.stb;
@@ -871,9 +881,9 @@ export async function requestProduct(payload: {
   const localId = "REQ" + Math.floor(Math.random() * 900000 + 100000);
   const req: ProductRequest = {
     id: localId,
-    stbId: stb?.id || u?.stbId || "1234567890",
-    customerName: u?.name || "Customer",
-    customerMobile: u?.mobile || "",
+    stbId: payload.stbId || stb?.id || u?.stbId || "1234567890",
+    customerName: payload.customerName || u?.name || "Customer",
+    customerMobile: payload.customerMobile || u?.mobile || "",
     productId: payload.productId,
     productName: prod?.name || "Accessory/Service Request",
     category: prod?.category || "accessory",
@@ -921,6 +931,9 @@ export async function fileComplaint(payload: {
   description: string;
   mediaUrl?: string;
   preferredTime: string;
+  stbId?: string;
+  customerName?: string;
+  customerMobile?: string;
 }) {
   const u = state.user;
   const stb = state.stb;
@@ -928,9 +941,9 @@ export async function fileComplaint(payload: {
   const localId = "CMP" + Math.floor(Math.random() * 900000 + 100000);
   const cmp: Complaint = {
     id: localId,
-    stbId: stb?.id || u?.stbId || "1234567890",
-    customerName: u?.name || "Customer",
-    customerMobile: u?.mobile || "",
+    stbId: payload.stbId || stb?.id || u?.stbId || "1234567890",
+    customerName: payload.customerName || u?.name || "Customer",
+    customerMobile: payload.customerMobile || u?.mobile || "",
     category: payload.category,
     issueType: payload.issueType,
     description: payload.description,

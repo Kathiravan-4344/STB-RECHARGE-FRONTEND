@@ -12,6 +12,16 @@ const rechargeRequestSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    customerName: {
+      type: String,
+      default: "Customer",
+      trim: true,
+    },
+    customerMobile: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     planId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Plan",

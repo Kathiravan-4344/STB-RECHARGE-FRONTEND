@@ -92,25 +92,59 @@ const createRechargeRequest = async (req, res) => {
     if (userId && userId.match(/^[0-9a-fA-F]{24}$/)) {
       user = await User.findById(userId);
     }
-    if (!user && customerMobile) {
+    if (!user && customerMobile && customerMobile.trim()) {
       user = await User.findOne({ mobileNumber: customerMobile.trim() });
     }
-    if (!user && cleanStbId) {
+    if (!user && cleanStbId && cleanStbId !== "STB-UNKNOWN") {
       user = await User.findOne({ stbId: cleanStbId });
     }
     if (!user) {
-      user = await User.create({
-        mobileNumber: customerMobile || "9000000000",
-        name: customerName || "Customer",
-        stbId: cleanStbId,
-        role: "customer",
-      });
+      const mob =
+        customerMobile && customerMobile.trim().length >= 10
+          ? customerMobile.trim()
+          : "9" + Math.floor(100000000 + Math.random() * 900000000);
+      user = await User.findOne({ mobileNumber: mob });
+      if (!user) {
+        try {
+          user = await User.create({
+            mobileNumber: mob,
+            name: customerName || "Customer",
+            stbId: cleanStbId,
+            role: "customer",
+          });
+        } catch (e) {
+          user = await User.findOne({ role: "customer" });
+          if (!user) {
+            user = await User.create({
+              mobileNumber: "9" + Date.now().toString().slice(-9),
+              name: customerName || "Customer",
+              stbId: cleanStbId,
+              role: "customer",
+            });
+          }
+        }
+      }
+    } else {
+      let needsSave = false;
+      if (cleanStbId && cleanStbId !== "STB-UNKNOWN" && user.stbId !== cleanStbId) {
+        user.stbId = cleanStbId;
+        needsSave = true;
+      }
+      if (customerName && customerName !== "Customer" && user.name !== customerName) {
+        user.name = customerName;
+        needsSave = true;
+      }
+      if (needsSave) {
+        await user.save();
+      }
     }
 
     // Create recharge request
     const rechargeRequest = await RechargeRequest.create({
       userId: user._id,
       stbId: cleanStbId,
+      customerName: customerName || user.name || "Customer",
+      customerMobile: customerMobile || user.mobileNumber || "",
       planId: plan._id,
       amount: amount || plan.price,
       paymentStatus: "Success",

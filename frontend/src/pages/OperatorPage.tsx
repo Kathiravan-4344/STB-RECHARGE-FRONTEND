@@ -196,22 +196,28 @@ export function OperatorPage() {
 
   // Filtered transactions
   const filteredTxns = txns.filter((t) => {
+    const q = searchTerm.trim().toLowerCase();
     const matchesSearch =
-      (t.stbId && t.stbId.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (t.customerMobile && t.customerMobile.includes(searchTerm)) ||
-      (t.customerName && t.customerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (t.id && t.id.toLowerCase().includes(searchTerm.toLowerCase()));
+      !q ||
+      (t.stbId && t.stbId.toLowerCase().includes(q)) ||
+      (t.customerMobile && t.customerMobile.includes(q)) ||
+      (t.customerName && t.customerName.toLowerCase().includes(q)) ||
+      (t.planName && t.planName.toLowerCase().includes(q)) ||
+      (t.id && t.id.toLowerCase().includes(q));
     const matchesStatus = statusFilter === "all" ? true : t.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   // Filtered Product Requests
   const filteredProductRequests = productRequests.filter((r) => {
+    const q = productReqSearch.trim().toLowerCase();
     const matchesSearch =
-      r.customerName.toLowerCase().includes(productReqSearch.toLowerCase()) ||
-      r.stbId.toLowerCase().includes(productReqSearch.toLowerCase()) ||
-      r.productName.toLowerCase().includes(productReqSearch.toLowerCase()) ||
-      r.customerMobile.includes(productReqSearch);
+      !q ||
+      (r.customerName && r.customerName.toLowerCase().includes(q)) ||
+      (r.stbId && r.stbId.toLowerCase().includes(q)) ||
+      (r.productName && r.productName.toLowerCase().includes(q)) ||
+      (r.customerMobile && r.customerMobile.includes(q)) ||
+      (r.id && r.id.toLowerCase().includes(q));
     const matchesStatus =
       productReqStatusFilter === "all" ? true : r.status === productReqStatusFilter;
     return matchesSearch && matchesStatus;
@@ -219,13 +225,15 @@ export function OperatorPage() {
 
   // Filtered Complaints
   const filteredComplaints = complaints.filter((c) => {
+    const q = complaintSearch.trim().toLowerCase();
     const matchesSearch =
-      c.id.toLowerCase().includes(complaintSearch.toLowerCase()) ||
-      c.customerName.toLowerCase().includes(complaintSearch.toLowerCase()) ||
-      c.stbId.toLowerCase().includes(complaintSearch.toLowerCase()) ||
-      c.category.toLowerCase().includes(complaintSearch.toLowerCase()) ||
-      c.issueType.toLowerCase().includes(complaintSearch.toLowerCase()) ||
-      c.customerMobile.includes(complaintSearch);
+      !q ||
+      (c.id && c.id.toLowerCase().includes(q)) ||
+      (c.customerName && c.customerName.toLowerCase().includes(q)) ||
+      (c.stbId && c.stbId.toLowerCase().includes(q)) ||
+      (c.category && c.category.toLowerCase().includes(q)) ||
+      (c.issueType && c.issueType.toLowerCase().includes(q)) ||
+      (c.customerMobile && c.customerMobile.includes(q));
     const matchesStatus =
       complaintStatusFilter === "all" ? true : c.status === complaintStatusFilter;
     return matchesSearch && matchesStatus;

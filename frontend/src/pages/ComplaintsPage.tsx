@@ -161,6 +161,9 @@ export function ComplaintsPage() {
       description: description.trim(),
       mediaUrl: mediaPreview || undefined,
       preferredTime,
+      stbId: stbIdInput.trim(),
+      customerName: nameInput.trim(),
+      customerMobile: mobileInput.trim(),
     });
 
     setSuccessMsg(`Complaint submitted successfully! Operator notified.`);
