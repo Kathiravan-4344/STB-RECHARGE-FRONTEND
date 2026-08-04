@@ -1,28 +1,77 @@
 /// <reference types="vite/client" />
 // API Integration Service for Backend & MongoDB Atlas Database
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+function getApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL;
+  const backendTarget = import.meta.env.VITE_BACKEND_TARGET;
+
+  // Explicit remote production URL (e.g. https://.../api)
+  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+    return envUrl;
+  }
+
+  if (typeof window !== "undefined" && window.location) {
+    const hostname = window.location.hostname;
+    // If mobile or remote client is accessing via IP address or non-localhost domain
+    if (hostname !== "localhost" && hostname !== "127.0.0.1") {
+      if (envUrl && envUrl.startsWith("http")) {
+        return envUrl.replace("localhost", hostname).replace("127.0.0.1", hostname);
+      }
+      if (backendTarget && backendTarget.startsWith("http")) {
+        return `${backendTarget.replace("localhost", hostname).replace("127.0.0.1", hostname)}/api`;
+      }
+    }
+  }
+
+  return envUrl || "/api";
+}
 
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<{ success: boolean; data?: T; error?: string }> {
+  const primaryBaseUrl = getApiBaseUrl();
+  const url = primaryBaseUrl.endsWith("/")
+    ? `${primaryBaseUrl.slice(0, -1)}${endpoint}`
+    : `${primaryBaseUrl}${endpoint}`;
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+
   try {
-    const res = await fetch(`${API_BASE}${endpoint}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      },
-      ...options,
-    });
+    const res = await fetch(url, { ...options, headers });
     const data = await res.json();
     if (!res.ok) {
       return { success: false, error: data.message || "API request failed" };
     }
     return { success: true, data };
-  } catch (err: any) {
-    console.warn(`[API Info] ${endpoint} request error:`, err.message);
-    return { success: false, error: err.message };
+  } catch (primaryErr: any) {
+    console.warn(`[API Info] Primary fetch failed for ${endpoint} (${url}):`, primaryErr.message);
+
+    // Fallback: If running on mobile/remote device, retry directly against backend port 5000 on host IP
+    if (
+      typeof window !== "undefined" &&
+      window.location &&
+      window.location.hostname !== "localhost" &&
+      window.location.hostname !== "127.0.0.1"
+    ) {
+      const fallbackUrl = `${window.location.protocol}//${window.location.hostname}:5000/api${endpoint}`;
+      try {
+        console.info(`[API Fallback] Retrying request to direct host backend: ${fallbackUrl}`);
+        const res = await fetch(fallbackUrl, { ...options, headers });
+        const data = await res.json();
+        if (!res.ok) {
+          return { success: false, error: data.message || "API request failed" };
+        }
+        return { success: true, data };
+      } catch (fallbackErr: any) {
+        console.warn(`[API Info] Fallback fetch also failed (${fallbackUrl}):`, fallbackErr.message);
+      }
+    }
+
+    return { success: false, error: primaryErr.message || "Failed to fetch from backend server" };
   }
 }
 

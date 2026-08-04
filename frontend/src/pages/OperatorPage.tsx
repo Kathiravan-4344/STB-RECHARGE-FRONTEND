@@ -178,6 +178,13 @@ export function OperatorPage() {
   }, []);
 
   useEffect(() => {
+    syncPendingRechargesFromBackend();
+    syncProductRequestsFromBackend();
+    syncComplaintsFromBackend();
+    syncOperatorsFromBackend();
+  }, []);
+
+  useEffect(() => {
     if (!user) {
       navigate({ to: "/login" });
       return;
