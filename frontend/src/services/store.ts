@@ -339,6 +339,13 @@ export const INITIAL_APPROVED_OPERATORS: ApprovedOperator[] = [
     addedAt: new Date().toISOString(),
     active: true,
   },
+  {
+    id: "op-2",
+    mobile: "9787312758",
+    name: "PERUMAL A",
+    addedAt: new Date().toISOString(),
+    active: true,
+  },
 ];
 
 const defaultState: State = {
@@ -461,9 +468,17 @@ export async function syncOperatorsFromBackend() {
         addedAt: op.createdAt || op.addedAt || new Date().toISOString(),
         active: op.isActive !== undefined ? op.isActive : true,
       }));
-      if (fetched.length > 0) {
-        setState({ approvedOperators: fetched });
-      }
+      const merged = [...INITIAL_APPROVED_OPERATORS];
+      fetched.forEach((f) => {
+        const fClean = cleanMobile(f.mobile);
+        const existingIdx = merged.findIndex((m) => cleanMobile(m.mobile) === fClean);
+        if (existingIdx >= 0) {
+          merged[existingIdx] = { ...merged[existingIdx], ...f };
+        } else {
+          merged.push(f);
+        }
+      });
+      setState({ approvedOperators: merged });
     }
   } catch (e) {
     console.warn("Failed to sync operators from backend", e);
@@ -776,13 +791,23 @@ export function sendOtp(mobile: string) {
 }
 
 export function isOperatorApproved(contact: string): boolean {
+  if (!contact) return false;
   const digitsOnly = cleanMobile(contact);
-  if (digitsOnly === "9080864542") return true;
-  return state.approvedOperators.some(
-    (op) =>
-      op.active &&
-      (op.mobile === digitsOnly || (digitsOnly.length >= 5 && op.mobile.includes(digitsOnly))),
-  );
+  const trimmed = contact.trim().toLowerCase();
+
+  if (digitsOnly === "9080864542" || digitsOnly === "9787312758") return true;
+
+  return state.approvedOperators.some((op) => {
+    if (!op.active) return false;
+    const opDigits = cleanMobile(op.mobile);
+    const opCleanStr = op.mobile.trim().toLowerCase();
+    return (
+      (digitsOnly.length > 0 && opDigits === digitsOnly) ||
+      (opDigits.length >= 5 && digitsOnly.includes(opDigits)) ||
+      (opDigits.length >= 5 && opDigits.includes(digitsOnly)) ||
+      opCleanStr === trimmed
+    );
+  });
 }
 
 export function isCustomerBlocked(identifier: string): boolean {

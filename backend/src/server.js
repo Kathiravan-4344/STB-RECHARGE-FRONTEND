@@ -52,14 +52,24 @@ const seedInitialData = async () => {
     }
 
     // Seed Operators
-    const opCount = await Operator.countDocuments();
-    if (opCount === 0) {
+    let op1 = await Operator.findOne({ mobileNumber: "9080864542" });
+    if (!op1) {
       await Operator.create({
         mobileNumber: "9080864542",
         name: "Kathiravan V",
         isActive: true,
       });
-      console.log("[DB Seed] Default Admin Operator (9080864542) created.");
+      console.log("[DB Seed] Operator 9080864542 created.");
+    }
+
+    let op2 = await Operator.findOne({ mobileNumber: "9787312758" });
+    if (!op2) {
+      await Operator.create({
+        mobileNumber: "9787312758",
+        name: "PERUMAL A",
+        isActive: true,
+      });
+      console.log("[DB Seed] Operator 9787312758 created.");
     }
   } catch (err) {
     console.error("[DB Seed Error]", err.message);
