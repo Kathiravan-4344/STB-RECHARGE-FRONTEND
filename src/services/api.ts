@@ -5,14 +5,9 @@ function getApiBaseUrl(): string {
   const envUrl = import.meta.env.VITE_API_URL;
   const backendTarget = import.meta.env.VITE_BACKEND_TARGET;
 
-  // Explicit remote production URL (e.g. https://.../api)
-  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
-    return envUrl;
-  }
-
   if (typeof window !== "undefined" && window.location) {
     const hostname = window.location.hostname;
-    // If mobile or remote client is accessing via IP address or non-localhost domain
+    // If accessing from a mobile device or local network IP (e.g. 192.168.x.x or 10.x.x.x)
     if (hostname !== "localhost" && hostname !== "127.0.0.1") {
       if (envUrl && envUrl.startsWith("http")) {
         return envUrl.replace("localhost", hostname).replace("127.0.0.1", hostname);
@@ -20,10 +15,32 @@ function getApiBaseUrl(): string {
       if (backendTarget && backendTarget.startsWith("http")) {
         return `${backendTarget.replace("localhost", hostname).replace("127.0.0.1", hostname)}/api`;
       }
+      // If accessing via LAN IP address directly
+      if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
+        return `${window.location.protocol}//${hostname}:5000/api`;
+      }
     }
   }
 
+  // Explicit remote production URL (e.g. https://.../api)
+  if (envUrl && envUrl.startsWith("http") && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+    return envUrl;
+  }
+
   return envUrl || "/api";
+}
+
+async function parseResponseData(res: Response): Promise<any> {
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return await res.json();
+  }
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    return { message: text || `HTTP ${res.status} Server Error` };
+  }
 }
 
 export async function apiRequest<T>(
@@ -42,9 +59,9 @@ export async function apiRequest<T>(
 
   try {
     const res = await fetch(url, { ...options, headers });
-    const data = await res.json();
+    const data = await parseResponseData(res);
     if (!res.ok) {
-      return { success: false, error: data.message || "API request failed" };
+      return { success: false, error: data.message || `API request failed (HTTP ${res.status})` };
     }
     return { success: true, data };
   } catch (primaryErr: any) {
@@ -55,15 +72,16 @@ export async function apiRequest<T>(
       typeof window !== "undefined" &&
       window.location &&
       window.location.hostname !== "localhost" &&
-      window.location.hostname !== "127.0.0.1"
+      window.location.hostname !== "127.0.0.1" &&
+      !url.includes(`:${window.location.port || "5173"}`)
     ) {
       const fallbackUrl = `${window.location.protocol}//${window.location.hostname}:5000/api${endpoint}`;
       try {
         console.info(`[API Fallback] Retrying request to direct host backend: ${fallbackUrl}`);
         const res = await fetch(fallbackUrl, { ...options, headers });
-        const data = await res.json();
+        const data = await parseResponseData(res);
         if (!res.ok) {
-          return { success: false, error: data.message || "API request failed" };
+          return { success: false, error: data.message || `API request failed (HTTP ${res.status})` };
         }
         return { success: true, data };
       } catch (fallbackErr: any) {
