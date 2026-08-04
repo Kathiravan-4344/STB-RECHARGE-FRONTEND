@@ -5,28 +5,25 @@ function getApiBaseUrl(): string {
   const envUrl = import.meta.env.VITE_API_URL;
   const backendTarget = import.meta.env.VITE_BACKEND_TARGET;
 
-  if (typeof window !== "undefined" && window.location) {
-    const hostname = window.location.hostname;
-    // If accessing from a mobile device or local network IP (e.g. 192.168.x.x or 10.x.x.x)
-    if (hostname !== "localhost" && hostname !== "127.0.0.1") {
-      if (envUrl && envUrl.startsWith("http")) {
-        return envUrl.replace("localhost", hostname).replace("127.0.0.1", hostname);
-      }
-      if (backendTarget && backendTarget.startsWith("http")) {
-        return `${backendTarget.replace("localhost", hostname).replace("127.0.0.1", hostname)}/api`;
-      }
-      // If accessing via LAN IP address directly
-      if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
-        return `${window.location.protocol}//${hostname}:5000/api`;
-      }
-    }
-  }
-
-  // Explicit remote production URL (e.g. https://.../api)
+  // Explicit remote production URL (e.g. https://stb-recharge-backend.onrender.com/api)
   if (envUrl && envUrl.startsWith("http") && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
     return envUrl;
   }
 
+  if (typeof window !== "undefined" && window.location) {
+    const hostname = window.location.hostname;
+    const isLanIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname) || hostname.endsWith(".local");
+
+    // Only rewrite localhost URL when accessing via a local Wi-Fi / LAN IP address
+    if (isLanIp) {
+      if (backendTarget && backendTarget.startsWith("http")) {
+        return `${backendTarget.replace("localhost", hostname).replace("127.0.0.1", hostname)}/api`;
+      }
+      return `${window.location.protocol}//${hostname}:5000/api`;
+    }
+  }
+
+  // Standard relative endpoint (Works with Vercel serverless functions / Vite dev proxy)
   return envUrl || "/api";
 }
 
@@ -67,12 +64,11 @@ export async function apiRequest<T>(
   } catch (primaryErr: any) {
     console.warn(`[API Info] Primary fetch failed for ${endpoint} (${url}):`, primaryErr.message);
 
-    // Fallback: If running on mobile/remote device, retry directly against backend port 5000 on host IP
+    // Fallback: ONLY retry direct host port 5000 if host is a LAN IP (e.g. 192.168.x.x)
     if (
       typeof window !== "undefined" &&
       window.location &&
-      window.location.hostname !== "localhost" &&
-      window.location.hostname !== "127.0.0.1" &&
+      /^(\d{1,3}\.){3}\d{1,3}$/.test(window.location.hostname) &&
       !url.includes(`:${window.location.port || "5173"}`)
     ) {
       const fallbackUrl = `${window.location.protocol}//${window.location.hostname}:5000/api${endpoint}`;

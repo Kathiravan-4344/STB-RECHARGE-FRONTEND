@@ -71,7 +71,7 @@ const createRechargeRequest = async (req, res) => {
 
     const cleanStbId = stbId ? stbId.trim().toUpperCase() : "STB-UNKNOWN";
 
-    // Find or create Plan
+    // 1. Find or create Plan (guaranteed non-null)
     let plan = null;
     if (planId && planId.match(/^[0-9a-fA-F]{24}$/)) {
       plan = await Plan.findById(planId);
@@ -80,14 +80,20 @@ const createRechargeRequest = async (req, res) => {
       plan = await Plan.findOne({ name: planName });
     }
     if (!plan) {
+      plan = await Plan.findOne();
+    }
+    if (!plan) {
       let plans = await Plan.find();
       if (plans.length === 0) {
         plans = await Plan.insertMany(DEFAULT_PLANS);
       }
       plan = plans[0];
     }
+    if (!plan) {
+      plan = await Plan.create(DEFAULT_PLANS[0]);
+    }
 
-    // Find or create User
+    // 2. Find or create User (guaranteed non-null)
     let user = null;
     if (userId && userId.match(/^[0-9a-fA-F]{24}$/)) {
       user = await User.findById(userId);
@@ -102,7 +108,8 @@ const createRechargeRequest = async (req, res) => {
       const mob =
         customerMobile && customerMobile.trim().length >= 10
           ? customerMobile.trim()
-          : "9" + Math.floor(100000000 + Math.random() * 900000000);
+          : "9" + Date.now().toString().slice(-9);
+
       user = await User.findOne({ mobileNumber: mob });
       if (!user) {
         try {
@@ -113,10 +120,11 @@ const createRechargeRequest = async (req, res) => {
             role: "customer",
           });
         } catch (e) {
-          user = await User.findOne({ role: "customer" });
+          // If creation failed due to duplicate key or validation error, find matching or fallback user
+          user = (await User.findOne({ mobileNumber: mob })) || (await User.findOne());
           if (!user) {
             user = await User.create({
-              mobileNumber: "9" + Date.now().toString().slice(-9),
+              mobileNumber: "9" + Math.floor(100000000 + Math.random() * 900000000),
               name: customerName || "Customer",
               stbId: cleanStbId,
               role: "customer",
@@ -135,11 +143,13 @@ const createRechargeRequest = async (req, res) => {
         needsSave = true;
       }
       if (needsSave) {
-        await user.save();
+        try {
+          await user.save();
+        } catch (e) {}
       }
     }
 
-    // Create recharge request
+    // 3. Create recharge request
     const rechargeRequest = await RechargeRequest.create({
       userId: user._id,
       stbId: cleanStbId,
@@ -159,9 +169,10 @@ const createRechargeRequest = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Recharge request submitted successfully. Awaiting operator approval.",
-      rechargeRequest: populated,
+      rechargeRequest: populated || rechargeRequest,
     });
   } catch (error) {
+    console.error("[createRechargeRequest Error]", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

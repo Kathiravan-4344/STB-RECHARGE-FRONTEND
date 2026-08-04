@@ -108,6 +108,7 @@ export type Txn = {
   customerMobile?: string;
   stbId?: string;
   startedAt?: number;
+  syncedToBackend?: boolean;
 };
 
 export type STB = {
@@ -491,6 +492,40 @@ export async function syncOperatorsFromBackend() {
 
 export async function syncPendingRechargesFromBackend() {
   try {
+    // 1. Auto-retry unsynced local pending transactions
+    const unsynced = state.txns.filter(
+      (t) => t.status === "pending" && !t.syncedToBackend && !t.id.match(/^[0-9a-fA-F]{24}$/)
+    );
+
+    for (const t of unsynced) {
+      try {
+        const res = await apiCreateRecharge({
+          stbId: t.stbId || "1234567890",
+          planName: t.planName,
+          amount: t.amount,
+          customerName: t.customerName,
+          customerMobile: t.customerMobile,
+          paymentStatus: "Success",
+        });
+
+        if (res.success && res.data?.rechargeRequest?._id) {
+          const backendId = res.data.rechargeRequest._id;
+          const updatedTxns = state.txns.map((item) =>
+            item.id === t.id ? { ...item, id: backendId, syncedToBackend: true } : item
+          );
+          const currentPending = state.pending;
+          const isPendingMatch = currentPending?.txnId === t.id;
+          setState({
+            txns: updatedTxns,
+            pending: isPendingMatch && currentPending ? { ...currentPending, txnId: backendId } : state.pending,
+          });
+        }
+      } catch (retryErr) {
+        console.warn("[Auto-Retry Recharge Warning]", retryErr);
+      }
+    }
+
+    // 2. Fetch latest recharges from backend MongoDB
     const res = await apiGetPendingRecharges();
     if (res.success && res.data?.requests) {
       const backendRequests = res.data.requests;
@@ -514,11 +549,12 @@ export async function syncPendingRechargesFromBackend() {
           customerMobile,
           stbId,
           startedAt: new Date(date).getTime(),
+          syncedToBackend: true,
         };
       });
 
       const recentLocalPending = state.txns.filter(
-        (t) => t.status === "pending" && Date.now() - (t.startedAt || 0) < 60000 && !backendTxns.some((b) => b.id === t.id)
+        (t) => t.status === "pending" && !t.syncedToBackend && !backendTxns.some((b) => b.id === t.id)
       );
 
       const mergedTxns = [...recentLocalPending, ...backendTxns].sort(
