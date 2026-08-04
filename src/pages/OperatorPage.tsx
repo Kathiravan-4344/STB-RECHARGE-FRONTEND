@@ -182,6 +182,14 @@ export function OperatorPage() {
     syncProductRequestsFromBackend();
     syncComplaintsFromBackend();
     syncOperatorsFromBackend();
+
+    const interval = setInterval(() => {
+      syncPendingRechargesFromBackend();
+      syncProductRequestsFromBackend();
+      syncComplaintsFromBackend();
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
