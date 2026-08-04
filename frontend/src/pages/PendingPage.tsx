@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppShell } from "../components/AppShell";
-import { useStore, approveTxn, rejectTxn } from "../services/store";
+import { useStore, approveTxn, rejectTxn, syncPendingRechargesFromBackend } from "../services/store";
 import { useCountdown } from "../hooks/useCountdown";
 import { Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
@@ -14,6 +14,14 @@ export function PendingPage() {
   const isStaff = role === "operator" || role === "admin";
   const navigate = useNavigate();
   const cd = useCountdown(pending?.startedAt ?? 0, FORTY_FIVE_MIN);
+
+  useEffect(() => {
+    syncPendingRechargesFromBackend();
+    const interval = setInterval(() => {
+      syncPendingRechargesFromBackend();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!pending) {
