@@ -1,11 +1,4 @@
 const mongoose = require("mongoose");
-const dns = require("dns");
-
-try {
-  if (dns && typeof dns.setServers === "function") {
-    dns.setServers(["8.8.8.8", "1.1.1.1"]);
-  }
-} catch (e) {}
 
 const DEFAULT_ATLAS_URI =
   "mongodb+srv://kathir_stb_recharge:V.Kathiravan.4344@cluster0.eusikww.mongodb.net/stb_recharge?retryWrites=true&w=majority&appName=Cluster0";
