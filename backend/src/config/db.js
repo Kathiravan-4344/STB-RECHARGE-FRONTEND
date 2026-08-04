@@ -2,7 +2,9 @@ const mongoose = require("mongoose");
 const dns = require("dns");
 
 try {
-  dns.setServers(["8.8.8.8", "8.8.4.4"]);
+  if (dns && typeof dns.setServers === "function") {
+    dns.setServers(["8.8.8.8", "8.8.4.4"]);
+  }
 } catch (e) {
   console.warn("Unable to set custom DNS servers:", e.message);
 }

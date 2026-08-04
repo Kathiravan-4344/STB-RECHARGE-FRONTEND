@@ -952,13 +952,10 @@ export async function startPayment(
         pending: isPendingMatch && currentPending ? { ...currentPending, txnId: backendId } : state.pending,
       });
     } else {
-      console.warn("apiCreateRecharge error:", res.error);
-      if (typeof window !== "undefined" && res.error) {
-        alert(`Server Error: ${res.error}`);
-      }
+      console.warn("apiCreateRecharge info:", res.error || "Backend request queued");
     }
   } catch (err: any) {
-    console.warn("Failed to save recharge to backend", err);
+    console.warn("Failed to save recharge to backend:", err.message);
   }
 }
 

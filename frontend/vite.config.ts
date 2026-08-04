@@ -5,10 +5,14 @@ import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const apiTarget =
+  const rawTarget =
     env.VITE_BACKEND_TARGET ||
-    (env.VITE_API_URL ? env.VITE_API_URL.replace(/\/api\/?$/, "") : null) ||
-    "http://localhost:5000";
+    (env.VITE_API_URL && env.VITE_API_URL.startsWith("http")
+      ? env.VITE_API_URL.replace(/\/api\/?$/, "")
+      : null) ||
+    "http://127.0.0.1:5000";
+
+  const apiTarget = rawTarget.replace("localhost", "127.0.0.1");
 
   return {
     plugins: [react(), tailwindcss()],
@@ -23,6 +27,7 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target: apiTarget,
           changeOrigin: true,
+          secure: false,
         },
       },
     },
