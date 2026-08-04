@@ -3,28 +3,15 @@
 
 function getApiBaseUrl(): string {
   const envUrl = import.meta.env.VITE_API_URL;
-  const backendTarget = import.meta.env.VITE_BACKEND_TARGET;
 
   // Explicit remote production URL (e.g. https://stb-recharge-backend.onrender.com/api)
   if (envUrl && envUrl.startsWith("http") && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
     return envUrl;
   }
 
-  if (typeof window !== "undefined" && window.location) {
-    const hostname = window.location.hostname;
-    const isLanIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname) || hostname.endsWith(".local");
-
-    // Only rewrite localhost URL when accessing via a local Wi-Fi / LAN IP address
-    if (isLanIp) {
-      if (backendTarget && backendTarget.startsWith("http")) {
-        return `${backendTarget.replace("localhost", hostname).replace("127.0.0.1", hostname)}/api`;
-      }
-      return `${window.location.protocol}//${hostname}:5000/api`;
-    }
-  }
-
-  // Standard relative endpoint (Works with Vercel serverless functions / Vite dev proxy)
-  return envUrl || "/api";
+  // Always return relative /api so both Laptop & Mobile route through the Vite proxy (or Vercel serverless functions).
+  // This avoids direct port 5000 firewall blocks when accessing from mobile devices over Wi-Fi.
+  return "/api";
 }
 
 async function parseResponseData(res: Response): Promise<any> {
