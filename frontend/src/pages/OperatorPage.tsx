@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   useStore,
   approveTxn,
+  rejectTxn,
   logout,
   formatName,
   updateProductStatus,
@@ -287,8 +288,7 @@ export function OperatorPage() {
   });
 
   function handleRejectTxn(id: string) {
-    const updated = txns.map((t) => (t.id === id ? { ...t, status: "failed" as const } : t));
-    setState({ txns: updated });
+    rejectTxn(id);
   }
 
   function handleSaveStockUpdate() {

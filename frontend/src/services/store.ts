@@ -958,6 +958,7 @@ export async function startPayment(
     customerMobile: targetCustomerMobile,
     stbId: targetStbId,
     startedAt: now,
+    syncedToBackend: false,
   };
 
   setState({
@@ -981,7 +982,7 @@ export async function startPayment(
       const currentPending = state.pending;
       const isPendingMatch = currentPending?.txnId === localTxnId;
       const updatedTxns = state.txns.map((t) =>
-        t.id === localTxnId ? { ...t, id: backendId } : t,
+        t.id === localTxnId ? { ...t, id: backendId, syncedToBackend: true } : t,
       );
       setState({
         txns: updatedTxns,
