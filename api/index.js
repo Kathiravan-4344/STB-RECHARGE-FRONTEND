@@ -1,6 +1,3 @@
-const connectDB = require("../backend/src/config/db.js");
-const app = require("../backend/src/server.js");
-
 module.exports = async (req, res) => {
   // Enable CORS for Vercel Serverless execution
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -12,6 +9,9 @@ module.exports = async (req, res) => {
   }
 
   try {
+    const connectDB = require("../backend/src/config/db.js");
+    const app = require("../backend/src/server.js");
+
     await connectDB();
 
     // Clean and normalize req.url for Express app routes
