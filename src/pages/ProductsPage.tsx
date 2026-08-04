@@ -155,6 +155,9 @@ export function ProductsPage() {
       quantity,
       description: description.trim(),
       imageUrl: imagePreview || undefined,
+      stbId: stbIdInput.trim(),
+      customerName: nameInput.trim(),
+      customerMobile: mobileInput.trim(),
     });
 
     setSuccessMsg(

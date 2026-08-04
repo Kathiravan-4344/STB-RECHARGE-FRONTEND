@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 // API Integration Service for Backend & MongoDB Atlas Database
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
@@ -34,11 +35,21 @@ export async function apiSendOtp(mobileNumber: string) {
 }
 
 export async function apiVerifyOtp(mobileNumber: string, otp: string, name?: string, stbId?: string) {
-  return apiRequest("/auth/verify-otp", {
+  return apiRequest<{ token: string; user: any }>("/auth/verify-otp", {
     method: "POST",
     body: JSON.stringify({ mobileNumber, otp, name, stbId }),
   });
 }
+
+export async function apiGetUserProfile(mobileNumber: string) {
+  return apiRequest<{
+    user: any;
+    recharges: any[];
+    productRequests: any[];
+    complaints: any[];
+  }>(`/auth/profile/${encodeURIComponent(mobileNumber)}`);
+}
+
 
 // Admin API Calls
 export async function apiAddOperator(mobileNumber: string, name: string) {
@@ -70,18 +81,57 @@ export async function apiGetPlans() {
   return apiRequest<{ plans: any[] }>("/plans");
 }
 
-export async function apiCreateRecharge(stbId: string, planId: string, amount: number) {
-  return apiRequest("/recharge/create", {
+export async function apiCreateRecharge(payload: {
+  stbId: string;
+  planId?: string;
+  planName?: string;
+  amount: number;
+  customerName?: string;
+  customerMobile?: string;
+  paymentStatus?: string;
+}) {
+  return apiRequest<{ rechargeRequest: any }>("/recharge/create", {
     method: "POST",
-    body: JSON.stringify({ stbId, planId, amount }),
+    body: JSON.stringify({ paymentStatus: "Success", ...payload }),
   });
+}
+
+export async function apiGetPendingRecharges() {
+  return apiRequest<{ requests: any[] }>("/recharge/pending");
+}
+
+export async function apiApproveRecharge(id: string) {
+  return apiRequest(`/operator/approve/${id}`, {
+    method: "POST",
+  });
+}
+
+export async function apiRejectRecharge(id: string) {
+  return apiRequest(`/operator/reject/${id}`, {
+    method: "POST",
+  });
+}
+
+export async function apiGetRechargeStatus(id: string) {
+  return apiRequest<{ status: string; approvedTime?: string }>(`/recharge/status/${id}`);
 }
 
 // Complaints API Calls
 export async function apiCreateComplaint(payload: any) {
-  return apiRequest("/complaint/create", {
+  return apiRequest<{ complaint: any }>("/complaint/create", {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+}
+
+export async function apiGetComplaints() {
+  return apiRequest<{ complaints: any[] }>("/complaint/all");
+}
+
+export async function apiUpdateComplaintStatus(id: string, patch: any) {
+  return apiRequest<{ complaint: any }>(`/complaint/update/${id}`, {
+    method: "POST",
+    body: JSON.stringify(patch),
   });
 }
 
@@ -89,3 +139,24 @@ export async function apiCreateComplaint(payload: any) {
 export async function apiGetProducts() {
   return apiRequest<{ products: any[] }>("/products");
 }
+
+// Product Requests API Calls
+export async function apiCreateProductRequest(payload: any) {
+  return apiRequest<{ productRequest: any }>("/product-request/create", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiGetProductRequests() {
+  return apiRequest<{ requests: any[] }>("/product-request/all");
+}
+
+export async function apiUpdateProductRequestStatus(id: string, patch: any) {
+  return apiRequest<{ productRequest: any }>(`/product-request/update/${id}`, {
+    method: "POST",
+    body: JSON.stringify(patch),
+  });
+}
+
+

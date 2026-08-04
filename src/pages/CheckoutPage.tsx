@@ -12,6 +12,7 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
     () => allPlans.find((p) => p.id === searchPlanId) ?? allPlans[1] ?? allPlans[0],
     [allPlans, searchPlanId],
   );
+  const user = useStore((s) => s.user);
   const stb = useStore((s) => s.stb);
   const appliedCoupon = useStore((s) => s.appliedCoupon);
   const navigate = useNavigate();
@@ -31,7 +32,11 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
   function pay() {
     setProcessing(true);
     setTimeout(() => {
-      startPayment(plan.id, total, plan.name);
+      startPayment(plan.id, total, plan.name, {
+        stbId: stb?.id || user?.stbId,
+        customerName: user?.name || stb?.customerName,
+        customerMobile: user?.mobile,
+      });
       navigate({ to: "/recharge/pending" });
     }, 1200);
   }

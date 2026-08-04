@@ -1,7 +1,27 @@
 // In-memory data store for STB RECHARGE (Pure Frontend - Supabase removed).
 import { useSyncExternalStore } from "react";
-import { cleanMobile, mobileToEmail } from "../utils/utils";
-import { apiAddOperator, apiToggleOperator, apiDeleteOperator, apiGetOperators } from "./api";
+import { cleanMobile, cleanContact, mobileToEmail } from "../utils/utils";
+import {
+  apiAddOperator,
+  apiToggleOperator,
+  apiDeleteOperator,
+  apiGetOperators,
+  apiCreateRecharge,
+  apiGetPendingRecharges,
+  apiApproveRecharge,
+  apiRejectRecharge,
+  apiGetRechargeStatus,
+  apiCreateProductRequest,
+  apiGetProductRequests,
+  apiUpdateProductRequestStatus,
+  apiCreateComplaint,
+  apiGetComplaints,
+  apiUpdateComplaintStatus,
+  apiVerifyOtp,
+  apiGetUserProfile,
+} from "./api";
+
+
 
 export type Plan = {
   id: string;
@@ -319,6 +339,13 @@ export const INITIAL_APPROVED_OPERATORS: ApprovedOperator[] = [
     addedAt: new Date().toISOString(),
     active: true,
   },
+  {
+    id: "op-2",
+    mobile: "9787312758",
+    name: "KATHIR",
+    addedAt: new Date().toISOString(),
+    active: true,
+  },
 ];
 
 const defaultState: State = {
@@ -357,13 +384,46 @@ function loadSavedState(): State {
   return defaultState;
 }
 
-function saveState() {
+const syncChannel =
+  typeof window !== "undefined" && "BroadcastChannel" in window
+    ? new BroadcastChannel("stb_recharge_sync_channel")
+    : null;
+
+function saveState(broadcast = true) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (broadcast && syncChannel) {
+      syncChannel.postMessage({ type: "STATE_UPDATED" });
+    }
   } catch (e) {
     console.error("Failed to save local state", e);
   }
+}
+
+// Listen for instant cross-tab / multi-window sync
+if (typeof window !== "undefined") {
+  if (syncChannel) {
+    syncChannel.onmessage = (event) => {
+      if (event.data?.type === "STATE_UPDATED") {
+        const saved = loadSavedState();
+        state = { ...state, ...saved };
+        listeners.forEach((l) => l());
+      }
+    };
+  }
+
+  window.addEventListener("storage", (event) => {
+    if (event.key === STORAGE_KEY && event.newValue) {
+      try {
+        const parsed = JSON.parse(event.newValue);
+        state = { ...state, ...parsed };
+        listeners.forEach((l) => l());
+      } catch (e) {
+        console.warn("Failed to sync storage event", e);
+      }
+    }
+  });
 }
 
 function emit() {
@@ -408,25 +468,315 @@ export async function syncOperatorsFromBackend() {
         addedAt: op.createdAt || op.addedAt || new Date().toISOString(),
         active: op.isActive !== undefined ? op.isActive : true,
       }));
-      if (fetched.length > 0) {
-        setState({ approvedOperators: fetched });
-      }
+      
+      const mergedMap = new Map<string, ApprovedOperator>();
+      INITIAL_APPROVED_OPERATORS.forEach((op) => {
+        mergedMap.set(cleanContact(op.mobile), op);
+      });
+      state.approvedOperators.forEach((op) => {
+        mergedMap.set(cleanContact(op.mobile), op);
+      });
+      fetched.forEach((op) => {
+        const key = cleanContact(op.mobile);
+        const existing = mergedMap.get(key);
+        mergedMap.set(key, { ...(existing || {}), ...op });
+      });
+
+      setState({ approvedOperators: Array.from(mergedMap.values()) });
     }
   } catch (e) {
     console.warn("Failed to sync operators from backend", e);
   }
 }
 
+export async function syncPendingRechargesFromBackend() {
+  try {
+    const res = await apiGetPendingRecharges();
+    if (res.success && res.data?.requests) {
+      const backendRequests = res.data.requests;
+      const backendTxns: Txn[] = backendRequests.map((r: any) => {
+        const id = r._id || r.id;
+        const planName = r.planId?.name || r.planName || "STB Recharge";
+        const amount = r.amount || r.planId?.price || 0;
+        const status = r.status === "Approved" ? "success" : r.status === "Rejected" ? "failed" : "pending";
+        const date = r.requestTime || r.createdAt || new Date().toISOString();
+        const customerName = r.customerName || r.userId?.name || "Customer";
+        const customerMobile = r.customerMobile || r.userId?.mobileNumber || "";
+        const stbId = r.stbId || r.userId?.stbId || "";
+        return {
+          id,
+          planName,
+          amount,
+          date,
+          status,
+          approvedAt: r.approvedTime,
+          customerName,
+          customerMobile,
+          stbId,
+          startedAt: new Date(date).getTime(),
+        };
+      });
+
+      const recentLocalPending = state.txns.filter(
+        (t) => t.status === "pending" && Date.now() - (t.startedAt || 0) < 60000 && !backendTxns.some((b) => b.id === t.id)
+      );
+
+      const mergedTxns = [...recentLocalPending, ...backendTxns].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      );
+
+      let currentPending = state.pending;
+      if (currentPending) {
+        const match = mergedTxns.find((t) => t.id === currentPending?.txnId);
+        if (match && match.status !== "pending") {
+          currentPending = null;
+          if (match.status === "success" && state.stb) {
+            state = {
+              ...state,
+              stb: {
+                ...state.stb,
+                currentPlan: match.planName,
+                expiry: new Date(Date.now() + 30 * 86400000).toISOString(),
+                active: true,
+              },
+            };
+          }
+        }
+      }
+
+      setState({ txns: mergedTxns, pending: currentPending });
+    }
+  } catch (e) {
+    console.warn("Failed to sync pending recharges from backend", e);
+  }
+}
+
+export async function syncProductRequestsFromBackend() {
+  try {
+    const res = await apiGetProductRequests();
+    if (res.success && res.data?.requests) {
+      const backendReqs: ProductRequest[] = res.data.requests.map((r: any) => ({
+        id: r._id || r.id,
+        stbId: r.stbId || "STB-UNKNOWN",
+        customerName: r.customerName || "Customer",
+        customerMobile: r.customerMobile || "",
+        productId: r.productId,
+        productName: r.productName,
+        category: r.category || "accessory",
+        quantity: r.quantity || 1,
+        unitPrice: r.unitPrice || 0,
+        totalAmount: r.totalAmount || 0,
+        description: r.description || "",
+        imageUrl: r.imageUrl || "",
+        status: r.status || "Pending",
+        createdAt: r.createdAt || new Date().toISOString(),
+        technicianName: r.technicianName,
+        technicianMobile: r.technicianMobile,
+        scheduledDate: r.scheduledDate,
+        operatorNote: r.operatorNote,
+      }));
+
+      const merged = backendReqs.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+      setState({ productRequests: merged });
+    }
+  } catch (e) {
+    console.warn("Failed to sync product requests from backend", e);
+  }
+}
+
+export async function syncComplaintsFromBackend() {
+  try {
+    const res = await apiGetComplaints();
+    if (res.success && res.data?.complaints) {
+      const backendCmps: Complaint[] = res.data.complaints.map((c: any) => ({
+        id: c._id || c.id,
+        stbId: c.stbId || "STB-UNKNOWN",
+        customerName: c.customerName || "Customer",
+        customerMobile: c.customerMobile || "",
+        category: c.category || "General Issues",
+        issueType: c.issueType || "",
+        description: c.description || "",
+        mediaUrl: c.mediaUrl || "",
+        preferredTime: c.preferredTime || "Anytime",
+        status: c.status || "Pending",
+        createdAt: c.createdAt || new Date().toISOString(),
+        technicianName: c.technicianName,
+        technicianMobile: c.technicianMobile,
+        assignedAt: c.assignedAt,
+        expectedArrival: c.expectedArrival,
+        resolvedAt: c.resolvedAt,
+        rating: c.rating,
+        feedback: c.feedback,
+      }));
+
+      const merged = backendCmps.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+      setState({ complaints: merged });
+    }
+  } catch (e) {
+    console.warn("Failed to sync complaints from backend", e);
+  }
+}
+
+
+export async function syncAccountFromBackend(mobileNumber?: string) {
+  const targetMobile = mobileNumber || state.user?.mobile;
+  if (!targetMobile) return;
+
+  try {
+    const res = await apiGetUserProfile(targetMobile);
+    if (res.success && res.data?.user) {
+      const uData = res.data.user;
+      const rechargesData = res.data.recharges || [];
+      const prodReqsData = res.data.productRequests || [];
+      const complaintsData = res.data.complaints || [];
+
+      const isOpApproved = isOperatorApproved(uData.mobileNumber || targetMobile);
+      let resolvedRole: User["role"] = uData.role || state.user?.role || "customer";
+      if (uData.mobileNumber === "9080864542" || targetMobile === "9080864542") {
+        resolvedRole = "admin";
+      } else if (isOpApproved || uData.role === "operator") {
+        resolvedRole = "operator";
+      }
+
+      const updatedUser: User = {
+        ...(state.user || {}),
+        id: uData.id || uData._id || `usr-${uData.mobileNumber}`,
+        mobile: uData.mobileNumber || targetMobile,
+        name: uData.name || state.user?.name || (resolvedRole === "operator" ? "Operator" : "Customer"),
+        stbId: uData.stbId || state.user?.stbId || `STB-${uData.mobileNumber.slice(-6)}`,
+        role: resolvedRole,
+      };
+
+
+      const defaultExpiry = new Date(Date.now() + 15 * 86400000).toISOString();
+      const expiryDate = uData.expiryDate
+        ? new Date(uData.expiryDate).toISOString()
+        : state.stb?.expiry || defaultExpiry;
+
+      const updatedStb: STB = {
+        id: updatedUser.stbId || "1234567890",
+        customerName: updatedUser.name || "Customer",
+        currentPlan: uData.currentPlan || state.stb?.currentPlan || "Basic Tamil Silver Pack Monthly Rs 240",
+        expiry: expiryDate,
+        active: uData.status !== "Inactive",
+      };
+
+      const userTxns: Txn[] = rechargesData.map((r: any) => ({
+        id: r._id || r.id,
+        planName: r.planId?.name || r.planName || "STB Recharge",
+        amount: r.amount || r.planId?.price || 0,
+        date: r.requestTime || r.createdAt || new Date().toISOString(),
+        status: r.status === "Approved" ? "success" : r.status === "Rejected" ? "failed" : "pending",
+        approvedAt: r.approvedTime,
+        customerName: r.customerName || updatedUser.name,
+        customerMobile: r.customerMobile || updatedUser.mobile,
+        stbId: r.stbId || updatedUser.stbId,
+        startedAt: new Date(r.requestTime || r.createdAt).getTime(),
+      }));
+
+      const userProdReqs: ProductRequest[] = prodReqsData.map((r: any) => ({
+        id: r._id || r.id,
+        stbId: r.stbId || updatedUser.stbId || "STB-UNKNOWN",
+        customerName: r.customerName || updatedUser.name || "Customer",
+        customerMobile: r.customerMobile || updatedUser.mobile || "",
+        productId: r.productId,
+        productName: r.productName,
+        category: r.category || "accessory",
+        quantity: r.quantity || 1,
+        unitPrice: r.unitPrice || 0,
+        totalAmount: r.totalAmount || 0,
+        description: r.description || "",
+        imageUrl: r.imageUrl || "",
+        status: r.status || "Pending",
+        createdAt: r.createdAt || new Date().toISOString(),
+        technicianName: r.technicianName,
+        technicianMobile: r.technicianMobile,
+        scheduledDate: r.scheduledDate,
+        operatorNote: r.operatorNote,
+      }));
+
+      const userComplaints: Complaint[] = complaintsData.map((c: any) => ({
+        id: c._id || c.id,
+        stbId: c.stbId || updatedUser.stbId || "STB-UNKNOWN",
+        customerName: c.customerName || updatedUser.name || "Customer",
+        customerMobile: c.customerMobile || updatedUser.mobile || "",
+        category: c.category || "General Issues",
+        issueType: c.issueType || "",
+        description: c.description || "",
+        mediaUrl: c.mediaUrl || "",
+        preferredTime: c.preferredTime || "Anytime",
+        status: c.status || "Pending",
+        createdAt: c.createdAt || new Date().toISOString(),
+        technicianName: c.technicianName,
+        technicianMobile: c.technicianMobile,
+        assignedAt: c.assignedAt,
+        expectedArrival: c.expectedArrival,
+        resolvedAt: c.resolvedAt,
+        rating: c.rating,
+        feedback: c.feedback,
+      }));
+
+      if (updatedUser.role === "customer") {
+        setState({
+          user: updatedUser,
+          stb: updatedStb,
+          txns: userTxns,
+          productRequests: userProdReqs,
+          complaints: userComplaints,
+          ready: true,
+        });
+      } else {
+        setState({
+          user: updatedUser,
+          stb: updatedStb,
+          ready: true,
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to sync account from backend", err);
+  }
+}
+
+let pollTimer: any = null;
+
 export async function initStore() {
   if (booted || typeof window === "undefined") return;
   booted = true;
   state = loadSavedState();
   setState({ ready: true });
+
+  if (state.user?.mobile) {
+    syncAccountFromBackend(state.user.mobile);
+  }
+
   syncOperatorsFromBackend();
+  syncPendingRechargesFromBackend();
+  syncProductRequestsFromBackend();
+  syncComplaintsFromBackend();
+
+  if (!pollTimer) {
+    pollTimer = setInterval(() => {
+      if (state.user?.mobile) {
+        syncAccountFromBackend(state.user.mobile);
+      }
+      syncPendingRechargesFromBackend();
+      syncProductRequestsFromBackend();
+      syncComplaintsFromBackend();
+    }, 4000);
+  }
 }
+
 
 export async function refreshUserData() {
   setState({ ready: true });
+  if (state.user?.mobile) {
+    await syncAccountFromBackend(state.user.mobile);
+  }
 }
 
 export async function refreshAdminData() {
@@ -445,13 +795,26 @@ export function sendOtp(mobile: string) {
 }
 
 export function isOperatorApproved(contact: string): boolean {
+  if (!contact) return false;
+  const cleaned = cleanContact(contact);
   const digitsOnly = cleanMobile(contact);
-  if (digitsOnly === "9080864542") return true;
-  return state.approvedOperators.some(
-    (op) =>
-      op.active &&
-      (op.mobile === digitsOnly || (digitsOnly.length >= 5 && op.mobile.includes(digitsOnly))),
-  );
+  const trimmed = contact.trim().toLowerCase();
+
+  if (digitsOnly === "9080864542" || digitsOnly === "9787312758" || cleaned === "9080864542" || cleaned === "9787312758") return true;
+
+  return state.approvedOperators.some((op) => {
+    if (!op.active) return false;
+    const opCleaned = cleanContact(op.mobile);
+    const opDigits = cleanMobile(op.mobile);
+    const opCleanStr = op.mobile.trim().toLowerCase();
+    return (
+      (cleaned.length > 0 && opCleaned === cleaned) ||
+      (digitsOnly.length > 0 && opDigits === digitsOnly) ||
+      (opDigits.length >= 5 && digitsOnly.includes(opDigits)) ||
+      (opDigits.length >= 5 && opDigits.includes(digitsOnly)) ||
+      opCleanStr === trimmed
+    );
+  });
 }
 
 export function isCustomerBlocked(identifier: string): boolean {
@@ -472,15 +835,26 @@ export async function verifyOtp(
   if (otp.trim().length < 4) return false;
   if (!isEmail && cleanedMobile.length < 10 && cleanedMobile !== "9080864542") return false;
 
+  await syncOperatorsFromBackend();
+
   let effectiveRole: User["role"] = role;
   if (cleanedMobile === "9080864542") {
     effectiveRole = "admin";
-  } else if (role === "operator" && isOperatorApproved(mobile)) {
+  } else if (isOperatorApproved(mobile)) {
     effectiveRole = "operator";
   }
 
   if (isCustomerBlocked(mobile) && effectiveRole === "customer") {
     return false;
+  }
+
+  try {
+    const res = await apiVerifyOtp(cleanedMobile, otp, name, extra?.stbId);
+    if (res.success && res.data?.user?.role) {
+      effectiveRole = res.data.user.role as User["role"];
+    }
+  } catch (e) {
+    console.warn("Backend verify OTP warning:", e);
   }
 
   const user: User = {
@@ -502,8 +876,10 @@ export async function verifyOtp(
   };
 
   setState({ user, stb, ready: true });
+  await syncAccountFromBackend(cleanedMobile);
   return true;
 }
+
 
 export async function logout() {
   setState({ user: null, stb: null, pending: null, appliedCoupon: null, ready: true });
@@ -511,37 +887,40 @@ export async function logout() {
 
 // STB management
 export async function fetchStb(id: string): Promise<STB | null> {
-  const existing = state.stb;
-  if (existing && existing.id === id) return existing;
-  const newStb: STB = {
-    id,
-    customerName: state.user?.name || "Customer",
-    currentPlan: "Basic Tamil Silver Pack Monthly Rs 240",
-    expiry: new Date(Date.now() + 15 * 86400000).toISOString(),
-    active: true,
-  };
-  setState({ stb: newStb });
-  return newStb;
+  if (state.user?.mobile) {
+    await syncAccountFromBackend(state.user.mobile);
+  }
+  return state.stb;
 }
 
+
 // Transactions & Recharge Flow
-export function startPayment(planId: string, amount: number, planName: string) {
-  const txnId = "TXN" + Math.floor(Math.random() * 900000 + 100000);
+export async function startPayment(
+  planId: string,
+  amount: number,
+  planName: string,
+  customDetails?: { stbId?: string; customerName?: string; customerMobile?: string },
+) {
+  const localTxnId = "TXN" + Math.floor(Math.random() * 900000 + 100000);
   const now = Date.now();
   const user = state.user;
   const stb = state.stb;
 
-  const pending = { txnId, planName, amount, startedAt: now };
+  const targetStbId = customDetails?.stbId || stb?.id || user?.stbId || "1234567890";
+  const targetCustomerName = customDetails?.customerName || user?.name || "Customer";
+  const targetCustomerMobile = customDetails?.customerMobile || user?.mobile || "";
+
+  const pending = { txnId: localTxnId, planName, amount, startedAt: now };
 
   const newTxn: Txn = {
-    id: txnId,
+    id: localTxnId,
     planName,
     amount,
     date: new Date(now).toISOString(),
     status: "pending",
-    customerName: user?.name || "Customer",
-    customerMobile: user?.mobile || "",
-    stbId: stb?.id || "",
+    customerName: targetCustomerName,
+    customerMobile: targetCustomerMobile,
+    stbId: targetStbId,
     startedAt: now,
   };
 
@@ -549,6 +928,38 @@ export function startPayment(planId: string, amount: number, planName: string) {
     pending,
     txns: [newTxn, ...state.txns],
   });
+
+  try {
+    const res = await apiCreateRecharge({
+      stbId: targetStbId,
+      planId,
+      planName,
+      amount,
+      customerName: targetCustomerName,
+      customerMobile: targetCustomerMobile,
+      paymentStatus: "Success",
+    });
+
+    if (res.success && res.data?.rechargeRequest?._id) {
+      const backendId = res.data.rechargeRequest._id;
+      const currentPending = state.pending;
+      const isPendingMatch = currentPending?.txnId === localTxnId;
+      const updatedTxns = state.txns.map((t) =>
+        t.id === localTxnId ? { ...t, id: backendId } : t,
+      );
+      setState({
+        txns: updatedTxns,
+        pending: isPendingMatch && currentPending ? { ...currentPending, txnId: backendId } : state.pending,
+      });
+    } else {
+      console.warn("apiCreateRecharge error:", res.error);
+      if (typeof window !== "undefined" && res.error) {
+        alert(`Server Error: ${res.error}`);
+      }
+    }
+  } catch (err: any) {
+    console.warn("Failed to save recharge to backend", err);
+  }
 }
 
 export async function approveTxn(txnId: string) {
@@ -574,7 +985,23 @@ export async function approveTxn(txnId: string) {
     stb: newStb,
     pending: isPendingCleared ? null : state.pending,
   });
+
+  apiApproveRecharge(txnId);
 }
+
+export async function rejectTxn(txnId: string) {
+  const updatedTxns = state.txns.map((t) =>
+    t.id === txnId ? { ...t, status: "failed" as const } : t,
+  );
+  const isPendingCleared = state.pending?.txnId === txnId;
+  setState({
+    txns: updatedTxns,
+    pending: isPendingCleared ? null : state.pending,
+  });
+
+  apiRejectRecharge(txnId);
+}
+
 
 // Product Requests
 export async function requestProduct(payload: {
@@ -582,16 +1009,20 @@ export async function requestProduct(payload: {
   quantity?: number;
   description: string;
   imageUrl?: string;
+  stbId?: string;
+  customerName?: string;
+  customerMobile?: string;
 }) {
   const u = state.user;
   const stb = state.stb;
   const prod = state.products.find((p) => p.id === payload.productId);
 
+  const localId = "REQ" + Math.floor(Math.random() * 900000 + 100000);
   const req: ProductRequest = {
-    id: "REQ" + Math.floor(Math.random() * 900000 + 100000),
-    stbId: stb?.id || u?.stbId || "1234567890",
-    customerName: u?.name || "Customer",
-    customerMobile: u?.mobile || "",
+    id: localId,
+    stbId: payload.stbId || stb?.id || u?.stbId || "1234567890",
+    customerName: payload.customerName || u?.name || "Customer",
+    customerMobile: payload.customerMobile || u?.mobile || "",
     productId: payload.productId,
     productName: prod?.name || "Accessory/Service Request",
     category: prod?.category || "accessory",
@@ -605,6 +1036,17 @@ export async function requestProduct(payload: {
   };
 
   setState({ productRequests: [req, ...state.productRequests] });
+
+  try {
+    const res = await apiCreateProductRequest(req);
+    if (res.success && res.data?.productRequest?._id) {
+      const backendId = res.data.productRequest._id;
+      const updated = state.productRequests.map((r) => (r.id === localId ? { ...r, id: backendId } : r));
+      setState({ productRequests: updated });
+    }
+  } catch (err) {
+    console.warn("Failed to save product request to backend", err);
+  }
 }
 
 export async function updateProductStatus(
@@ -613,6 +1055,12 @@ export async function updateProductStatus(
 ) {
   const updated = state.productRequests.map((r) => (r.id === id ? { ...r, ...patch } : r));
   setState({ productRequests: updated });
+
+  try {
+    await apiUpdateProductRequestStatus(id, patch);
+  } catch (err) {
+    console.warn("Failed to update product request status on backend", err);
+  }
 }
 
 // Complaints
@@ -622,15 +1070,19 @@ export async function fileComplaint(payload: {
   description: string;
   mediaUrl?: string;
   preferredTime: string;
+  stbId?: string;
+  customerName?: string;
+  customerMobile?: string;
 }) {
   const u = state.user;
   const stb = state.stb;
 
+  const localId = "CMP" + Math.floor(Math.random() * 900000 + 100000);
   const cmp: Complaint = {
-    id: "CMP" + Math.floor(Math.random() * 900000 + 100000),
-    stbId: stb?.id || u?.stbId || "1234567890",
-    customerName: u?.name || "Customer",
-    customerMobile: u?.mobile || "",
+    id: localId,
+    stbId: payload.stbId || stb?.id || u?.stbId || "1234567890",
+    customerName: payload.customerName || u?.name || "Customer",
+    customerMobile: payload.customerMobile || u?.mobile || "",
     category: payload.category,
     issueType: payload.issueType,
     description: payload.description,
@@ -641,6 +1093,17 @@ export async function fileComplaint(payload: {
   };
 
   setState({ complaints: [cmp, ...state.complaints] });
+
+  try {
+    const res = await apiCreateComplaint(cmp);
+    if (res.success && res.data?.complaint?._id) {
+      const backendId = res.data.complaint._id;
+      const updated = state.complaints.map((c) => (c.id === localId ? { ...c, id: backendId } : c));
+      setState({ complaints: updated });
+    }
+  } catch (err) {
+    console.warn("Failed to save complaint to backend", err);
+  }
 }
 
 export async function updateComplaintStatus(
@@ -649,11 +1112,23 @@ export async function updateComplaintStatus(
 ) {
   const updated = state.complaints.map((c) => (c.id === id ? { ...c, ...patch } : c));
   setState({ complaints: updated });
+
+  try {
+    await apiUpdateComplaintStatus(id, patch);
+  } catch (err) {
+    console.warn("Failed to update complaint status on backend", err);
+  }
 }
 
 export async function rateComplaint(id: string, rating: number, feedback?: string) {
   const updated = state.complaints.map((c) => (c.id === id ? { ...c, rating, feedback } : c));
   setState({ complaints: updated });
+
+  try {
+    await apiUpdateComplaintStatus(id, { rating, feedback });
+  } catch (err) {
+    console.warn("Failed to submit rating on backend", err);
+  }
 }
 
 // Settings & Coupons
@@ -680,13 +1155,16 @@ export function applyCoupon(code: string): { success: boolean; discount: number;
 }
 
 // Admin Operations
-export async function upsertOperator(mobile: string, name: string, active = true) {
-  const cleaned = cleanMobile(mobile);
-  const exists = state.approvedOperators.find((o) => o.mobile === cleaned);
+export async function upsertOperator(mobile: string, name: string, active = true): Promise<{ success: boolean; message?: string }> {
+  const cleaned = cleanContact(mobile);
+  if (!cleaned) {
+    return { success: false, message: "Invalid mobile number or email address" };
+  }
+  const exists = state.approvedOperators.find((o) => cleanContact(o.mobile) === cleaned);
   let updatedOps: ApprovedOperator[];
   if (exists) {
     updatedOps = state.approvedOperators.map((o) =>
-      o.mobile === cleaned ? { ...o, name, active } : o,
+      cleanContact(o.mobile) === cleaned ? { ...o, mobile: cleaned, name, active } : o,
     );
   } else {
     updatedOps = [
@@ -695,8 +1173,18 @@ export async function upsertOperator(mobile: string, name: string, active = true
     ];
   }
   setState({ approvedOperators: updatedOps });
-  // Sync with MongoDB backend API asynchronously
-  apiAddOperator(cleaned, name);
+
+  try {
+    const res = await apiAddOperator(cleaned, name);
+    if (!res.success) {
+      console.warn("Backend add operator warning:", res.error);
+      return { success: false, message: res.error || "Failed to save operator to server database" };
+    }
+    return { success: true };
+  } catch (err: any) {
+    console.warn("apiAddOperator error:", err);
+    return { success: false, message: err.message || "Network request failed" };
+  }
 }
 
 export async function setOperatorActive(id: string, active: boolean) {

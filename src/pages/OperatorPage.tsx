@@ -9,12 +9,19 @@ import {
   upsertProduct,
   updateComplaintStatus,
   setState,
+  syncPendingRechargesFromBackend,
+  syncProductRequestsFromBackend,
+  syncComplaintsFromBackend,
+  syncOperatorsFromBackend,
+  isOperatorApproved,
   type ProductRequest,
   type Product,
   type ProductRequestStatus,
   type Complaint,
   type ComplaintStatus,
 } from "../services/store";
+
+
 import {
   Tv,
   CheckCircle2,
@@ -171,14 +178,39 @@ export function OperatorPage() {
   }, []);
 
   useEffect(() => {
-    if (!user || (user.role !== "operator" && user.role !== "admin")) {
-      navigate({ to: "/" });
+    if (!user) {
+      navigate({ to: "/login" });
+      return;
+    }
+    const isOp = isOperatorApproved(user.mobile);
+    if (user.role !== "operator" && user.role !== "admin" && !isOp) {
+      // If customer role and not approved operator, send to login
+      navigate({ to: "/login" });
     }
   }, [user, navigate]);
 
   if (!user) {
-    return null;
+    return (
+      <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl border border-[#CBD5E1] p-8 max-w-md w-full text-center shadow-lg">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-[#2563EB] mx-auto font-bold mb-4">
+            <Shield className="h-6 w-6" />
+          </div>
+          <h2 className="text-xl font-extrabold text-[#0F172A]">Operator Login Required</h2>
+          <p className="text-xs text-[#64748B] mt-2 leading-relaxed">
+            Please log in with your registered Operator Mobile Number to access the Control Center.
+          </p>
+          <button
+            onClick={() => navigate({ to: "/login" })}
+            className="mt-6 w-full rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] py-3 text-sm font-bold text-white shadow-md transition"
+          >
+            Go to Operator Login
+          </button>
+        </div>
+      </div>
+    );
   }
+
 
   // Summary counts
   const totalCount = txns.length;
@@ -196,22 +228,28 @@ export function OperatorPage() {
 
   // Filtered transactions
   const filteredTxns = txns.filter((t) => {
+    const q = searchTerm.trim().toLowerCase();
     const matchesSearch =
-      (t.stbId && t.stbId.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (t.customerMobile && t.customerMobile.includes(searchTerm)) ||
-      (t.customerName && t.customerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (t.id && t.id.toLowerCase().includes(searchTerm.toLowerCase()));
+      !q ||
+      (t.stbId && t.stbId.toLowerCase().includes(q)) ||
+      (t.customerMobile && t.customerMobile.includes(q)) ||
+      (t.customerName && t.customerName.toLowerCase().includes(q)) ||
+      (t.planName && t.planName.toLowerCase().includes(q)) ||
+      (t.id && t.id.toLowerCase().includes(q));
     const matchesStatus = statusFilter === "all" ? true : t.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   // Filtered Product Requests
   const filteredProductRequests = productRequests.filter((r) => {
+    const q = productReqSearch.trim().toLowerCase();
     const matchesSearch =
-      r.customerName.toLowerCase().includes(productReqSearch.toLowerCase()) ||
-      r.stbId.toLowerCase().includes(productReqSearch.toLowerCase()) ||
-      r.productName.toLowerCase().includes(productReqSearch.toLowerCase()) ||
-      r.customerMobile.includes(productReqSearch);
+      !q ||
+      (r.customerName && r.customerName.toLowerCase().includes(q)) ||
+      (r.stbId && r.stbId.toLowerCase().includes(q)) ||
+      (r.productName && r.productName.toLowerCase().includes(q)) ||
+      (r.customerMobile && r.customerMobile.includes(q)) ||
+      (r.id && r.id.toLowerCase().includes(q));
     const matchesStatus =
       productReqStatusFilter === "all" ? true : r.status === productReqStatusFilter;
     return matchesSearch && matchesStatus;
@@ -219,13 +257,15 @@ export function OperatorPage() {
 
   // Filtered Complaints
   const filteredComplaints = complaints.filter((c) => {
+    const q = complaintSearch.trim().toLowerCase();
     const matchesSearch =
-      c.id.toLowerCase().includes(complaintSearch.toLowerCase()) ||
-      c.customerName.toLowerCase().includes(complaintSearch.toLowerCase()) ||
-      c.stbId.toLowerCase().includes(complaintSearch.toLowerCase()) ||
-      c.category.toLowerCase().includes(complaintSearch.toLowerCase()) ||
-      c.issueType.toLowerCase().includes(complaintSearch.toLowerCase()) ||
-      c.customerMobile.includes(complaintSearch);
+      !q ||
+      (c.id && c.id.toLowerCase().includes(q)) ||
+      (c.customerName && c.customerName.toLowerCase().includes(q)) ||
+      (c.stbId && c.stbId.toLowerCase().includes(q)) ||
+      (c.category && c.category.toLowerCase().includes(q)) ||
+      (c.issueType && c.issueType.toLowerCase().includes(q)) ||
+      (c.customerMobile && c.customerMobile.includes(q));
     const matchesStatus =
       complaintStatusFilter === "all" ? true : c.status === complaintStatusFilter;
     return matchesSearch && matchesStatus;
@@ -326,11 +366,18 @@ export function OperatorPage() {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setNow(Date.now())}
+              onClick={() => {
+                syncPendingRechargesFromBackend();
+                syncProductRequestsFromBackend();
+                syncComplaintsFromBackend();
+                syncOperatorsFromBackend();
+                setNow(Date.now());
+              }}
               className="hidden sm:flex items-center gap-1.5 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-xs font-bold text-[#64748B] transition hover:bg-slate-100 hover:text-[#0F172A]"
             >
               <RefreshCw className="h-3.5 w-3.5" /> Sync Now
             </button>
+
             <button
               onClick={() => {
                 logout();

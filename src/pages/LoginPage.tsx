@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Tv, Shield, Zap, ArrowRight, Lock } from "lucide-react";
-import { sendOtp, verifyOtp, useStore, isOperatorApproved, getState } from "../services/store";
+import { sendOtp, verifyOtp, useStore, isOperatorApproved, getState, syncOperatorsFromBackend } from "../services/store";
+import { cleanMobile } from "../utils/utils";
+
 
 export function LoginPage() {
   const [role, setRole] = useState<"customer" | "operator">("customer");
@@ -40,30 +42,32 @@ export function LoginPage() {
     setErr(null);
   }
 
-  // Formatting Operator Contact: Auto-lowercase for email/text, digits-only for mobile
+  // Formatting Operator Contact: Auto-lowercase for email/text, clean digits for mobile
   function handleOperatorContactChange(raw: string) {
     setErr(null);
-    if (/^\d*$/.test(raw)) {
-      setOperatorContact(raw.slice(0, 10));
+    if (raw.includes("@")) {
+      setOperatorContact(raw.toLowerCase().trim());
     } else {
-      setOperatorContact(raw.toLowerCase());
+      const digits = raw.replace(/[^\d+ ]/g, "");
+      setOperatorContact(digits);
     }
   }
 
   // Real-time validation checks
+  const cleanedOpContact = cleanMobile(operatorContact);
   const isOperatorEmail = operatorContact.includes("@");
   const isOperatorValidEmail =
     isOperatorEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(operatorContact.trim());
-  const isOperatorValidMobile = !isOperatorEmail && /^\d{10}$/.test(operatorContact.trim());
+  const isOperatorValidMobile = !isOperatorEmail && /^\d{10}$/.test(cleanedOpContact);
 
   const isOperatorValid =
     name.trim().length > 0 &&
-    (isOperatorValidEmail || isOperatorValidMobile || operatorContact.trim() === "9080864542");
+    (isOperatorValidEmail || isOperatorValidMobile || cleanedOpContact === "9080864542" || cleanedOpContact === "9787312758");
 
   const isCustomerValid =
     name.trim().length > 0 &&
-    /^\d{10}$/.test(mobile.trim()) &&
-    /^\d{12}$/.test(stbId.trim());
+    /^\d{10}$/.test(cleanMobile(mobile)) &&
+    /^[A-Za-z0-9\-\_]{4,20}$/.test(stbId.trim());
 
   const isFormValid = role === "operator" ? isOperatorValid : isCustomerValid;
 
@@ -76,7 +80,7 @@ export function LoginPage() {
 
     if (role === "operator") {
       const contact = operatorContact.trim();
-      const cleanedContact = contact.replace(/\D/g, "");
+      const cleanedContact = cleanMobile(contact);
 
       if (!contact) {
         setErr("ENTER YOUR MOBILE NUMBER OR GMAIL");
@@ -93,7 +97,11 @@ export function LoginPage() {
       }
 
       // STRICT OPERATOR WHITELIST CHECK FOR OTHERS
-      if (!isOperatorApproved(contact)) {
+      setLoading(true);
+      await syncOperatorsFromBackend();
+      setLoading(false);
+
+      if (!isOperatorApproved(contact) && !isOperatorApproved(cleanedContact)) {
         setErr(
           "❌ You are not authorized. Contact Admin (KATHIRAVAN V) to add your operator number.",
         );
@@ -110,7 +118,7 @@ export function LoginPage() {
       }
 
       setLoading(true);
-      await sendOtp(contact);
+      await sendOtp(cleanedContact || contact);
       setLoading(false);
       setStep("otp");
     } else {
@@ -126,8 +134,8 @@ export function LoginPage() {
         return;
       }
 
-      if (!/^\d{12}$/.test(stbId.trim())) {
-        setErr("Enter a valid 12-digit STB ID / Smart Card Number");
+      if (!/^[A-Za-z0-9\-\_]{4,20}$/.test(stbId.trim())) {
+        setErr("Enter a valid STB ID / Customer ID (4 to 20 characters)");
         return;
       }
 

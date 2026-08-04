@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppShell } from "../components/AppShell";
-import { useStore, approveTxn, setState } from "../services/store";
+import { useStore, approveTxn, rejectTxn } from "../services/store";
 import { useCountdown } from "../hooks/useCountdown";
 import { Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
@@ -29,10 +29,7 @@ export function PendingPage() {
 
   function handleReject() {
     if (pending) {
-      const updated = txns.map((t) =>
-        t.id === pending.txnId ? { ...t, status: "failed" as const } : t,
-      );
-      setState({ txns: updated, pending: null });
+      rejectTxn(pending.txnId);
     }
   }
 

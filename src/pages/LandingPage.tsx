@@ -64,16 +64,23 @@ export function LandingPage() {
           </nav>
 
           {/* Header Action */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link
               to="/login"
-              className="flex items-center gap-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all"
+              className="flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-xs font-bold text-[#2563EB] hover:bg-blue-100 transition-all"
+            >
+              <Shield className="h-4 w-4" /> Operator Panel
+            </Link>
+            <Link
+              to="/login"
+              className="flex items-center gap-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all"
             >
               Login / Register <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
       </header>
+
 
       {/* HERO SECTION */}
       <section className="relative pt-12 pb-16 sm:pt-16 sm:pb-24">
