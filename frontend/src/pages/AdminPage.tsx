@@ -103,12 +103,16 @@ export function AdminPage() {
   if (!user || user.role !== "admin") return null;
 
   // Handlers
-  function handleAddOperator(e: React.FormEvent) {
+  async function handleAddOperator(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
     if (!opMobile.trim() || !opName.trim()) return;
-    upsertOperator(opMobile, opName);
-    setMsg({ text: `Operator ${opName} added successfully!` });
+    const res = await upsertOperator(opMobile, opName);
+    if (res.success) {
+      setMsg({ text: `Operator ${opName} added and saved to database successfully!` });
+    } else {
+      setMsg({ text: res.message || `Failed to save operator to database.`, error: true });
+    }
     setOpMobile("");
     setOpName("");
   }

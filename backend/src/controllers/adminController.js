@@ -13,7 +13,7 @@ const addOperator = async (req, res) => {
       return res.status(400).json({ message: "Operator mobile number is required" });
     }
 
-    const cleanMobile = mobileNumber.trim();
+    const cleanMobile = mobileNumber.trim().toLowerCase();
     let operator = await Operator.findOne({ mobileNumber: cleanMobile });
 
     if (operator) {

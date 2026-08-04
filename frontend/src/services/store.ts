@@ -1,6 +1,6 @@
 // In-memory data store for STB RECHARGE (Pure Frontend - Supabase removed).
 import { useSyncExternalStore } from "react";
-import { cleanMobile, mobileToEmail } from "../utils/utils";
+import { cleanMobile, cleanContact, mobileToEmail } from "../utils/utils";
 import {
   apiAddOperator,
   apiToggleOperator,
@@ -342,7 +342,7 @@ export const INITIAL_APPROVED_OPERATORS: ApprovedOperator[] = [
   {
     id: "op-2",
     mobile: "9787312758",
-    name: "PERUMAL A",
+    name: "KATHIR",
     addedAt: new Date().toISOString(),
     active: true,
   },
@@ -468,17 +468,21 @@ export async function syncOperatorsFromBackend() {
         addedAt: op.createdAt || op.addedAt || new Date().toISOString(),
         active: op.isActive !== undefined ? op.isActive : true,
       }));
-      const merged = [...INITIAL_APPROVED_OPERATORS];
-      fetched.forEach((f) => {
-        const fClean = cleanMobile(f.mobile);
-        const existingIdx = merged.findIndex((m) => cleanMobile(m.mobile) === fClean);
-        if (existingIdx >= 0) {
-          merged[existingIdx] = { ...merged[existingIdx], ...f };
-        } else {
-          merged.push(f);
-        }
+      
+      const mergedMap = new Map<string, ApprovedOperator>();
+      INITIAL_APPROVED_OPERATORS.forEach((op) => {
+        mergedMap.set(cleanContact(op.mobile), op);
       });
-      setState({ approvedOperators: merged });
+      state.approvedOperators.forEach((op) => {
+        mergedMap.set(cleanContact(op.mobile), op);
+      });
+      fetched.forEach((op) => {
+        const key = cleanContact(op.mobile);
+        const existing = mergedMap.get(key);
+        mergedMap.set(key, { ...(existing || {}), ...op });
+      });
+
+      setState({ approvedOperators: Array.from(mergedMap.values()) });
     }
   } catch (e) {
     console.warn("Failed to sync operators from backend", e);
@@ -792,16 +796,19 @@ export function sendOtp(mobile: string) {
 
 export function isOperatorApproved(contact: string): boolean {
   if (!contact) return false;
+  const cleaned = cleanContact(contact);
   const digitsOnly = cleanMobile(contact);
   const trimmed = contact.trim().toLowerCase();
 
-  if (digitsOnly === "9080864542" || digitsOnly === "9787312758") return true;
+  if (digitsOnly === "9080864542" || digitsOnly === "9787312758" || cleaned === "9080864542" || cleaned === "9787312758") return true;
 
   return state.approvedOperators.some((op) => {
     if (!op.active) return false;
+    const opCleaned = cleanContact(op.mobile);
     const opDigits = cleanMobile(op.mobile);
     const opCleanStr = op.mobile.trim().toLowerCase();
     return (
+      (cleaned.length > 0 && opCleaned === cleaned) ||
       (digitsOnly.length > 0 && opDigits === digitsOnly) ||
       (opDigits.length >= 5 && digitsOnly.includes(opDigits)) ||
       (opDigits.length >= 5 && opDigits.includes(digitsOnly)) ||
@@ -1148,13 +1155,16 @@ export function applyCoupon(code: string): { success: boolean; discount: number;
 }
 
 // Admin Operations
-export async function upsertOperator(mobile: string, name: string, active = true) {
-  const cleaned = cleanMobile(mobile);
-  const exists = state.approvedOperators.find((o) => o.mobile === cleaned);
+export async function upsertOperator(mobile: string, name: string, active = true): Promise<{ success: boolean; message?: string }> {
+  const cleaned = cleanContact(mobile);
+  if (!cleaned) {
+    return { success: false, message: "Invalid mobile number or email address" };
+  }
+  const exists = state.approvedOperators.find((o) => cleanContact(o.mobile) === cleaned);
   let updatedOps: ApprovedOperator[];
   if (exists) {
     updatedOps = state.approvedOperators.map((o) =>
-      o.mobile === cleaned ? { ...o, name, active } : o,
+      cleanContact(o.mobile) === cleaned ? { ...o, mobile: cleaned, name, active } : o,
     );
   } else {
     updatedOps = [
@@ -1163,8 +1173,18 @@ export async function upsertOperator(mobile: string, name: string, active = true
     ];
   }
   setState({ approvedOperators: updatedOps });
-  // Sync with MongoDB backend API asynchronously
-  apiAddOperator(cleaned, name);
+
+  try {
+    const res = await apiAddOperator(cleaned, name);
+    if (!res.success) {
+      console.warn("Backend add operator warning:", res.error);
+      return { success: false, message: res.error || "Failed to save operator to server database" };
+    }
+    return { success: true };
+  } catch (err: any) {
+    console.warn("apiAddOperator error:", err);
+    return { success: false, message: err.message || "Network request failed" };
+  }
 }
 
 export async function setOperatorActive(id: string, active: boolean) {

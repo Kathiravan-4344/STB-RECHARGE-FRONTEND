@@ -18,6 +18,16 @@ export function cleanMobile(v: string) {
   return digits;
 }
 
+export function cleanContact(raw: string): string {
+  if (!raw) return "";
+  const trimmed = raw.trim();
+  if (trimmed.includes("@")) {
+    return trimmed.toLowerCase();
+  }
+  return cleanMobile(trimmed);
+}
+
 export function mobileToEmail(mobile: string) {
   return `${cleanMobile(mobile)}@stb-recharge.app`;
 }
+
