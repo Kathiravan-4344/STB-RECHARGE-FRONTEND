@@ -1,5 +1,27 @@
-const app = require("../backend/src/server.js");
-const connectDB = require("../backend/src/config/db.js");
+const path = require("path");
+
+let app;
+let connectDB;
+
+try {
+  app = require("../backend/src/server.js");
+} catch (e1) {
+  try {
+    app = require(path.join(process.cwd(), "backend/src/server.js"));
+  } catch (e2) {
+    console.error("Failed to require server.js:", e2);
+  }
+}
+
+try {
+  connectDB = require("../backend/src/config/db.js");
+} catch (e1) {
+  try {
+    connectDB = require(path.join(process.cwd(), "backend/src/config/db.js"));
+  } catch (e2) {
+    console.error("Failed to require db.js:", e2);
+  }
+}
 
 module.exports = async (req, res) => {
   // Enable CORS for Vercel Serverless execution
@@ -12,7 +34,9 @@ module.exports = async (req, res) => {
   }
 
   try {
-    await connectDB();
+    if (connectDB) {
+      await connectDB();
+    }
 
     // Clean and normalize req.url for Express app routes
     let url = req.url || "/";
@@ -27,6 +51,10 @@ module.exports = async (req, res) => {
       try {
         req.body = JSON.parse(req.body);
       } catch (e) {}
+    }
+
+    if (!app) {
+      return res.status(500).json({ success: false, message: "Backend application module could not be loaded." });
     }
 
     return app(req, res);
