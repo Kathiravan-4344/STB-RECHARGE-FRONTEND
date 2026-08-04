@@ -82,10 +82,16 @@ const seedInitialData = async () => {
   }
 };
 
-// Connect Database & Seed
-connectDB().then(() => {
-  seedInitialData();
-});
+// Connect Database & Seed for standalone server execution
+if (require.main === module) {
+  connectDB()
+    .then(() => {
+      seedInitialData();
+    })
+    .catch((err) => {
+      console.error("[Standalone DB Connection Error]", err);
+    });
+}
 
 // Root Health Check Route
 app.get(["/", "/api", "/api/health"], (req, res) => {
