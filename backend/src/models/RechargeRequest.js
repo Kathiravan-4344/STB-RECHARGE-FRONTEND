@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const rechargeRequestSchema = new mongoose.Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: "User",
       required: false,
     },
@@ -23,7 +23,7 @@ const rechargeRequestSchema = new mongoose.Schema(
       trim: true,
     },
     planId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: "Plan",
       required: false,
     },

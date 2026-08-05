@@ -2,7 +2,11 @@
 // API Integration Service for Backend & MongoDB Atlas Database
 
 function getApiBaseUrl(): string {
-  const envUrl = import.meta.env.VITE_API_URL;
+  const envUrl =
+    import.meta.env.VITE_API_URL ||
+    (import.meta as any).env?.NEXT_PUBLIC_API_URL ||
+    (typeof process !== "undefined" ? process.env?.NEXT_PUBLIC_API_URL : undefined);
+
   if (envUrl && envUrl.trim().length > 0) {
     let clean = envUrl.trim();
     if (!clean.endsWith("/api")) {
@@ -50,16 +54,18 @@ export async function apiRequest<T>(
   } catch (primaryErr: any) {
     console.warn(`[API Info] Primary fetch failed for ${endpoint} (${url}):`, primaryErr.message);
 
-    // Fallback: ONLY retry direct host port 5000 if host is a LAN IP (e.g. 192.168.x.x)
+    // Fallback: Retry direct backend port 5000 if frontend is running on dev port (5173/3000) on laptop or mobile
     if (
       typeof window !== "undefined" &&
       window.location &&
-      /^(\d{1,3}\.){3}\d{1,3}$/.test(window.location.hostname) &&
-      !url.includes(`:${window.location.port || "5173"}`)
+      window.location.port &&
+      window.location.port !== "5000" &&
+      !url.includes(":5000")
     ) {
-      const fallbackUrl = `${window.location.protocol}//${window.location.hostname}:5000/api${endpoint}`;
+      const host = window.location.hostname === "localhost" ? "127.0.0.1" : window.location.hostname;
+      const fallbackUrl = `${window.location.protocol}//${host}:5000/api${endpoint}`;
       try {
-        console.info(`[API Fallback] Retrying request to direct host backend: ${fallbackUrl}`);
+        console.info(`[API Fallback] Retrying request to backend server on port 5000: ${fallbackUrl}`);
         const res = await fetch(fallbackUrl, { ...options, headers });
         const data = await parseResponseData(res);
         if (!res.ok) {
@@ -138,7 +144,9 @@ export async function apiCreateRecharge(payload: {
   customerName?: string;
   customerMobile?: string;
   paymentStatus?: string;
+  userId?: string;
 }) {
+  console.log("Calling recharge API");
   return apiRequest<{ rechargeRequest: any }>("/recharge/create", {
     method: "POST",
     body: JSON.stringify({ paymentStatus: "Success", ...payload }),
@@ -150,6 +158,8 @@ export async function apiGetPendingRecharges() {
 }
 
 export async function apiGetOperatorRequests() {
+  console.log("API URL:", getApiBaseUrl());
+  console.log("Fetching operator data...");
   return apiRequest<{ requests: any[] }>("/operator/requests");
 }
 

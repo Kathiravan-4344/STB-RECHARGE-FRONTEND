@@ -18,6 +18,10 @@ const LOCAL_MONGODB_URI = "mongodb://127.0.0.1:27017/stb_recharge";
 
 let isConnected = false;
 
+mongoose.connection.on("connected", () => {
+  console.log("MongoDB Connected");
+});
+
 const connectDB = async () => {
   if (isConnected || mongoose.connection.readyState === 1) {
     return;

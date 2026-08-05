@@ -537,14 +537,23 @@ export async function syncPendingRechargesFromBackend() {
     ]);
 
     let rawList: any[] = [];
+    const extractList = (resVal: any): any[] => {
+      if (!resVal) return [];
+      const data = resVal.data !== undefined ? resVal.data : resVal;
+      const list = Array.isArray(data)
+        ? data
+        : data?.data || data?.requests || data?.recharges || [];
+      return Array.isArray(list) ? list : [];
+    };
+
     if (resAll.status === "fulfilled" && resAll.value.success) {
-      const list1 = resAll.value.data?.requests || (resAll.value.data as any)?.data?.requests;
-      if (Array.isArray(list1)) rawList.push(...list1);
+      rawList.push(...extractList(resAll.value));
     }
     if (resPending.status === "fulfilled" && resPending.value.success) {
-      const list2 = resPending.value.data?.requests || (resPending.value.data as any)?.data?.requests;
-      if (Array.isArray(list2)) rawList.push(...list2);
+      rawList.push(...extractList(resPending.value));
     }
+
+    console.log("API RESPONSE:", resPending.status === "fulfilled" ? resPending.value : resAll.status === "fulfilled" ? resAll.value : rawList);
 
     // Deduplicate by ID
     const uniqueMap = new Map<string, any>();
@@ -561,7 +570,13 @@ export async function syncPendingRechargesFromBackend() {
         const id = r._id || r.id;
         const planName = r.planId?.name || r.planName || "STB Recharge";
         const amount = r.amount || r.planId?.price || 0;
-        const status = r.status === "Approved" ? "success" : r.status === "Rejected" ? "failed" : "pending";
+        const rawStatus = String(r.status || "").toLowerCase();
+        const status =
+          rawStatus === "approved" || rawStatus === "success"
+            ? "success"
+            : rawStatus === "rejected" || rawStatus === "failed"
+              ? "failed"
+              : "pending";
         const date = r.requestTime || r.createdAt || new Date().toISOString();
         const customerName = r.customerName || r.userId?.name || "Customer";
         const customerMobile = r.customerMobile || r.userId?.mobileNumber || "";
@@ -608,7 +623,7 @@ export async function syncPendingRechargesFromBackend() {
         }
       }
 
-      setState({ txns: mergedTxns, pending: currentPending });
+      setState({ txns: [...mergedTxns], pending: currentPending });
     }
   } catch (e) {
     console.warn("Failed to sync pending recharges from backend", e);
@@ -997,6 +1012,7 @@ export async function startPayment(
 
   try {
     const res = await apiCreateRecharge({
+      userId: user?.id,
       stbId: targetStbId,
       planId,
       planName,

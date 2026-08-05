@@ -61,6 +61,8 @@ const getPlans = async (req, res) => {
 // @route POST /api/recharge/create and POST /recharge/create
 const createRechargeRequest = async (req, res) => {
   try {
+    console.log("API HIT:", req.body);
+
     // Critical Fix 3: Ensure DB Connection BEFORE saving
     await connectDB();
 
@@ -71,7 +73,7 @@ const createRechargeRequest = async (req, res) => {
     if (statusClean.toLowerCase() !== "success") {
       return res.status(400).json({
         success: false,
-        message: "Payment status must be Success to create a recharge request.",
+        message: "Payment not success",
       });
     }
 
@@ -137,11 +139,11 @@ const createRechargeRequest = async (req, res) => {
 
     // 3. Construct new Recharge model instance
     const newRecharge = new Recharge({
-      userId: user?._id || (userId && String(userId).match(/^[0-9a-fA-F]{24}$/) ? userId : undefined),
-      stbId: cleanStbId !== "STB-UNKNOWN" ? cleanStbId : user?.stbId || "1234567890",
+      userId: user?._id || userId || undefined,
+      stbId: cleanStbId !== "STB-UNKNOWN" ? cleanStbId : user?.stbId || stbId || "1234567890",
       customerName: cleanName !== "Customer" ? cleanName : user?.name || "Customer",
       customerMobile: cleanMobile || user?.mobileNumber || "",
-      planId: plan?._id || (planId && String(planId).match(/^[0-9a-fA-F]{24}$/) ? planId : undefined),
+      planId: plan?._id || planId || undefined,
       amount: Number(amount) || plan?.price || 240,
       paymentStatus: "Success",
       status: "Pending",
@@ -149,27 +151,30 @@ const createRechargeRequest = async (req, res) => {
     });
 
     // Critical Fix 4 & 5: Debug Log & Try-Catch saving logic
-    console.log("Saving recharge:", newRecharge);
+    console.log("Saving:", newRecharge);
     try {
       await newRecharge.save();
-      console.log(`[Recharge API] SUCCESS! Saved in MongoDB Atlas with ID: ${newRecharge._id}`);
+      console.log("Saved successfully");
     } catch (saveErr) {
-      console.log("SAVE ERROR:", saveErr);
-      return res.status(500).json({ success: false, message: saveErr.message });
+      console.log("ERROR:", saveErr);
+      return res.status(500).json({ error: saveErr.message });
     }
 
-    const populated = await Recharge.findById(newRecharge._id)
-      .populate("userId", "name mobileNumber stbId")
-      .populate("planId", "name price validity category");
+    let populated = null;
+    try {
+      populated = await Recharge.findById(newRecharge._id)
+        .populate("userId", "name mobileNumber stbId")
+        .populate("planId", "name price validity category");
+    } catch (e) {}
 
     return res.status(201).json({
       success: true,
       message: "Recharge request created",
       rechargeRequest: populated || newRecharge,
     });
-  } catch (error) {
-    console.error("[Recharge API Error saving to database]", error);
-    return res.status(500).json({ success: false, message: error.message });
+  } catch (err) {
+    console.log("ERROR:", err);
+    return res.status(500).json({ error: err.message });
   }
 };
 

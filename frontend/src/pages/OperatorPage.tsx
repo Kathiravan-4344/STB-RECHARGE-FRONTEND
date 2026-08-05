@@ -194,6 +194,10 @@ export function OperatorPage() {
   }, []);
 
   useEffect(() => {
+    console.log("Updated requests:", txns);
+  }, [txns]);
+
+  useEffect(() => {
     if (!user) {
       navigate({ to: "/login" });
       return;
@@ -242,8 +246,10 @@ export function OperatorPage() {
     (c) => c.status === "Pending" || c.status === "Assigned" || c.status === "In Progress",
   ).length;
 
-  // Filtered transactions
-  const filteredTxns = txns.filter((t) => {
+  // Filtered transactions with safe Array.isArray check
+  const safeTxns = Array.isArray(txns) ? txns : [];
+  const filteredTxns = safeTxns.filter((t) => {
+    if (!t) return false;
     const q = searchTerm.trim().toLowerCase();
     const matchesSearch =
       !q ||
@@ -252,7 +258,7 @@ export function OperatorPage() {
       (t.customerName && String(t.customerName).toLowerCase().includes(q)) ||
       (t.planName && String(t.planName).toLowerCase().includes(q)) ||
       (t.id && String(t.id).toLowerCase().includes(q));
-    const matchesStatus = statusFilter === "all" ? true : t.status === statusFilter;
+    const matchesStatus = statusFilter === "all" ? true : String(t.status || "").toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
 
@@ -582,15 +588,9 @@ export function OperatorPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#CBD5E1]">
-                    {filteredTxns.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-[#64748B] font-medium">
-                          No recharge transactions found.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredTxns.map((t) => (
-                        <tr key={t.id} className="hover:bg-slate-50 transition">
+                    {Array.isArray(filteredTxns) && filteredTxns.length > 0 ? (
+                      filteredTxns.map((t, index) => (
+                        <tr key={(t as any)._id || t.id || index} className="hover:bg-slate-50 transition">
                           <td className="px-6 py-4 font-mono font-bold text-[#0F172A]">{t.id}</td>
                           <td className="px-6 py-4">
                             <div className="font-bold text-[#0F172A]">
@@ -644,6 +644,12 @@ export function OperatorPage() {
                           </td>
                         </tr>
                       ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-[#64748B] font-medium">
+                          No requests found
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
