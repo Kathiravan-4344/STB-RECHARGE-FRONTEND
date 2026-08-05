@@ -247,11 +247,11 @@ export function OperatorPage() {
     const q = searchTerm.trim().toLowerCase();
     const matchesSearch =
       !q ||
-      (t.stbId && t.stbId.toLowerCase().includes(q)) ||
-      (t.customerMobile && t.customerMobile.includes(q)) ||
-      (t.customerName && t.customerName.toLowerCase().includes(q)) ||
-      (t.planName && t.planName.toLowerCase().includes(q)) ||
-      (t.id && t.id.toLowerCase().includes(q));
+      (t.stbId && String(t.stbId).toLowerCase().includes(q)) ||
+      (t.customerMobile && String(t.customerMobile).toLowerCase().includes(q)) ||
+      (t.customerName && String(t.customerName).toLowerCase().includes(q)) ||
+      (t.planName && String(t.planName).toLowerCase().includes(q)) ||
+      (t.id && String(t.id).toLowerCase().includes(q));
     const matchesStatus = statusFilter === "all" ? true : t.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
