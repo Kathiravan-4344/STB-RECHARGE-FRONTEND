@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const Operator = require("../models/Operator");
+const Recharge = require("../models/Recharge");
 const RechargeRequest = require("../models/RechargeRequest");
 const User = require("../models/User");
 
@@ -48,21 +49,19 @@ const operatorLogin = async (req, res) => {
 // @route GET /api/operator/requests
 const getPendingRequests = async (req, res) => {
   try {
-    console.log("[Backend Operator API] Fetching requests with paymentStatus = 'Success' AND status = 'Pending'...");
-    const requests = await RechargeRequest.find({
-      paymentStatus: "Success",
-      status: "Pending",
-    })
-      .populate("userId", "name mobileNumber stbId")
-      .populate("planId", "name price validity category")
-      .sort({ createdAt: -1, requestTime: -1 });
+    console.log("[Backend Operator API] Fetching requests...");
+    const recharges = await Recharge.find().sort({ createdAt: -1 });
+    const requests = await RechargeRequest.find().sort({ createdAt: -1 });
 
-    console.log(`[Backend Operator API] Found ${requests.length} matching pending recharge requests.`);
-    return res.status(200).json({
-      success: true,
-      count: requests.length,
-      requests,
-    });
+    const uniqueMap = new Map();
+    for (const item of [...recharges, ...requests]) {
+      const key = String(item._id || item.id);
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, item);
+      }
+    }
+    const data = Array.from(uniqueMap.values());
+    return res.status(200).json(data);
   } catch (error) {
     console.error("[Backend Operator API Error]", error);
     return res.status(500).json({ success: false, message: error.message });
@@ -74,13 +73,20 @@ const getPendingRequests = async (req, res) => {
 const approveRecharge = async (req, res) => {
   try {
     const { id } = req.params;
-    const request = await RechargeRequest.findById(id).populate("planId");
+    let request = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      request = await Recharge.findById(id).populate("planId");
+      if (!request) {
+        request = await RechargeRequest.findById(id).populate("planId");
+      }
+    }
 
     if (!request) {
       return res.status(404).json({ success: false, message: "Recharge request not found" });
     }
 
-    if (request.status !== "Pending") {
+    const normStatus = String(request.status || "").toLowerCase();
+    if (normStatus !== "pending") {
       return res.status(400).json({
         success: false,
         message: `Request is already ${request.status}`,
@@ -95,7 +101,7 @@ const approveRecharge = async (req, res) => {
     if (request.userId) {
       const user = await User.findById(request.userId);
       if (user) {
-        user.currentPlan = request.planId ? request.planId.name : "Recharge Pack";
+        user.currentPlan = request.planName || (request.planId ? request.planId.name : "Recharge Pack");
         const validityDays = request.planId ? request.planId.validity : 30;
         const currentExpiry = user.expiryDate && user.expiryDate > new Date() ? new Date(user.expiryDate) : new Date();
         user.expiryDate = new Date(currentExpiry.getTime() + validityDays * 24 * 60 * 60 * 1000);
@@ -119,13 +125,20 @@ const approveRecharge = async (req, res) => {
 const rejectRecharge = async (req, res) => {
   try {
     const { id } = req.params;
-    const request = await RechargeRequest.findById(id);
+    let request = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      request = await Recharge.findById(id);
+      if (!request) {
+        request = await RechargeRequest.findById(id);
+      }
+    }
 
     if (!request) {
       return res.status(404).json({ success: false, message: "Recharge request not found" });
     }
 
-    if (request.status !== "Pending") {
+    const normStatus = String(request.status || "").toLowerCase();
+    if (normStatus !== "pending") {
       return res.status(400).json({
         success: false,
         message: `Request is already ${request.status}`,

@@ -118,9 +118,12 @@ app.use("/api/stb", stbRoutes);
 app.use("/api/recharge", rechargeRoutes);
 app.use("/recharge", rechargeRoutes);
 app.use("/api", rechargeRoutes);
+app.use("/operator", operatorRoutes);
 app.use("/api/operator", operatorRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/admin", adminRoutes);
 app.use("/api/complaint", complaintRoutes);
+app.use("/complaint", complaintRoutes);
 app.use("/api", productRoutes);
 app.use("/api", productRequestRoutes);
 
