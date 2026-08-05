@@ -2,17 +2,30 @@
 // API Integration Service for Backend & MongoDB Atlas Database
 
 function getApiBaseUrl(): string {
-  const envUrl =
+  let envUrl =
     import.meta.env.VITE_API_URL ||
     (import.meta as any).env?.NEXT_PUBLIC_API_URL ||
-    (typeof process !== "undefined" ? process.env?.NEXT_PUBLIC_API_URL : undefined);
+    (typeof process !== "undefined" ? process.env?.NEXT_PUBLIC_API_URL : undefined) ||
+    "";
 
-  if (envUrl && envUrl.trim().length > 0) {
+  if (typeof envUrl === "string" && envUrl.trim().length > 0) {
     let clean = envUrl.trim();
-    if (!clean.endsWith("/api")) {
-      clean = clean.replace(/\/+$/, "") + "/api";
+    // Remove accidental copy-pasted string fragments like "https://domain.com/api or /api"
+    if (clean.includes(" or ")) {
+      clean = clean.split(" or ")[0].trim();
     }
-    return clean;
+    // Remove encoded spaces (%20), quotes, and trailing slashes
+    clean = clean
+      .replace(/%20/g, "")
+      .replace(/^["']|["']$/g, "")
+      .replace(/\/+$/, "");
+
+    if (clean.length > 0) {
+      if (!clean.endsWith("/api")) {
+        clean += "/api";
+      }
+      return clean;
+    }
   }
   return "/api";
 }
