@@ -3,14 +3,13 @@
 
 function getApiBaseUrl(): string {
   const envUrl = import.meta.env.VITE_API_URL;
-
-  // Explicit remote production URL (e.g. https://stb-recharge-backend.onrender.com/api)
-  if (envUrl && envUrl.startsWith("http") && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
-    return envUrl;
+  if (envUrl && envUrl.trim().length > 0) {
+    let clean = envUrl.trim();
+    if (!clean.endsWith("/api")) {
+      clean = clean.replace(/\/+$/, "") + "/api";
+    }
+    return clean;
   }
-
-  // Always return relative /api so both Laptop & Mobile route through the Vite proxy (or Vercel serverless functions).
-  // This avoids direct port 5000 firewall blocks when accessing from mobile devices over Wi-Fi.
   return "/api";
 }
 
@@ -148,6 +147,10 @@ export async function apiCreateRecharge(payload: {
 
 export async function apiGetPendingRecharges() {
   return apiRequest<{ requests: any[] }>("/recharge/pending");
+}
+
+export async function apiGetOperatorRequests() {
+  return apiRequest<{ requests: any[] }>("/operator/requests");
 }
 
 export async function apiApproveRecharge(id: string) {

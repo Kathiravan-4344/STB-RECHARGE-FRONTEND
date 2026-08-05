@@ -8,6 +8,7 @@ import {
   apiGetOperators,
   apiCreateRecharge,
   apiGetPendingRecharges,
+  apiGetOperatorRequests,
   apiApproveRecharge,
   apiRejectRecharge,
   apiGetRechargeStatus,
@@ -529,10 +530,33 @@ export async function syncPendingRechargesFromBackend() {
       }
     }
 
-    // 2. Fetch latest recharges from backend MongoDB
-    const res = await apiGetPendingRecharges();
-    const backendRequests = res.data?.requests || (res.data as any)?.data?.requests;
-    if (res.success && Array.isArray(backendRequests)) {
+    // 2. Fetch latest recharges from backend MongoDB (Query both endpoints for 100% device & endpoint consistency)
+    const [resAll, resPending] = await Promise.allSettled([
+      apiGetPendingRecharges(),
+      apiGetOperatorRequests(),
+    ]);
+
+    let rawList: any[] = [];
+    if (resAll.status === "fulfilled" && resAll.value.success) {
+      const list1 = resAll.value.data?.requests || (resAll.value.data as any)?.data?.requests;
+      if (Array.isArray(list1)) rawList.push(...list1);
+    }
+    if (resPending.status === "fulfilled" && resPending.value.success) {
+      const list2 = resPending.value.data?.requests || (resPending.value.data as any)?.data?.requests;
+      if (Array.isArray(list2)) rawList.push(...list2);
+    }
+
+    // Deduplicate by ID
+    const uniqueMap = new Map<string, any>();
+    for (const item of rawList) {
+      const key = String(item._id || item.id || "");
+      if (key && !uniqueMap.has(key)) {
+        uniqueMap.set(key, item);
+      }
+    }
+    const backendRequests = Array.from(uniqueMap.values());
+
+    if (backendRequests.length > 0 || resAll.status === "fulfilled" || resPending.status === "fulfilled") {
       const backendTxns: Txn[] = backendRequests.map((r: any) => {
         const id = r._id || r.id;
         const planName = r.planId?.name || r.planName || "STB Recharge";
