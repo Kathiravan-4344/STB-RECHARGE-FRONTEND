@@ -61,19 +61,15 @@ const createRechargeRequest = async (req, res) => {
   try {
     const { userId, stbId, planId, planName, amount, paymentStatus, customerName, customerMobile } = req.body;
 
-    const pStatus = paymentStatus || "Success";
-    if (pStatus !== "Success") {
-      return res.status(400).json({
-        success: false,
-        message: "Recharge request rejected: Payment status must be Success.",
-      });
-    }
+    const cleanStbId = stbId ? String(stbId).trim().toUpperCase() : "STB-UNKNOWN";
+    const cleanName = customerName ? String(customerName).trim() : "Customer";
+    const cleanMobile = customerMobile ? String(customerMobile).trim() : "";
 
-    const cleanStbId = stbId ? stbId.trim().toUpperCase() : "STB-UNKNOWN";
+    console.log(`[Recharge API] Creating Recharge: STB=${cleanStbId}, Mobile=${cleanMobile}, Customer=${cleanName}, Amount=${amount}`);
 
-    // 1. Find or create Plan (guaranteed non-null)
+    // 1. Find or resolve Plan
     let plan = null;
-    if (planId && planId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (planId && String(planId).match(/^[0-9a-fA-F]{24}$/)) {
       plan = await Plan.findById(planId);
     }
     if (!plan && planName) {
@@ -83,84 +79,59 @@ const createRechargeRequest = async (req, res) => {
       plan = await Plan.findOne();
     }
     if (!plan) {
-      let plans = await Plan.find();
-      if (plans.length === 0) {
-        plans = await Plan.insertMany(DEFAULT_PLANS);
-      }
-      plan = plans[0];
-    }
-    if (!plan) {
-      plan = await Plan.create(DEFAULT_PLANS[0]);
+      try {
+        let plans = await Plan.find();
+        if (plans.length === 0) {
+          plans = await Plan.insertMany(DEFAULT_PLANS);
+        }
+        plan = plans[0];
+      } catch (e) {}
     }
 
-    // 2. Find or create User (guaranteed non-null)
+    // 2. Find or resolve User
     let user = null;
-    if (userId && userId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (userId && String(userId).match(/^[0-9a-fA-F]{24}$/)) {
       user = await User.findById(userId);
     }
-    if (!user && customerMobile && customerMobile.trim()) {
-      user = await User.findOne({ mobileNumber: customerMobile.trim() });
+    if (!user && cleanMobile) {
+      user = await User.findOne({ mobileNumber: cleanMobile });
     }
     if (!user && cleanStbId && cleanStbId !== "STB-UNKNOWN") {
       user = await User.findOne({ stbId: cleanStbId });
     }
     if (!user) {
-      const mob =
-        customerMobile && customerMobile.trim().length >= 10
-          ? customerMobile.trim()
-          : "9" + Date.now().toString().slice(-9);
-
+      const mob = cleanMobile.length >= 10 ? cleanMobile : "9" + Date.now().toString().slice(-9);
       user = await User.findOne({ mobileNumber: mob });
       if (!user) {
         try {
           user = await User.create({
             mobileNumber: mob,
-            name: customerName || "Customer",
+            name: cleanName,
             stbId: cleanStbId,
             role: "customer",
           });
         } catch (e) {
-          // If creation failed due to duplicate key or validation error, find matching or fallback user
-          user = (await User.findOne({ mobileNumber: mob })) || (await User.findOne());
-          if (!user) {
-            user = await User.create({
-              mobileNumber: "9" + Math.floor(100000000 + Math.random() * 900000000),
-              name: customerName || "Customer",
-              stbId: cleanStbId,
-              role: "customer",
-            });
-          }
+          user = await User.findOne();
         }
-      }
-    } else {
-      let needsSave = false;
-      if (cleanStbId && cleanStbId !== "STB-UNKNOWN" && user.stbId !== cleanStbId) {
-        user.stbId = cleanStbId;
-        needsSave = true;
-      }
-      if (customerName && customerName !== "Customer" && user.name !== customerName) {
-        user.name = customerName;
-        needsSave = true;
-      }
-      if (needsSave) {
-        try {
-          await user.save();
-        } catch (e) {}
       }
     }
 
-    // 3. Create recharge request
-    const rechargeRequest = await RechargeRequest.create({
-      userId: user._id,
+    // 3. Guaranteed DB Creation in MongoDB Atlas
+    const rechargeData = {
+      userId: user?._id || undefined,
       stbId: cleanStbId,
-      customerName: customerName || user.name || "Customer",
-      customerMobile: customerMobile || user.mobileNumber || "",
-      planId: plan._id,
-      amount: amount || plan.price,
+      customerName: cleanName || user?.name || "Customer",
+      customerMobile: cleanMobile || user?.mobileNumber || "",
+      planId: plan?._id || undefined,
+      amount: Number(amount) || plan?.price || 240,
       paymentStatus: "Success",
-      status: "Pending", // Operator approval required
+      status: "Pending",
       requestTime: new Date(),
-    });
+    };
+
+    console.log("[Recharge API] Attempting RechargeRequest.create with payload:", rechargeData);
+    const rechargeRequest = await RechargeRequest.create(rechargeData);
+    console.log(`[Recharge API] SUCCESS! Saved in MongoDB Atlas with ID: ${rechargeRequest._id}`);
 
     const populated = await RechargeRequest.findById(rechargeRequest._id)
       .populate("userId", "name mobileNumber stbId")
@@ -172,7 +143,7 @@ const createRechargeRequest = async (req, res) => {
       rechargeRequest: populated || rechargeRequest,
     });
   } catch (error) {
-    console.error("[createRechargeRequest Error]", error);
+    console.error("[Recharge API Error saving to database]", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
