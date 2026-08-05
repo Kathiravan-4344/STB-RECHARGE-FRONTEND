@@ -195,6 +195,7 @@ export function OperatorPage() {
 
   useEffect(() => {
     console.log("Updated requests:", txns);
+    console.log("Statuses:", txns.map((t) => t.status));
   }, [txns]);
 
   useEffect(() => {
@@ -232,24 +233,50 @@ export function OperatorPage() {
   }
 
 
-  // Summary counts
-  const totalCount = txns.length;
-  const pendingCount = txns.filter((t) => t.status === "pending").length;
-  const approvedCount = txns.filter((t) => t.status === "success").length;
-  const failedCount = txns.filter((t) => t.status === "failed").length;
+  // Summary counts with case-insensitive & multi-state filtering
+  const validPendingStatuses = ["pending"];
+  const validApprovedStatuses = ["success", "approved"];
+  const validFailedStatuses = ["failed", "rejected"];
 
-  const pendingProductReqsCount = productRequests.filter((r) => r.status === "Pending").length;
+  const totalCount = txns.length;
+  const pendingCount = txns.filter(
+    (t) => t.status && validPendingStatuses.includes(String(t.status).toLowerCase()),
+  ).length;
+  const approvedCount = txns.filter(
+    (t) => t.status && validApprovedStatuses.includes(String(t.status).toLowerCase()),
+  ).length;
+  const failedCount = txns.filter(
+    (t) => t.status && validFailedStatuses.includes(String(t.status).toLowerCase()),
+  ).length;
+
+  const pendingProductReqsCount = productRequests.filter((r) => (r.status || "").toLowerCase() === "pending").length;
   const lowStockCount = products.filter(
     (p) => p.category === "accessory" && p.availableStock <= 5,
   ).length;
-  const pendingComplaintsCount = complaints.filter(
-    (c) => c.status === "Pending" || c.status === "Assigned" || c.status === "In Progress",
-  ).length;
+  const pendingComplaintsCount = complaints.filter((c) => {
+    const cs = (c.status || "").toLowerCase();
+    return cs === "pending" || cs === "assigned" || cs === "in progress";
+  }).length;
 
-  // Filtered transactions with safe Array.isArray check
+  // Filtered transactions with safe Array.isArray check and case-insensitive multi-state filtering
   const safeTxns = Array.isArray(txns) ? txns : [];
+  const validStatuses = ["pending", "success", "approved", "failed", "rejected"];
+
   const filteredTxns = safeTxns.filter((t) => {
     if (!t) return false;
+    const normStatus = t.status ? String(t.status).toLowerCase() : "";
+
+    let matchesStatus = false;
+    if (statusFilter === "all") {
+      matchesStatus = !t.status || validStatuses.includes(normStatus);
+    } else if (statusFilter === "pending") {
+      matchesStatus = normStatus === "pending";
+    } else if (statusFilter === "success") {
+      matchesStatus = normStatus === "success" || normStatus === "approved";
+    } else if (statusFilter === "failed") {
+      matchesStatus = normStatus === "failed" || normStatus === "rejected";
+    }
+
     const q = searchTerm.trim().toLowerCase();
     const matchesSearch =
       !q ||
@@ -258,7 +285,7 @@ export function OperatorPage() {
       (t.customerName && String(t.customerName).toLowerCase().includes(q)) ||
       (t.planName && String(t.planName).toLowerCase().includes(q)) ||
       (t.id && String(t.id).toLowerCase().includes(q));
-    const matchesStatus = statusFilter === "all" ? true : String(t.status || "").toLowerCase() === statusFilter.toLowerCase();
+
     return matchesSearch && matchesStatus;
   });
 
@@ -605,25 +632,25 @@ export function OperatorPage() {
                             ₹{t.amount}
                           </td>
                           <td className="px-6 py-4">
-                            {t.status === "pending" && (
+                            {String(t.status || "").toLowerCase() === "pending" && (
                               <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
                                 <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />{" "}
                                 Pending Approval
                               </span>
                             )}
-                            {t.status === "success" && (
+                            {(String(t.status || "").toLowerCase() === "success" || String(t.status || "").toLowerCase() === "approved") && (
                               <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
                                 <CheckCircle2 className="h-3.5 w-3.5 text-[#22C55E]" /> Approved
                               </span>
                             )}
-                            {t.status === "failed" && (
+                            {(String(t.status || "").toLowerCase() === "failed" || String(t.status || "").toLowerCase() === "rejected") && (
                               <span className="inline-flex items-center gap-1 rounded-full border border-red-300 bg-red-100 px-3 py-1 text-xs font-bold text-red-800">
                                 <XCircle className="h-3.5 w-3.5" /> Rejected
                               </span>
                             )}
                           </td>
                           <td className="px-6 py-4 text-right">
-                            {t.status === "pending" ? (
+                            {String(t.status || "").toLowerCase() === "pending" ? (
                               <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => approveTxn(t.id)}
@@ -647,7 +674,7 @@ export function OperatorPage() {
                     ) : (
                       <tr>
                         <td colSpan={6} className="px-6 py-12 text-center text-[#64748B] font-medium">
-                          No requests found
+                          <p className="text-[#64748B]">No requests found</p>
                         </td>
                       </tr>
                     )}

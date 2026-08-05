@@ -597,7 +597,7 @@ export async function syncPendingRechargesFromBackend() {
       });
 
       const recentLocalPending = state.txns.filter(
-        (t) => t.status === "pending" && !t.syncedToBackend && !backendTxns.some((b) => b.id === t.id)
+        (t) => (t.status || "").toLowerCase() === "pending" && !t.syncedToBackend && !backendTxns.some((b) => b.id === t.id)
       );
 
       const mergedTxns = [...recentLocalPending, ...backendTxns].sort(
@@ -607,9 +607,9 @@ export async function syncPendingRechargesFromBackend() {
       let currentPending = state.pending;
       if (currentPending) {
         const match = mergedTxns.find((t) => t.id === currentPending?.txnId);
-        if (match && match.status !== "pending") {
+        if (match && (match.status || "").toLowerCase() !== "pending") {
           currentPending = null;
-          if (match.status === "success" && state.stb) {
+          if (((match.status || "").toLowerCase() === "success" || (match.status || "").toLowerCase() === "approved") && state.stb) {
             state = {
               ...state,
               stb: {

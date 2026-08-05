@@ -139,11 +139,15 @@ export function AdminPage() {
 
   // Derived Metrics
   const totalRechargeAmount = txns
-    .filter((t) => t.status === "success")
+    .filter((t) => t.status && ["success", "approved"].includes(String(t.status).toLowerCase()))
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const pendingRechargesCount = txns.filter((t) => t.status === "pending").length;
-  const pendingComplaintsCount = complaints.filter((c) => c.status === "Pending").length;
+  const pendingRechargesCount = txns.filter(
+    (t) => t.status && String(t.status).toLowerCase() === "pending",
+  ).length;
+  const pendingComplaintsCount = complaints.filter(
+    (c) => c.status && String(c.status).toLowerCase() === "pending",
+  ).length;
 
   // Aggregate Customer list from all records
   const customerMap = new Map<string, { mobile: string; name: string; stbId: string }>();
@@ -186,13 +190,28 @@ export function AdminPage() {
       c.name.toLowerCase().includes(customerSearch.toLowerCase()),
   );
 
+  const validStatuses = ["pending", "success", "approved", "failed", "rejected"];
   const filteredTxns = txns.filter((t) => {
+    if (!t) return false;
+    const normStatus = t.status ? String(t.status).toLowerCase() : "";
     const matchSearch =
       t.id.toLowerCase().includes(rechargeSearch.toLowerCase()) ||
       (t.customerName && t.customerName.toLowerCase().includes(rechargeSearch.toLowerCase())) ||
       (t.stbId && t.stbId.toLowerCase().includes(rechargeSearch.toLowerCase())) ||
       (t.customerMobile && t.customerMobile.includes(rechargeSearch));
-    const matchStatus = rechargeStatusFilter === "all" ? true : t.status === rechargeStatusFilter;
+
+    let matchStatus = false;
+    if (rechargeStatusFilter === "all") {
+      matchStatus = !t.status || validStatuses.includes(normStatus);
+    } else if (rechargeStatusFilter === "pending") {
+      matchStatus = normStatus === "pending";
+    } else if (rechargeStatusFilter === "success") {
+      matchStatus = normStatus === "success" || normStatus === "approved";
+    } else if (rechargeStatusFilter === "failed") {
+      matchStatus = normStatus === "failed" || normStatus === "rejected";
+    } else {
+      matchStatus = normStatus === rechargeStatusFilter.toLowerCase();
+    }
     return matchSearch && matchStatus;
   });
 
