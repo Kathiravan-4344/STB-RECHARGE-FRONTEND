@@ -226,10 +226,24 @@ const getRechargeStatus = async (req, res) => {
 const getPendingRecharges = async (req, res) => {
   try {
     console.log("[Recharge API] Fetching all recharge requests for operator...");
-    const requests = await RechargeRequest.find()
+    const recharges = await Recharge.find()
       .populate("userId", "name mobileNumber stbId")
       .populate("planId", "name price validity category")
       .sort({ createdAt: -1, requestTime: -1 });
+
+    const rechargeRequests = await RechargeRequest.find()
+      .populate("userId", "name mobileNumber stbId")
+      .populate("planId", "name price validity category")
+      .sort({ createdAt: -1, requestTime: -1 });
+
+    const uniqueMap = new Map();
+    for (const item of [...recharges, ...rechargeRequests]) {
+      const key = String(item._id || item.id);
+      if (key && !uniqueMap.has(key)) {
+        uniqueMap.set(key, item);
+      }
+    }
+    const requests = Array.from(uniqueMap.values());
 
     console.log(`[Recharge API] Returned ${requests.length} recharge requests.`);
     return res.status(200).json({

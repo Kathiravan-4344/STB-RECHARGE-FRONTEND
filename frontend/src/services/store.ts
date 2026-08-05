@@ -540,17 +540,23 @@ export async function syncPendingRechargesFromBackend() {
     const extractList = (resVal: any): any[] => {
       if (!resVal) return [];
       const data = resVal.data !== undefined ? resVal.data : resVal;
-      const list = Array.isArray(data)
-        ? data
-        : data?.data || data?.requests || data?.recharges || [];
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(resVal)) return resVal;
+      const list = data?.requests || data?.recharges || data?.data || resVal?.requests || resVal?.recharges || [];
       return Array.isArray(list) ? list : [];
     };
 
-    if (resAll.status === "fulfilled" && resAll.value.success) {
-      rawList.push(...extractList(resAll.value));
+    if (resAll.status === "fulfilled") {
+      const val = resAll.value;
+      if (val?.success || Array.isArray(val) || Array.isArray(val?.data)) {
+        rawList.push(...extractList(val));
+      }
     }
-    if (resPending.status === "fulfilled" && resPending.value.success) {
-      rawList.push(...extractList(resPending.value));
+    if (resPending.status === "fulfilled") {
+      const val = resPending.value;
+      if (val?.success || Array.isArray(val) || Array.isArray(val?.data)) {
+        rawList.push(...extractList(val));
+      }
     }
 
     console.log("API RESPONSE:", resPending.status === "fulfilled" ? resPending.value : resAll.status === "fulfilled" ? resAll.value : rawList);
@@ -568,8 +574,15 @@ export async function syncPendingRechargesFromBackend() {
     if (backendRequests.length > 0 || resAll.status === "fulfilled" || resPending.status === "fulfilled") {
       const backendTxns: Txn[] = backendRequests.map((r: any) => {
         const id = r._id || r.id;
-        const planName = r.planId?.name || r.planName || "STB Recharge";
-        const amount = r.amount || r.planId?.price || 0;
+        const planName =
+          (typeof r.planId === "object" ? r.planId?.name : null) ||
+          r.planName ||
+          (typeof r.plan === "object" ? r.plan?.name : null) ||
+          "STB Recharge";
+        const amount =
+          r.amount ||
+          (typeof r.planId === "object" ? r.planId?.price : null) ||
+          0;
         const rawStatus = String(r.status || "").toLowerCase();
         const status =
           rawStatus === "approved" || rawStatus === "success"
@@ -578,9 +591,18 @@ export async function syncPendingRechargesFromBackend() {
               ? "failed"
               : "pending";
         const date = r.requestTime || r.createdAt || new Date().toISOString();
-        const customerName = r.customerName || r.userId?.name || "Customer";
-        const customerMobile = r.customerMobile || r.userId?.mobileNumber || "";
-        const stbId = r.stbId || r.userId?.stbId || "";
+        const customerName =
+          (typeof r.userId === "object" ? r.userId?.name : null) ||
+          r.customerName ||
+          "Customer";
+        const customerMobile =
+          (typeof r.userId === "object" ? r.userId?.mobileNumber : null) ||
+          r.customerMobile ||
+          "";
+        const stbId =
+          r.stbId ||
+          (typeof r.userId === "object" ? r.userId?.stbId : null) ||
+          "";
         return {
           id,
           planName,

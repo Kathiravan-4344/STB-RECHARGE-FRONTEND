@@ -25,13 +25,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Middleware & Bulletproof CORS Setup
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
+});
 app.use(
   cors({
-    origin: true,
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-    credentials: true,
   })
 );
 app.options("*", cors());
@@ -114,20 +122,16 @@ app.get(["/", "/api", "/api/health"], (req, res) => {
 });
 
 
-// Mount Routes
+// Mount Routes cleanly
 app.use("/api/auth", authRoutes);
 app.use("/api/stb", stbRoutes);
-app.use("/api/recharge", rechargeRoutes);
-app.use("/recharge", rechargeRoutes);
-app.use("/api", rechargeRoutes);
-app.use("/operator", operatorRoutes);
 app.use("/api/operator", operatorRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/admin", adminRoutes);
 app.use("/api/complaint", complaintRoutes);
-app.use("/complaint", complaintRoutes);
+app.use("/api/recharge", rechargeRoutes);
 app.use("/api", productRoutes);
 app.use("/api", productRequestRoutes);
+app.use("/api", rechargeRoutes);
 
 // Global 404 Route
 app.use((req, res) => {

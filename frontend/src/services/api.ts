@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 // API Integration Service for Backend & MongoDB Atlas Database
 
-function getApiBaseUrl(): string {
+export function getApiBaseUrl(): string {
   let envUrl =
     import.meta.env.VITE_API_URL ||
     (import.meta as any).env?.NEXT_PUBLIC_API_URL ||
@@ -10,24 +10,36 @@ function getApiBaseUrl(): string {
 
   if (typeof envUrl === "string" && envUrl.trim().length > 0) {
     let clean = envUrl.trim();
-    // Remove accidental copy-pasted string fragments like "https://domain.com/api or /api"
     if (clean.includes(" or ")) {
       clean = clean.split(" or ")[0].trim();
     }
-    // Remove encoded spaces (%20), quotes, and trailing slashes
     clean = clean
       .replace(/%20/g, "")
       .replace(/^["']|["']$/g, "")
       .replace(/\/+$/, "");
 
     if (clean.length > 0) {
-      if (!clean.endsWith("/api")) {
+      if (!clean.endsWith("/api") && !clean.includes("/api/")) {
         clean += "/api";
       }
       return clean;
     }
   }
-  return "/api";
+
+  // If deployed on Vercel/Production domain without VITE_API_URL configured at build time:
+  if (
+    typeof window !== "undefined" &&
+    window.location &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
+    console.warn(
+      "⚠️ [VITE_API_URL WARNING] VITE_API_URL environment variable was NOT baked into Vercel build! Defaulting to relative '/api'."
+    );
+    return "/api";
+  }
+
+  return "http://localhost:5000/api";
 }
 
 async function parseResponseData(res: Response): Promise<any> {
@@ -43,14 +55,13 @@ async function parseResponseData(res: Response): Promise<any> {
   }
 }
 
-export async function apiRequest<T>(
+export async function apiRequest<T = any>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<{ success: boolean; data?: T; error?: string }> {
-  const primaryBaseUrl = getApiBaseUrl();
-  const url = primaryBaseUrl.endsWith("/")
-    ? `${primaryBaseUrl.slice(0, -1)}${endpoint}`
-    : `${primaryBaseUrl}${endpoint}`;
+  const base = getApiBaseUrl();
+  const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const url = base.endsWith("/") ? `${base.slice(0, -1)}${path}` : `${base}${path}`;
 
   const headers = {
     "Content-Type": "application/json",
@@ -61,7 +72,7 @@ export async function apiRequest<T>(
     const res = await fetch(url, { ...options, headers });
     const data = await parseResponseData(res);
     if (!res.ok) {
-      return { success: false, error: data.message || `API request failed (HTTP ${res.status})` };
+      return { success: false, error: data?.message || data?.error || `API request failed (HTTP ${res.status})` };
     }
     return { success: true, data };
   } catch (primaryErr: any) {
@@ -76,13 +87,13 @@ export async function apiRequest<T>(
       !url.includes(":5000")
     ) {
       const host = window.location.hostname === "localhost" ? "127.0.0.1" : window.location.hostname;
-      const fallbackUrl = `${window.location.protocol}//${host}:5000/api${endpoint}`;
+      const fallbackUrl = `${window.location.protocol}//${host}:5000/api${path}`;
       try {
         console.info(`[API Fallback] Retrying request to backend server on port 5000: ${fallbackUrl}`);
         const res = await fetch(fallbackUrl, { ...options, headers });
         const data = await parseResponseData(res);
         if (!res.ok) {
-          return { success: false, error: data.message || `API request failed (HTTP ${res.status})` };
+          return { success: false, error: data?.message || data?.error || `API request failed (HTTP ${res.status})` };
         }
         return { success: true, data };
       } catch (fallbackErr: any) {
