@@ -508,8 +508,12 @@ export async function syncPendingRechargesFromBackend() {
           paymentStatus: "Success",
         });
 
-        if (res.success && res.data?.rechargeRequest?._id) {
-          const backendId = res.data.rechargeRequest._id;
+        const backendId =
+          res.data?.rechargeRequest?._id ||
+          (res.data as any)?.data?.rechargeRequest?._id ||
+          (res.data as any)?.rechargeRequest?.id;
+
+        if (res.success && backendId) {
           const updatedTxns = state.txns.map((item) =>
             item.id === t.id ? { ...item, id: backendId, syncedToBackend: true } : item
           );
@@ -527,8 +531,8 @@ export async function syncPendingRechargesFromBackend() {
 
     // 2. Fetch latest recharges from backend MongoDB
     const res = await apiGetPendingRecharges();
-    if (res.success && res.data?.requests) {
-      const backendRequests = res.data.requests;
+    const backendRequests = res.data?.requests || (res.data as any)?.data?.requests;
+    if (res.success && Array.isArray(backendRequests)) {
       const backendTxns: Txn[] = backendRequests.map((r: any) => {
         const id = r._id || r.id;
         const planName = r.planId?.name || r.planName || "STB Recharge";
@@ -977,8 +981,12 @@ export async function startPayment(
       paymentStatus: "Success",
     });
 
-    if (res.success && res.data?.rechargeRequest?._id) {
-      const backendId = res.data.rechargeRequest._id;
+    const backendId =
+      res.data?.rechargeRequest?._id ||
+      (res.data as any)?.data?.rechargeRequest?._id ||
+      (res.data as any)?.rechargeRequest?.id;
+
+    if (res.success && backendId) {
       const currentPending = state.pending;
       const isPendingMatch = currentPending?.txnId === localTxnId;
       const updatedTxns = state.txns.map((t) =>
