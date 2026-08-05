@@ -970,7 +970,8 @@ export async function startPayment(
   const user = state.user;
   const stb = state.stb;
 
-  const targetStbId = customDetails?.stbId || stb?.id || user?.stbId || "1234567890";
+  const rawStbId = customDetails?.stbId || stb?.id || user?.stbId || "1234567890";
+  const targetStbId = rawStbId.trim().toUpperCase();
   const targetCustomerName = customDetails?.customerName || user?.name || "Customer";
   const targetCustomerMobile = customDetails?.customerMobile || user?.mobile || "";
 
@@ -1014,7 +1015,7 @@ export async function startPayment(
       const currentPending = state.pending;
       const isPendingMatch = currentPending?.txnId === localTxnId;
       const updatedTxns = state.txns.map((t) =>
-        t.id === localTxnId ? { ...t, id: backendId, syncedToBackend: true } : t,
+        t.id === localTxnId ? { ...t, id: backendId, stbId: targetStbId, syncedToBackend: true } : t,
       );
       setState({
         txns: updatedTxns,

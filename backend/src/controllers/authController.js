@@ -63,7 +63,7 @@ const verifyOtp = async (req, res) => {
     user.isVerified = true;
     user.otp = null;
     if (name) user.name = name.trim();
-    if (stbId) user.stbId = stbId.trim();
+    if (stbId) user.stbId = stbId.trim().toUpperCase();
     await user.save();
 
     let userRole = "customer";
@@ -115,7 +115,12 @@ const getUserProfile = async (req, res) => {
     const cleanMobile = mobile.trim();
     let user = await User.findOne({ mobileNumber: cleanMobile });
     if (!user) {
-      user = await User.findOne({ stbId: cleanMobile.toUpperCase() });
+      user = await User.findOne({
+        $or: [
+          { stbId: cleanMobile.toUpperCase() },
+          { stbId: { $regex: new RegExp("^" + cleanMobile + "$", "i") } },
+        ],
+      });
     }
 
     if (!user) {
@@ -124,18 +129,25 @@ const getUserProfile = async (req, res) => {
 
     const stbId = user.stbId || "";
     const searchConditions = [{ customerMobile: cleanMobile }, { userId: user._id }];
-    if (stbId) searchConditions.push({ stbId: stbId });
+    if (stbId) {
+      searchConditions.push({ stbId: stbId });
+      searchConditions.push({ stbId: { $regex: new RegExp("^" + stbId + "$", "i") } });
+    }
 
     const recharges = await RechargeRequest.find({ $or: searchConditions })
       .populate("planId", "name price validity category")
       .sort({ requestTime: -1 });
 
     const productRequests = await ProductRequest.find({
-      $or: stbId ? [{ customerMobile: cleanMobile }, { stbId: stbId }] : [{ customerMobile: cleanMobile }],
+      $or: stbId
+        ? [{ customerMobile: cleanMobile }, { stbId: stbId }, { stbId: { $regex: new RegExp("^" + stbId + "$", "i") } }]
+        : [{ customerMobile: cleanMobile }],
     }).sort({ createdAt: -1 });
 
     const complaints = await Complaint.find({
-      $or: stbId ? [{ customerMobile: cleanMobile }, { stbId: stbId }] : [{ customerMobile: cleanMobile }],
+      $or: stbId
+        ? [{ customerMobile: cleanMobile }, { stbId: stbId }, { stbId: { $regex: new RegExp("^" + stbId + "$", "i") } }]
+        : [{ customerMobile: cleanMobile }],
     }).sort({ createdAt: -1 });
 
     let userRole = "customer";
