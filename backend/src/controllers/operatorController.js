@@ -48,20 +48,23 @@ const operatorLogin = async (req, res) => {
 // @route GET /api/operator/requests
 const getPendingRequests = async (req, res) => {
   try {
+    console.log("[Backend Operator API] Fetching requests with paymentStatus = 'Success' AND status = 'Pending'...");
     const requests = await RechargeRequest.find({
       paymentStatus: "Success",
       status: "Pending",
     })
       .populate("userId", "name mobileNumber stbId")
       .populate("planId", "name price validity category")
-      .sort({ requestTime: -1 });
+      .sort({ createdAt: -1, requestTime: -1 });
 
+    console.log(`[Backend Operator API] Found ${requests.length} matching pending recharge requests.`);
     return res.status(200).json({
       success: true,
       count: requests.length,
       requests,
     });
   } catch (error) {
+    console.error("[Backend Operator API Error]", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

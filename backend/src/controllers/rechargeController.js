@@ -224,17 +224,20 @@ const getRechargeStatus = async (req, res) => {
 // @route GET /api/recharge/pending
 const getPendingRecharges = async (req, res) => {
   try {
+    console.log("[Recharge API] Fetching all recharge requests for operator...");
     const requests = await RechargeRequest.find()
       .populate("userId", "name mobileNumber stbId")
       .populate("planId", "name price validity category")
-      .sort({ requestTime: -1 });
+      .sort({ createdAt: -1, requestTime: -1 });
 
+    console.log(`[Recharge API] Returned ${requests.length} recharge requests.`);
     return res.status(200).json({
       success: true,
       count: requests.length,
       requests,
     });
   } catch (error) {
+    console.error("[Recharge API Error]", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
