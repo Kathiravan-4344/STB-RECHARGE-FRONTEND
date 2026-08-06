@@ -493,44 +493,7 @@ export async function syncOperatorsFromBackend() {
 
 export async function syncPendingRechargesFromBackend() {
   try {
-    // 1. Auto-retry unsynced local pending transactions
-    const unsynced = state.txns.filter(
-      (t) => t.status === "pending" && !t.syncedToBackend && !t.id.match(/^[0-9a-fA-F]{24}$/)
-    );
-
-    for (const t of unsynced) {
-      try {
-        const res = await apiCreateRecharge({
-          stbId: t.stbId || "1234567890",
-          planName: t.planName,
-          amount: t.amount,
-          customerName: t.customerName,
-          customerMobile: t.customerMobile,
-          paymentStatus: "Success",
-        });
-
-        const backendId =
-          res.data?.rechargeRequest?._id ||
-          (res.data as any)?.data?.rechargeRequest?._id ||
-          (res.data as any)?.rechargeRequest?.id;
-
-        if (res.success && backendId) {
-          const updatedTxns = state.txns.map((item) =>
-            item.id === t.id ? { ...item, id: backendId, syncedToBackend: true } : item
-          );
-          const currentPending = state.pending;
-          const isPendingMatch = currentPending?.txnId === t.id;
-          setState({
-            txns: updatedTxns,
-            pending: isPendingMatch && currentPending ? { ...currentPending, txnId: backendId } : state.pending,
-          });
-        }
-      } catch (retryErr) {
-        console.warn("[Auto-Retry Recharge Warning]", retryErr);
-      }
-    }
-
-    // 2. Fetch latest recharges from backend MongoDB (Query both endpoints for 100% device & endpoint consistency)
+    // Fetch latest recharges from backend MongoDB
     const [resAll, resPending] = await Promise.allSettled([
       apiGetPendingRecharges(),
       apiGetOperatorRequests(),

@@ -57,18 +57,19 @@ const getPlans = async (req, res) => {
   }
 };
 
+// In-memory atomic lock map to prevent parallel race conditions
+const recentRechargeLocks = new Map();
+
 // @desc Create Recharge Request (Strict Rule: Payment must be SUCCESS)
 // @route POST /api/recharge/create and POST /recharge/create
 const createRechargeRequest = async (req, res) => {
   try {
     console.log("API HIT:", req.body);
 
-    // Critical Fix 3: Ensure DB Connection BEFORE saving
     await connectDB();
 
     const { userId, stbId, planId, planName, amount, paymentStatus, customerName, customerMobile } = req.body;
 
-    // Critical Fix 1: Validate paymentStatus === "Success"
     const statusClean = paymentStatus ? String(paymentStatus).trim() : "Success";
     if (statusClean.toLowerCase() !== "success") {
       return res.status(400).json({
@@ -80,8 +81,29 @@ const createRechargeRequest = async (req, res) => {
     const cleanStbId = stbId ? String(stbId).trim().toUpperCase() : "STB-UNKNOWN";
     const cleanName = customerName ? String(customerName).trim() : "Customer";
     const cleanMobile = customerMobile ? String(customerMobile).trim() : "";
+    const cleanAmount = Number(amount) || 240;
 
-    console.log(`[Recharge API] Creating Recharge: STB=${cleanStbId}, Mobile=${cleanMobile}, Customer=${cleanName}, Amount=${amount}`);
+    console.log(`[Recharge API] Creating Recharge: STB=${cleanStbId}, Mobile=${cleanMobile}, Customer=${cleanName}, Amount=${cleanAmount}`);
+
+    // Atomic In-Memory Concurrency Lock Check (Prevents parallel duplicate hits within 15 seconds)
+    const lockKey = `${cleanStbId}_${cleanMobile}_${cleanAmount}`;
+    const nowMs = Date.now();
+    const lastHitTime = recentRechargeLocks.get(lockKey) || 0;
+
+    if (nowMs - lastHitTime < 15000) {
+      console.log(`[Recharge API Lock] Duplicate parallel hit blocked for ${lockKey}`);
+      let existingDoc = await Recharge.findOne({
+        $or: [{ stbId: cleanStbId }, { customerMobile: cleanMobile }],
+        status: "Pending",
+      }).sort({ createdAt: -1 });
+
+      return res.status(200).json({
+        success: true,
+        message: "Recharge request already created",
+        rechargeRequest: existingDoc || { stbId: cleanStbId, amount: cleanAmount, status: "Pending" },
+      });
+    }
+    recentRechargeLocks.set(lockKey, nowMs);
 
     // 1. Find or resolve Plan
     let plan = null;
@@ -137,50 +159,25 @@ const createRechargeRequest = async (req, res) => {
       }
     }
 
-    // 3. Prevent duplicate creation within 30 seconds
-    const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
-    let existingRecent = await Recharge.findOne({
-      $or: [{ stbId: cleanStbId }, { customerMobile: cleanMobile }],
-      status: "Pending",
-      createdAt: { $gte: thirtySecondsAgo },
-    });
-
-    if (!existingRecent && cleanStbId !== "STB-UNKNOWN") {
-      existingRecent = await RechargeRequest.findOne({
-        stbId: cleanStbId,
-        status: "Pending",
-        createdAt: { $gte: thirtySecondsAgo },
-      });
-    }
-
-    if (existingRecent) {
-      console.log(`[Recharge API] Duplicate request suppressed for STB=${cleanStbId}, ID=${existingRecent._id}`);
-      return res.status(200).json({
-        success: true,
-        message: "Recharge request already exists",
-        rechargeRequest: existingRecent,
-      });
-    }
-
-    // 4. Construct new Recharge model instance
+    // 3. Construct & Save new Recharge document
     const newRecharge = new Recharge({
       userId: user?._id || userId || undefined,
       stbId: cleanStbId !== "STB-UNKNOWN" ? cleanStbId : user?.stbId || stbId || "1234567890",
       customerName: cleanName !== "Customer" ? cleanName : user?.name || "Customer",
       customerMobile: cleanMobile || user?.mobileNumber || "",
       planId: plan?._id || planId || undefined,
-      amount: Number(amount) || plan?.price || 240,
+      amount: cleanAmount,
       paymentStatus: "Success",
       status: "Pending",
       requestTime: new Date(),
     });
 
-    console.log("Saving:", newRecharge);
+    console.log("Saving new single recharge:", newRecharge._id);
     try {
       await newRecharge.save();
-      console.log("Saved successfully");
+      console.log("Saved successfully:", newRecharge._id);
     } catch (saveErr) {
-      console.log("ERROR:", saveErr);
+      console.log("ERROR saving recharge:", saveErr);
       return res.status(500).json({ error: saveErr.message });
     }
 
