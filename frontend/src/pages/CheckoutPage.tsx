@@ -12,22 +12,20 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
   const selectedPlanObject = useStore((s) => s.selectedPlanObject);
 
   const activePlanId = useMemo(() => {
-    if (searchPlanId) return searchPlanId;
-    if (selectedPlanId) return selectedPlanId;
+    // 1. Highest Priority: URL parameter ?plan=m3
     if (typeof window !== "undefined") {
       const hash = window.location.hash || "";
       const searchPart = hash.includes("?") ? hash.split("?")[1] : window.location.search;
       const params = new URLSearchParams(searchPart);
-      return params.get("plan") || undefined;
+      const urlPlan = params.get("plan");
+      if (urlPlan) return urlPlan;
     }
+    if (searchPlanId) return searchPlanId;
+    if (selectedPlanId) return selectedPlanId;
     return undefined;
   }, [searchPlanId, selectedPlanId]);
 
   const plan = useMemo(() => {
-    if (selectedPlanObject && selectedPlanObject.name && selectedPlanObject.price) {
-      return selectedPlanObject;
-    }
-
     if (activePlanId) {
       const targetStr = String(activePlanId).toLowerCase().trim();
       const found = allPlans.find((p: any) => {
@@ -41,10 +39,17 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
       if (found) return found;
     }
 
+    if (selectedPlanObject && selectedPlanObject.name && selectedPlanObject.price) {
+      return selectedPlanObject;
+    }
+
     if (typeof window !== "undefined") {
       const hash = window.location.hash || "";
       if (hash.includes("m3") || hash.includes("300")) {
         return allPlans.find((p) => p.price === 300) || PLANS[2];
+      }
+      if (hash.includes("m2") || hash.includes("240")) {
+        return allPlans.find((p) => p.price === 240) || PLANS[1];
       }
       if (hash.includes("m1") || hash.includes("220")) {
         return allPlans.find((p) => p.price === 220) || PLANS[0];
