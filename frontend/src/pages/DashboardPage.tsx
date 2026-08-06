@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppShell } from "../components/AppShell";
-import { fetchStb, useStore, PLANS, formatName, setState, getState } from "../services/store";
+import { fetchStb, useStore, PLANS, formatName, setState, getState, selectPlan } from "../services/store";
 import {
   Tv,
   Zap,
@@ -306,7 +306,10 @@ function PlanMini({ plan }: { plan: (typeof PLANS)[number] }) {
         </ul>
       </div>
       <button
-        onClick={() => navigate({ to: "/recharge/checkout", search: { plan: plan.id } })}
+        onClick={() => {
+          selectPlan(plan.id);
+          navigate({ to: "/recharge/checkout", search: { plan: plan.id } });
+        }}
         className="mt-4 w-full rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] py-2.5 text-sm font-bold text-white shadow-sm transition"
       >
         Select Plan

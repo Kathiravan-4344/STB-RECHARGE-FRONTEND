@@ -149,6 +149,7 @@ export type State = {
   productRequests: ProductRequest[];
   complaints: Complaint[];
   appliedCoupon: string | null;
+  selectedPlanId: string | null;
   approvedOperators: ApprovedOperator[];
   blockedCustomers: string[];
   ready: boolean;
@@ -361,10 +362,15 @@ const defaultState: State = {
   productRequests: INITIAL_SEED_PRODUCT_REQUESTS,
   complaints: INITIAL_SEED_COMPLAINTS,
   appliedCoupon: null,
+  selectedPlanId: null,
   approvedOperators: INITIAL_APPROVED_OPERATORS,
   blockedCustomers: [],
   ready: true,
 };
+
+export function selectPlan(planId: string) {
+  setState({ selectedPlanId: planId });
+}
 
 let state: State = defaultState;
 const listeners = new Set<() => void>();
@@ -493,43 +499,35 @@ export async function syncOperatorsFromBackend() {
 
 export async function syncPendingRechargesFromBackend() {
   try {
-    // Fetch latest recharges from backend MongoDB
-    const [resAll, resPending] = await Promise.allSettled([
-      apiGetPendingRecharges(),
-      apiGetOperatorRequests(),
-    ]);
+    // Single API endpoint query to avoid duplicate data fetching
+    const res = await apiGetOperatorRequests();
 
     let rawList: any[] = [];
-    const extractList = (resVal: any): any[] => {
-      if (!resVal) return [];
-      const data = resVal.data !== undefined ? resVal.data : resVal;
-      if (Array.isArray(data)) return data;
-      if (Array.isArray(resVal)) return resVal;
-      const list = data?.requests || data?.recharges || data?.data || resVal?.requests || resVal?.recharges || [];
-      return Array.isArray(list) ? list : [];
-    };
-
-    if (resAll.status === "fulfilled") {
-      const val = resAll.value;
-      if (val?.success || Array.isArray(val) || Array.isArray(val?.data)) {
-        rawList.push(...extractList(val));
-      }
-    }
-    if (resPending.status === "fulfilled") {
-      const val = resPending.value;
-      if (val?.success || Array.isArray(val) || Array.isArray(val?.data)) {
-        rawList.push(...extractList(val));
-      }
+    if (res.success && Array.isArray(res.data?.requests)) {
+      rawList = res.data.requests;
+    } else if (Array.isArray(res.data)) {
+      rawList = res.data;
+    } else if (Array.isArray(res)) {
+      rawList = res;
     }
 
-    console.log("API RESPONSE:", resPending.status === "fulfilled" ? resPending.value : resAll.status === "fulfilled" ? resAll.value : rawList);
-
-    // Deduplicate by ID and content signature
+    // Deduplicate by ID and Content Signature
     const uniqueMap = new Map<string, any>();
+    const seenSignatures = new Set<string>();
+
     for (const item of rawList) {
-      const key = String(item._id || item.id || "");
-      if (key && !uniqueMap.has(key)) {
-        uniqueMap.set(key, item);
+      const idKey = String(item._id || item.id || "");
+      const stb = String(item.stbId || "").trim().toUpperCase();
+      const mobile = String(item.customerMobile || (typeof item.userId === "object" ? item.userId?.mobileNumber : "") || "").trim();
+      const amount = Number(item.amount) || 0;
+      const status = String(item.status || "Pending").trim();
+      const timeMin = Math.floor(new Date(item.createdAt || item.requestTime || Date.now()).getTime() / 60000);
+
+      const signature = `${stb}_${mobile}_${amount}_${status}_${timeMin}`;
+
+      if (idKey && !uniqueMap.has(idKey) && !seenSignatures.has(signature)) {
+        uniqueMap.set(idKey, item);
+        seenSignatures.add(signature);
       }
     }
     const backendRequests = Array.from(uniqueMap.values());

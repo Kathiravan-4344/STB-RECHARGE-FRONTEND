@@ -8,9 +8,11 @@ const COUPONS: Record<string, number> = { STB50: 50, NEW10: 10, WELCOME: 25 };
 
 export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
   const allPlans = useStore((s) => (s.plans.length ? s.plans : PLANS));
+  const selectedPlanId = useStore((s) => s.selectedPlanId);
 
   const activePlanId = useMemo(() => {
     if (searchPlanId) return searchPlanId;
+    if (selectedPlanId) return selectedPlanId;
     if (typeof window !== "undefined") {
       const hash = window.location.hash || "";
       const searchPart = hash.includes("?") ? hash.split("?")[1] : window.location.search;
@@ -18,14 +20,16 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
       return params.get("plan") || undefined;
     }
     return undefined;
-  }, [searchPlanId]);
+  }, [searchPlanId, selectedPlanId]);
 
   const plan = useMemo(() => {
     if (activePlanId) {
-      const found = allPlans.find((p) => p.id === activePlanId || p.name.includes(activePlanId));
+      const found = allPlans.find(
+        (p) => p.id === activePlanId || p.price === Number(activePlanId) || p.name.toLowerCase().includes(String(activePlanId).toLowerCase())
+      );
       if (found) return found;
     }
-    return allPlans[0] || PLANS[0];
+    return allPlans.find((p) => p.popular) || allPlans[0] || PLANS[0];
   }, [allPlans, activePlanId]);
   const user = useStore((s) => s.user);
   const stb = useStore((s) => s.stb);

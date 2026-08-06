@@ -68,13 +68,25 @@ const getPendingRequests = async (req, res) => {
     }
 
     const uniqueMap = new Map();
+    const seenSignatures = new Set();
+    const resultList = [];
+
     for (const item of [...recharges, ...requests]) {
-      const key = String(item._id || item.id);
-      if (key && !uniqueMap.has(key)) {
-        uniqueMap.set(key, item);
+      const idKey = String(item._id || item.id || "");
+      const stb = String(item.stbId || "").trim().toUpperCase();
+      const mobile = String(item.customerMobile || (typeof item.userId === "object" ? item.userId?.mobileNumber : "") || "").trim();
+      const amount = Number(item.amount) || 0;
+      const status = String(item.status || "Pending").trim();
+      const timeMin = Math.floor(new Date(item.createdAt || item.requestTime || Date.now()).getTime() / 60000);
+
+      const signature = `${stb}_${mobile}_${amount}_${status}_${timeMin}`;
+
+      if (idKey && !uniqueMap.has(idKey) && !seenSignatures.has(signature)) {
+        uniqueMap.set(idKey, true);
+        seenSignatures.add(signature);
+        resultList.push(item);
       }
     }
-    const data = Array.from(uniqueMap.values());
 
     const acceptHeader = req.headers.accept || "";
     // If opened directly in browser or requested with test query
@@ -85,7 +97,7 @@ const getPendingRequests = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "WORKING BRO ✅",
-      requests: data,
+      requests: resultList,
     });
   } catch (error) {
     console.error("[Backend Operator API Error]", error);
