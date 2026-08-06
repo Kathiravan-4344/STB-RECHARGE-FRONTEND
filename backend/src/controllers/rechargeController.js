@@ -137,7 +137,32 @@ const createRechargeRequest = async (req, res) => {
       }
     }
 
-    // 3. Construct new Recharge model instance
+    // 3. Prevent duplicate creation within 30 seconds
+    const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
+    let existingRecent = await Recharge.findOne({
+      $or: [{ stbId: cleanStbId }, { customerMobile: cleanMobile }],
+      status: "Pending",
+      createdAt: { $gte: thirtySecondsAgo },
+    });
+
+    if (!existingRecent && cleanStbId !== "STB-UNKNOWN") {
+      existingRecent = await RechargeRequest.findOne({
+        stbId: cleanStbId,
+        status: "Pending",
+        createdAt: { $gte: thirtySecondsAgo },
+      });
+    }
+
+    if (existingRecent) {
+      console.log(`[Recharge API] Duplicate request suppressed for STB=${cleanStbId}, ID=${existingRecent._id}`);
+      return res.status(200).json({
+        success: true,
+        message: "Recharge request already exists",
+        rechargeRequest: existingRecent,
+      });
+    }
+
+    // 4. Construct new Recharge model instance
     const newRecharge = new Recharge({
       userId: user?._id || userId || undefined,
       stbId: cleanStbId !== "STB-UNKNOWN" ? cleanStbId : user?.stbId || stbId || "1234567890",
@@ -150,7 +175,6 @@ const createRechargeRequest = async (req, res) => {
       requestTime: new Date(),
     });
 
-    // Critical Fix 4 & 5: Debug Log & Try-Catch saving logic
     console.log("Saving:", newRecharge);
     try {
       await newRecharge.save();

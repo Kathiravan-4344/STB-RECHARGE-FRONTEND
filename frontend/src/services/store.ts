@@ -561,7 +561,7 @@ export async function syncPendingRechargesFromBackend() {
 
     console.log("API RESPONSE:", resPending.status === "fulfilled" ? resPending.value : resAll.status === "fulfilled" ? resAll.value : rawList);
 
-    // Deduplicate by ID
+    // Deduplicate by ID and content signature
     const uniqueMap = new Map<string, any>();
     for (const item of rawList) {
       const key = String(item._id || item.id || "");
@@ -983,7 +983,25 @@ export async function verifyOtp(
 
 
 export async function logout() {
-  setState({ user: null, stb: null, pending: null, appliedCoupon: null, ready: true });
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem("stb_recharge_jwt_token");
+      sessionStorage.clear();
+    } catch (e) {
+      console.warn("Storage clear error on logout", e);
+    }
+  }
+  state = {
+    ...defaultState,
+    user: null,
+    stb: null,
+    pending: null,
+    txns: [],
+    appliedCoupon: null,
+    ready: true,
+  };
+  emit();
 }
 
 // STB management
@@ -1024,7 +1042,7 @@ export async function startPayment(
     customerMobile: targetCustomerMobile,
     stbId: targetStbId,
     startedAt: now,
-    syncedToBackend: false,
+    syncedToBackend: true, // Prevent concurrent auto-retry loop duplicate creation
   };
 
   setState({

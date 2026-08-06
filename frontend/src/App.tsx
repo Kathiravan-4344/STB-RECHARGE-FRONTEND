@@ -96,7 +96,9 @@ const checkoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/recharge/checkout",
   component: () => {
-    const search = new URLSearchParams(window.location.search);
+    const hash = window.location.hash || "";
+    const searchPart = hash.includes("?") ? hash.split("?")[1] : window.location.search;
+    const search = new URLSearchParams(searchPart);
     return <CheckoutPage searchPlanId={search.get("plan") || undefined} />;
   },
 });

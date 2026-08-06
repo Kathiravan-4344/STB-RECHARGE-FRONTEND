@@ -8,10 +8,25 @@ const COUPONS: Record<string, number> = { STB50: 50, NEW10: 10, WELCOME: 25 };
 
 export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
   const allPlans = useStore((s) => (s.plans.length ? s.plans : PLANS));
-  const plan = useMemo(
-    () => allPlans.find((p) => p.id === searchPlanId) ?? allPlans[1] ?? allPlans[0],
-    [allPlans, searchPlanId],
-  );
+
+  const activePlanId = useMemo(() => {
+    if (searchPlanId) return searchPlanId;
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash || "";
+      const searchPart = hash.includes("?") ? hash.split("?")[1] : window.location.search;
+      const params = new URLSearchParams(searchPart);
+      return params.get("plan") || undefined;
+    }
+    return undefined;
+  }, [searchPlanId]);
+
+  const plan = useMemo(() => {
+    if (activePlanId) {
+      const found = allPlans.find((p) => p.id === activePlanId || p.name.includes(activePlanId));
+      if (found) return found;
+    }
+    return allPlans[0] || PLANS[0];
+  }, [allPlans, activePlanId]);
   const user = useStore((s) => s.user);
   const stb = useStore((s) => s.stb);
   const appliedCoupon = useStore((s) => s.appliedCoupon);

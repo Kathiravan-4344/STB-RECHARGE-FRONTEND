@@ -108,8 +108,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
             <button
               onClick={() => {
-                logout();
-                navigate({ to: "/" });
+                void logout();
+                navigate({ to: "/login" });
               }}
               className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-100"
               aria-label="Sign out"
