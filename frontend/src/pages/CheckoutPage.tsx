@@ -24,13 +24,20 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
 
   const plan = useMemo(() => {
     if (activePlanId) {
-      const found = allPlans.find(
-        (p) => p.id === activePlanId || p.price === Number(activePlanId) || p.name.toLowerCase().includes(String(activePlanId).toLowerCase())
-      );
+      const targetStr = String(activePlanId).toLowerCase().trim();
+      const found = allPlans.find((p: any) => {
+        const pid = String(p.id || p._id || "").toLowerCase();
+        if (pid === targetStr) return true;
+        if (targetStr === "m3" || targetStr === "300") return p.price === 300 || p.name.includes("300");
+        if (targetStr === "m2" || targetStr === "240") return p.price === 240 || p.name.includes("240");
+        if (targetStr === "m1" || targetStr === "220") return p.price === 220 || p.name.includes("220");
+        return p.name.toLowerCase().includes(targetStr) || String(p.price) === targetStr;
+      });
       if (found) return found;
     }
-    return allPlans.find((p) => p.popular) || allPlans[0] || PLANS[0];
+    return allPlans.find((p) => p.price === 300) || allPlans[0] || PLANS[0];
   }, [allPlans, activePlanId]);
+
   const user = useStore((s) => s.user);
   const stb = useStore((s) => s.stb);
   const appliedCoupon = useStore((s) => s.appliedCoupon);
@@ -49,15 +56,16 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
   }
 
   function pay() {
+    if (processing) return;
     setProcessing(true);
     setTimeout(() => {
-      startPayment(plan.id, total, plan.name, {
+      startPayment(plan.id || plan.name, total, plan.name, {
         stbId: stb?.id || user?.stbId,
         customerName: user?.name || stb?.customerName,
         customerMobile: user?.mobile,
       });
       navigate({ to: "/recharge/pending" });
-    }, 1200);
+    }, 1000);
   }
 
   return (

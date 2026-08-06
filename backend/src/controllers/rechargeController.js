@@ -85,13 +85,15 @@ const createRechargeRequest = async (req, res) => {
 
     console.log(`[Recharge API] Creating Recharge: STB=${cleanStbId}, Mobile=${cleanMobile}, Customer=${cleanName}, Amount=${cleanAmount}`);
 
-    // Atomic In-Memory Concurrency Lock Check (Prevents parallel duplicate hits within 15 seconds)
-    const lockKey = `${cleanStbId}_${cleanMobile}_${cleanAmount}`;
+    // Atomic In-Memory Concurrency Lock Check (Prevents parallel duplicate hits within 30 seconds)
+    const cleanDigitsMobile = cleanMobile.replace(/\D/g, "").slice(-10);
+    const cleanStbKey = cleanStbId.replace(/[^A-Z0-9]/gi, "").toUpperCase();
+    const lockKey = `${cleanStbKey || "NOSTB"}_${cleanDigitsMobile || "NOMOBILE"}`;
     const nowMs = Date.now();
     const lastHitTime = recentRechargeLocks.get(lockKey) || 0;
 
-    if (nowMs - lastHitTime < 15000) {
-      console.log(`[Recharge API Lock] Duplicate parallel hit blocked for ${lockKey}`);
+    if (nowMs - lastHitTime < 30000) {
+      console.log(`[Recharge API Lock] Duplicate submission blocked for ${lockKey}`);
       let existingDoc = await Recharge.findOne({
         $or: [{ stbId: cleanStbId }, { customerMobile: cleanMobile }],
         status: "Pending",
