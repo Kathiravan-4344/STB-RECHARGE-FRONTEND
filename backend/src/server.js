@@ -112,28 +112,26 @@ app.get(["/", "/api", "/api/health"], (req, res) => {
     endpoints: {
       auth: "/api/auth",
       stb: "/api/stb",
-      plans: "/api/plans",
+      plans: "/api/recharge/plans",
       recharge: "/api/recharge",
-      operator: "/api/operator",
+      operator: "/api/operator/requests",
       admin: "/api/admin",
       complaint: "/api/complaint",
     },
   });
 });
 
-
-// Mount Routes cleanly
+// Mount Routes cleanly (No duplicate mounts)
 app.use("/api/auth", authRoutes);
 app.use("/api/stb", stbRoutes);
+app.use("/api/recharge", rechargeRoutes);
 app.use("/api/operator", operatorRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/complaint", complaintRoutes);
-app.use("/api/recharge", rechargeRoutes);
 app.use("/api", productRoutes);
 app.use("/api", productRequestRoutes);
-app.use("/api", rechargeRoutes);
 
-// Global 404 Route
+// Global 404 Route Catch-all
 app.use((req, res) => {
   res.status(404).json({ success: false, message: `Route not found: ${req.originalUrl}` });
 });

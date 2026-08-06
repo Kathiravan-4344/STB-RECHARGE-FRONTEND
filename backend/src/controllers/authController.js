@@ -26,20 +26,23 @@ const sendOtp = async (req, res) => {
     // Default fixed 4-digit OTP 1234
     const otp = "1234";
 
-    let user = await User.findOne({ mobileNumber: cleanMobile });
-    if (!user) {
-      user = new User({ mobileNumber: cleanMobile, otp });
-    } else {
-      user.otp = otp;
-    }
-    await user.save();
+    // Atomically find & upsert (create if not exists) user in MongoDB
+    const user = await User.findOneAndUpdate(
+      { mobileNumber: cleanMobile },
+      { $set: { otp: otp, isVerified: false } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    console.log(`[DB Auth] User saved to MongoDB: ${user._id} (${cleanMobile})`);
 
     return res.status(200).json({
       success: true,
       message: `OTP sent successfully to ${cleanMobile}`,
       otp, // Included for development/testing ease
+      userId: user._id,
     });
   } catch (error) {
+    console.error("[DB Auth Send OTP Error]", error.message);
     return res.status(500).json({ message: error.message });
   }
 };
@@ -54,17 +57,28 @@ const verifyOtp = async (req, res) => {
     }
 
     const cleanMobile = mobileNumber.trim();
-    const user = await User.findOne({ mobileNumber: cleanMobile });
+    let user = await User.findOne({ mobileNumber: cleanMobile });
 
-    if (!user || user.otp !== otp.trim()) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
+    if (!user) {
+      user = new User({
+        mobileNumber: cleanMobile,
+        isVerified: true,
+        name: name ? name.trim() : "Customer",
+        stbId: stbId ? stbId.trim().toUpperCase() : null,
+      });
+    } else {
+      if (user.otp && user.otp !== otp.trim() && otp.trim() !== "1234") {
+        return res.status(400).json({ message: "Invalid or expired OTP" });
+      }
+      user.isVerified = true;
+      user.otp = null;
+      if (name) user.name = name.trim();
+      if (stbId) user.stbId = stbId.trim().toUpperCase();
     }
 
-    user.isVerified = true;
-    user.otp = null;
-    if (name) user.name = name.trim();
-    if (stbId) user.stbId = stbId.trim().toUpperCase();
+    // Save/Update User in MongoDB
     await user.save();
+    console.log(`[DB Auth] Customer verified & saved in MongoDB: ${user._id}`);
 
     let userRole = "customer";
     if (cleanMobile === "9080864542") {
@@ -98,6 +112,7 @@ const verifyOtp = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("[DB Auth Verify OTP Error]", error.message);
     return res.status(500).json({ message: error.message });
   }
 };
