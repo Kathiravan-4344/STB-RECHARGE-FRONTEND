@@ -75,8 +75,8 @@ export function PlansPage() {
             </div>
             <button
               onClick={() => {
-                selectPlan(p.id);
-                navigate({ to: "/recharge/checkout", search: { plan: p.id } });
+                selectPlan(p);
+                navigate({ to: "/recharge/checkout", search: { plan: p.id || p._id || "m3" } });
               }}
               className="mt-6 w-full rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] py-3 text-sm font-bold text-white shadow-md shadow-blue-500/20 transition-all duration-200 active:scale-[0.99]"
             >

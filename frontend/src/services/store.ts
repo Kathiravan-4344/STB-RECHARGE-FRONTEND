@@ -150,6 +150,7 @@ export type State = {
   complaints: Complaint[];
   appliedCoupon: string | null;
   selectedPlanId: string | null;
+  selectedPlanObject?: any;
   approvedOperators: ApprovedOperator[];
   blockedCustomers: string[];
   ready: boolean;
@@ -363,13 +364,19 @@ const defaultState: State = {
   complaints: INITIAL_SEED_COMPLAINTS,
   appliedCoupon: null,
   selectedPlanId: null,
+  selectedPlanObject: null,
   approvedOperators: INITIAL_APPROVED_OPERATORS,
   blockedCustomers: [],
   ready: true,
 };
 
-export function selectPlan(planId: string) {
-  setState({ selectedPlanId: planId });
+export function selectPlan(planOrId: any) {
+  if (typeof planOrId === "object" && planOrId !== null) {
+    const id = planOrId.id || planOrId._id || (planOrId.price === 300 ? "m3" : planOrId.price === 240 ? "m2" : "m1");
+    setState({ selectedPlanId: id, selectedPlanObject: planOrId });
+  } else {
+    setState({ selectedPlanId: String(planOrId || "") });
+  }
 }
 
 let state: State = defaultState;

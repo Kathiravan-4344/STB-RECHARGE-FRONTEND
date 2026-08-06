@@ -307,8 +307,8 @@ function PlanMini({ plan }: { plan: (typeof PLANS)[number] }) {
       </div>
       <button
         onClick={() => {
-          selectPlan(plan.id);
-          navigate({ to: "/recharge/checkout", search: { plan: plan.id } });
+          selectPlan(plan);
+          navigate({ to: "/recharge/checkout", search: { plan: plan.id || plan._id || "m3" } });
         }}
         className="mt-4 w-full rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] py-2.5 text-sm font-bold text-white shadow-sm transition"
       >

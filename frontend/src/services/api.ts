@@ -78,8 +78,10 @@ export async function apiRequest<T = any>(
   } catch (primaryErr: any) {
     console.warn(`[API Info] Primary fetch failed for ${endpoint} (${url}):`, primaryErr.message);
 
-    // Fallback: Retry direct backend port 5000 if frontend is running on dev port (5173/3000) on laptop or mobile
+    const isReadonly = !options.method || options.method.toUpperCase() === "GET";
+    // Fallback ONLY for GET requests to prevent duplicate database creation on POST/PUT/DELETE
     if (
+      isReadonly &&
       typeof window !== "undefined" &&
       window.location &&
       window.location.port &&
@@ -89,7 +91,7 @@ export async function apiRequest<T = any>(
       const host = window.location.hostname === "localhost" ? "127.0.0.1" : window.location.hostname;
       const fallbackUrl = `${window.location.protocol}//${host}:5000/api${path}`;
       try {
-        console.info(`[API Fallback] Retrying request to backend server on port 5000: ${fallbackUrl}`);
+        console.info(`[API Fallback] Retrying GET request to backend server on port 5000: ${fallbackUrl}`);
         const res = await fetch(fallbackUrl, { ...options, headers });
         const data = await parseResponseData(res);
         if (!res.ok) {

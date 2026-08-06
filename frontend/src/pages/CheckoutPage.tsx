@@ -9,6 +9,7 @@ const COUPONS: Record<string, number> = { STB50: 50, NEW10: 10, WELCOME: 25 };
 export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
   const allPlans = useStore((s) => (s.plans.length ? s.plans : PLANS));
   const selectedPlanId = useStore((s) => s.selectedPlanId);
+  const selectedPlanObject = useStore((s) => s.selectedPlanObject);
 
   const activePlanId = useMemo(() => {
     if (searchPlanId) return searchPlanId;
@@ -23,6 +24,10 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
   }, [searchPlanId, selectedPlanId]);
 
   const plan = useMemo(() => {
+    if (selectedPlanObject && selectedPlanObject.name && selectedPlanObject.price) {
+      return selectedPlanObject;
+    }
+
     if (activePlanId) {
       const targetStr = String(activePlanId).toLowerCase().trim();
       const found = allPlans.find((p: any) => {
@@ -35,8 +40,19 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
       });
       if (found) return found;
     }
-    return allPlans.find((p) => p.price === 300) || allPlans[0] || PLANS[0];
-  }, [allPlans, activePlanId]);
+
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash || "";
+      if (hash.includes("m3") || hash.includes("300")) {
+        return allPlans.find((p) => p.price === 300) || PLANS[2];
+      }
+      if (hash.includes("m1") || hash.includes("220")) {
+        return allPlans.find((p) => p.price === 220) || PLANS[0];
+      }
+    }
+
+    return allPlans.find((p) => p.price === 300) || PLANS[2] || allPlans[0];
+  }, [allPlans, activePlanId, selectedPlanObject]);
 
   const user = useStore((s) => s.user);
   const stb = useStore((s) => s.stb);
