@@ -22,6 +22,12 @@ const rechargeRequestSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    operatorMobile: {
+      type: String,
+      default: "",
+      trim: true,
+      index: true,
+    },
     planId: {
       type: mongoose.Schema.Types.Mixed,
       ref: "Plan",

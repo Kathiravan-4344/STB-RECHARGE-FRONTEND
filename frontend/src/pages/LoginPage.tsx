@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Tv, Shield, Zap, ArrowRight, Lock } from "lucide-react";
 import { sendOtp, verifyOtp, useStore, isOperatorApproved, getState, syncOperatorsFromBackend } from "../services/store";
+import { apiValidateStb } from "../services/api";
 import { cleanMobile } from "../utils/utils";
 
 function getRoleFromUrl(): "customer" | "operator" {
@@ -157,6 +158,18 @@ export function LoginPage() {
       }
 
       setLoading(true);
+
+      // Validate STB ID against Operator mapped STB IDs
+      const valRes = await apiValidateStb(stbId.trim());
+      if (!valRes.success || !valRes.data?.valid) {
+        setLoading(false);
+        setErr(
+          valRes.data?.message ||
+            "❌ STB ID is not registered with any operator. Please contact your local operator to map your STB ID."
+        );
+        return;
+      }
+
       await sendOtp(mobile);
       setLoading(false);
       setStep("otp");

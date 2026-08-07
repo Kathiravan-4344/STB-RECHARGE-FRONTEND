@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const Operator = require("../models/Operator");
 const Recharge = require("../models/Recharge");
 const RechargeRequest = require("../models/RechargeRequest");
+const StbMapping = require("../models/StbMapping");
 const User = require("../models/User");
 
 const JWT_SECRET = process.env.JWT_SECRET || "stb_recharge_jwt_super_secret_key_2026";
@@ -45,20 +46,35 @@ const operatorLogin = async (req, res) => {
   }
 };
 
-// @desc Get Pending Requests (paymentStatus = Success AND status = Pending)
+// @desc Get Pending Requests (Filtered by Operator STB mapping)
 // @route GET /api/operator/requests
 const getPendingRequests = async (req, res) => {
   try {
     let recharges = [];
     let requests = [];
 
+    const operatorMobile = req.query.operatorMobile || req.headers["x-operator-mobile"] || "";
+    const cleanOpMobile = String(operatorMobile).trim();
+
     try {
-      recharges = await Recharge.find()
+      let filter = {};
+      if (cleanOpMobile && cleanOpMobile !== "9080864542") {
+        // Find STBs owned by this operator
+        const mappedStbs = await StbMapping.find({ operatorMobile: cleanOpMobile }).distinct("stbId");
+        filter = {
+          $or: [
+            { operatorMobile: cleanOpMobile },
+            { stbId: { $in: mappedStbs } },
+          ],
+        };
+      }
+
+      recharges = await Recharge.find(filter)
         .populate("userId", "name mobileNumber stbId")
         .populate("planId", "name price validity category")
         .sort({ createdAt: -1 });
 
-      requests = await RechargeRequest.find()
+      requests = await RechargeRequest.find(filter)
         .populate("userId", "name mobileNumber stbId")
         .populate("planId", "name price validity category")
         .sort({ createdAt: -1 });

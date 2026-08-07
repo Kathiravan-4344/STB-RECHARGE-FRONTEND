@@ -2,6 +2,7 @@ const connectDB = require("../config/db");
 const Plan = require("../models/Plan");
 const RechargeRequest = require("../models/RechargeRequest");
 const Recharge = require("../models/Recharge");
+const StbMapping = require("../models/StbMapping");
 const User = require("../models/User");
 
 // Seed default plans helper
@@ -161,12 +162,22 @@ const createRechargeRequest = async (req, res) => {
       }
     }
 
-    // 3. Construct & Save new Recharge document
+    // 3. Look up STB Mapping to route to the specific Operator
+    let mappedOperatorMobile = req.body.operatorMobile || "";
+    if (!mappedOperatorMobile && cleanStbId && cleanStbId !== "STB-UNKNOWN") {
+      const stbMapping = await StbMapping.findOne({ stbId: cleanStbId });
+      if (stbMapping && stbMapping.operatorMobile) {
+        mappedOperatorMobile = stbMapping.operatorMobile;
+      }
+    }
+
+    // 4. Construct & Save new Recharge document
     const newRecharge = new Recharge({
       userId: user?._id || userId || undefined,
       stbId: cleanStbId !== "STB-UNKNOWN" ? cleanStbId : user?.stbId || stbId || "1234567890",
       customerName: cleanName !== "Customer" ? cleanName : user?.name || "Customer",
       customerMobile: cleanMobile || user?.mobileNumber || "",
+      operatorMobile: mappedOperatorMobile,
       planId: plan?._id || planId || undefined,
       amount: cleanAmount,
       paymentStatus: "Success",

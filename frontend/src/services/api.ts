@@ -183,10 +183,46 @@ export async function apiGetPendingRecharges() {
   return apiRequest<{ requests: any[] }>("/recharge/pending");
 }
 
-export async function apiGetOperatorRequests() {
+export async function apiGetOperatorRequests(operatorMobile?: string) {
   console.log("API URL:", getApiBaseUrl());
-  console.log("Fetching operator data...");
-  return apiRequest<{ requests: any[] }>("/operator/requests");
+  console.log("Fetching operator data for:", operatorMobile);
+  const query = operatorMobile ? `?operatorMobile=${encodeURIComponent(operatorMobile)}` : "";
+  return apiRequest<{ requests: any[] }>(`/operator/requests${query}`, {
+    headers: operatorMobile ? { "x-operator-mobile": operatorMobile } : {},
+  });
+}
+
+// STB Mapping API Calls
+export async function apiValidateStb(stbId: string) {
+  return apiRequest<{ valid: boolean; stbId: string; customerName?: string; customerMobile?: string; operatorMobile?: string; currentPlan?: string; expiryDate?: string; message?: string }>("/stb/validate", {
+    method: "POST",
+    body: JSON.stringify({ stbId }),
+  });
+}
+
+export async function apiMapStb(payload: {
+  stbId: string;
+  operatorMobile: string;
+  operatorName?: string;
+  customerName?: string;
+  customerMobile?: string;
+  currentPlan?: string;
+  expiryDate?: string;
+}) {
+  return apiRequest<{ mapping: any }>("/stb/map", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function apiGetOperatorStbs(operatorMobile: string) {
+  return apiRequest<{ mappings: any[] }>(`/stb/operator/${encodeURIComponent(operatorMobile)}`);
+}
+
+export async function apiDeleteStbMapping(id: string) {
+  return apiRequest(`/stb/map/${id}`, {
+    method: "DELETE",
+  });
 }
 
 export async function apiApproveRecharge(id: string) {
