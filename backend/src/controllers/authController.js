@@ -175,6 +175,15 @@ const getUserProfile = async (req, res) => {
       }
     }
 
+    const StbMapping = require("../models/StbMapping");
+    let operatorMobile = "9787312758";
+    if (user.stbId) {
+      const stbMapping = await StbMapping.findOne({ stbId: user.stbId.toUpperCase() });
+      if (stbMapping && stbMapping.operatorMobile) {
+        operatorMobile = stbMapping.operatorMobile;
+      }
+    }
+
     return res.status(200).json({
       success: true,
       user: {
@@ -185,6 +194,7 @@ const getUserProfile = async (req, res) => {
         currentPlan: user.currentPlan,
         expiryDate: user.expiryDate,
         status: user.status,
+        operatorMobile: operatorMobile,
         role: userRole,
       },
       recharges,

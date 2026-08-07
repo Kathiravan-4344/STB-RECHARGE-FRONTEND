@@ -44,95 +44,105 @@ export function DashboardPage() {
   const recommended = allPlans.filter((p) => p.popular || p.category === "Monthly").slice(0, 3);
   const daysLeft = stb ? Math.ceil((new Date(stb.expiry).getTime() - Date.now()) / 86400000) : 0;
 
+  // Dynamic Operator Helpline Contact Number
+  const rawOpNumber =
+    user?.operatorMobile ||
+    user?.operatorNumber ||
+    stb?.operatorMobile ||
+    "9787312758";
+
+  const cleanOpNumber = rawOpNumber.replace(/\D/g, "") || "9787312758";
+  const formattedOpNumber =
+    cleanOpNumber.length === 10
+      ? `+91 ${cleanOpNumber.slice(0, 5)} ${cleanOpNumber.slice(5)}`
+      : `+91 ${cleanOpNumber}`;
+
+  const currentStbId = user?.stbId || stb?.id || "STB-833100124D63";
+  const waMsg = encodeURIComponent(
+    `Hi Operator, I need support regarding my STB Recharge (STB ID: ${currentStbId})`
+  );
+
   return (
-    <AppShell>
-      {/* Top Header Card */}
-      <section className="bg-white rounded-2xl border border-[#CBD5E1] p-6 shadow-sm">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-              Welcome Back
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] mt-1">
-              Hi, {formatName(user?.name || "Customer")} 👋
-            </h1>
-            <p className="text-sm font-semibold text-[#2563EB] mt-1">
-              STB ID: <span className="font-mono">{user?.stbId || stb?.id || "123456789012"}</span>
-            </p>
+    <AppShell title="Customer Dashboard">
+      {/* Welcome Banner */}
+      <section className="bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+        <div className="relative z-10 max-w-2xl space-y-3">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1 text-xs font-bold border border-white/20">
+            <Sparkles className="h-3.5 w-3.5 text-amber-300 fill-amber-300" />
+            <span>Smart Cable TV Control Center</span>
           </div>
-          <Link
-            to="/plans"
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-6 py-3.5 font-bold text-white shadow-md shadow-blue-500/20 transition-all hover:scale-[1.01]"
-          >
-            <Zap className="h-5 w-5 fill-current" />
-            <span>Recharge Now</span>
-            <ArrowRight className="h-5 w-5" />
-          </Link>
+
+          <h1 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight">
+            Welcome back, {formatName(user?.name || "Customer")} 👋
+          </h1>
+
+          <p className="text-xs sm:text-sm text-blue-100 font-medium leading-relaxed">
+            Manage your STB subscription, request fast recharges with local operator approval, buy accessories & log complaints.
+          </p>
         </div>
 
-        {/* STB Status Card */}
-        {stb ? (
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-5 md:col-span-2">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs font-semibold uppercase text-[#64748B]">
-                    <Tv className="h-4 w-4 text-[#2563EB]" /> Set Top Box Status
-                  </div>
-                  <div className="mt-1 text-lg font-bold text-[#0F172A]">{stb.customerName}</div>
-                  <div className="text-xs font-mono text-[#64748B]">STB ID: {stb.id}</div>
-                </div>
-                <StatusDot active={stb.active} />
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-                <Meta label="Current Plan" value={stb.currentPlan} />
-                <Meta label="Expiry Date" value={new Date(stb.expiry).toLocaleDateString()} />
-                <Meta
-                  label="Days Left"
-                  value={`${daysLeft} Days`}
-                  accent={daysLeft <= 3 ? "warn" : "ok"}
-                />
-              </div>
-              {daysLeft <= 3 && daysLeft >= 0 && (
-                <div className="mt-4 flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3.5 py-2 text-xs font-bold text-amber-800">
-                  <Clock className="h-4 w-4 text-amber-600 shrink-0" />
-                  Plan expires in {daysLeft} day{daysLeft === 1 ? "" : "s"} — recharge now to avoid disconnection.
-                </div>
-              )}
-            </div>
-
-            <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-5 flex flex-col justify-between">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs font-semibold uppercase text-[#64748B]">
-                    Auto Recharge
-                  </div>
-                  <div className="text-base font-bold text-[#0F172A] mt-1">Never Miss Expiry</div>
-                </div>
-                <AutoRechargeToggle />
-              </div>
-              <p className="mt-2 text-xs text-[#64748B]">
-                {autoRecharge.enabled
-                  ? "Enabled — plan auto-renews 1 day prior to expiry."
-                  : "Turn on to automatically renew your active STB subscription."}
-              </p>
-              <Link
-                to="/plans"
-                className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#2563EB] hover:underline"
-              >
-                Manage Plans <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-        ) : null}
+        {/* Decorative background circle */}
+        <div className="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-white/5 pointer-events-none" />
       </section>
 
-      {/* Grid Cards (2x2 Mobile / 4 Columns Desktop) */}
+      {/* Main STB Info Card */}
+      <section className="mt-6 bg-white rounded-2xl border border-[#CBD5E1] p-6 shadow-sm">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between border-b border-[#CBD5E1] pb-6">
+          <div className="flex items-center gap-4">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-[#2563EB] border border-blue-200 shadow-sm">
+              <Tv className="h-7 w-7" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xl font-extrabold text-[#0F172A]">
+                  {stb?.id || user?.stbId || "1234567890"}
+                </span>
+                <StatusDot active={stb?.active ?? true} />
+              </div>
+              <p className="text-xs font-semibold text-[#64748B] mt-0.5 uppercase tracking-wide">
+                Registered STB Box ID • Owner: {formatName(user?.name || "Customer")}
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Action Button */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                selectPlan(PLANS[0]);
+                navigate({ to: "/recharge/checkout" });
+              }}
+              className="flex items-center gap-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+            >
+              <Zap className="h-4 w-4 fill-current" /> Quick Recharge Now
+            </button>
+          </div>
+        </div>
+
+        {/* STB Details Grid */}
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4 text-xs">
+          <Meta label="Current Subscription Plan" value={stb?.currentPlan || "Basic Tamil Pack Monthly Rs 220"} />
+          <Meta
+            label="Plan Expiry Date"
+            value={
+              stb?.expiry
+                ? new Date(stb.expiry).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "Active"
+            }
+          />
+          <Meta label="Account Status" value={stb?.active ? "Active Box" : "Expired / Disconnected"} accent={stb?.active ? "ok" : "warn"} />
+          <Meta label="Assigned Cable Operator" value={formattedOpNumber} />
+        </div>
+      </section>
+
+      {/* Quick Services Grid */}
       <section className="mt-6">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-3">
-          Quick Services
-        </h2>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <h2 className="text-base font-bold text-[#0F172A] mb-3">Quick Services</h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Link
             to="/plans"
             className="bg-white rounded-2xl border border-[#CBD5E1] p-5 shadow-sm hover:border-[#2563EB] hover:shadow-md transition group"
@@ -145,7 +155,7 @@ export function DashboardPage() {
           </Link>
 
           <Link
-            to="/plans"
+            to="/recharge/checkout"
             className="bg-white rounded-2xl border border-[#CBD5E1] p-5 shadow-sm hover:border-[#2563EB] hover:shadow-md transition group"
           >
             <div className="h-12 w-12 rounded-xl bg-blue-50 text-[#2563EB] flex items-center justify-center font-bold text-xl group-hover:bg-[#2563EB] group-hover:text-white transition">
@@ -187,26 +197,38 @@ export function DashboardPage() {
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
           <a
-            href="tel:9876543210"
-            className="flex items-center justify-between rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] p-3 text-xs font-bold text-[#0F172A] hover:border-[#2563EB] transition"
+            href={`tel:${cleanOpNumber}`}
+            className="flex items-center justify-between rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] p-3 text-xs font-bold text-[#0F172A] hover:border-[#2563EB] hover:bg-blue-50/50 transition group"
+            title={`Call Operator (${formattedOpNumber})`}
           >
-            <span>Call Operator</span>
-            <span className="font-mono text-[#2563EB]">+91 98765 43210</span>
+            <span className="flex items-center gap-1.5">
+              <PhoneCall className="h-4 w-4 text-[#2563EB]" /> Call Operator
+            </span>
+            <span className="font-mono text-[#2563EB] font-extrabold group-hover:underline">{formattedOpNumber}</span>
           </a>
+
           <a
-            href="https://wa.me/919876543210"
+            href={`https://wa.me/91${cleanOpNumber}?text=${waMsg}`}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-between rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] p-3 text-xs font-bold text-[#0F172A] hover:border-[#22C55E] transition"
+            className="flex items-center justify-between rounded-xl bg-emerald-50/60 border border-emerald-200 p-3 text-xs font-bold text-[#0F172A] hover:border-[#22C55E] hover:bg-emerald-100/50 transition group"
+            title={`Chat on WhatsApp with Operator (${formattedOpNumber})`}
           >
-            <span>WhatsApp Support</span>
-            <span className="text-[#22C55E] font-bold">Online 💬</span>
+            <span className="flex items-center gap-1.5 text-emerald-900">
+              <MessageCircle className="h-4 w-4 text-[#22C55E] fill-emerald-100" /> WhatsApp Support
+            </span>
+            <span className="text-[#22C55E] font-extrabold flex items-center gap-1 group-hover:underline">
+              {formattedOpNumber} <span className="h-2 w-2 rounded-full bg-[#22C55E] animate-pulse" />
+            </span>
           </a>
+
           <a
             href="tel:18001234567"
             className="flex items-center justify-between rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] p-3 text-xs font-bold text-[#0F172A] hover:border-[#2563EB] transition"
           >
-            <span>Customer Care</span>
+            <span className="flex items-center gap-1.5">
+              <Headphones className="h-4 w-4 text-[#64748B]" /> Customer Care
+            </span>
             <span className="font-mono text-[#64748B]">1800-123-4567</span>
           </a>
         </div>
