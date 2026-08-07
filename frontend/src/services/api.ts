@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 // API Integration Service for Backend & MongoDB Atlas Database
 
+<<<<<<< HEAD:frontend/src/services/api.ts
 export function getApiBaseUrl(): string {
   let envUrl =
     import.meta.env.VITE_API_URL ||
@@ -40,6 +41,19 @@ export function getApiBaseUrl(): string {
   }
 
   return "http://localhost:5000/api";
+=======
+function getApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL;
+
+  // Explicit remote production URL (e.g. https://stb-recharge-backend.onrender.com/api)
+  if (envUrl && envUrl.startsWith("http") && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+    return envUrl;
+  }
+
+  // Always return relative /api so both Laptop & Mobile route through the Vite proxy (or Vercel serverless functions).
+  // This avoids direct port 5000 firewall blocks when accessing from mobile devices over Wi-Fi.
+  return "/api";
+>>>>>>> vercel-target/main:src/services/api.ts
 }
 
 async function parseResponseData(res: Response): Promise<any> {
@@ -55,6 +69,7 @@ async function parseResponseData(res: Response): Promise<any> {
   }
 }
 
+<<<<<<< HEAD:frontend/src/services/api.ts
 export async function apiRequest<T = any>(
   endpoint: string,
   options: RequestInit = {},
@@ -62,6 +77,16 @@ export async function apiRequest<T = any>(
   const base = getApiBaseUrl();
   const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
   const url = base.endsWith("/") ? `${base.slice(0, -1)}${path}` : `${base}${path}`;
+=======
+export async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<{ success: boolean; data?: T; error?: string }> {
+  const primaryBaseUrl = getApiBaseUrl();
+  const url = primaryBaseUrl.endsWith("/")
+    ? `${primaryBaseUrl.slice(0, -1)}${endpoint}`
+    : `${primaryBaseUrl}${endpoint}`;
+>>>>>>> vercel-target/main:src/services/api.ts
 
   const headers = {
     "Content-Type": "application/json",
@@ -72,12 +97,17 @@ export async function apiRequest<T = any>(
     const res = await fetch(url, { ...options, headers });
     const data = await parseResponseData(res);
     if (!res.ok) {
+<<<<<<< HEAD:frontend/src/services/api.ts
       return { success: false, error: data?.message || data?.error || `API request failed (HTTP ${res.status})` };
+=======
+      return { success: false, error: data.message || `API request failed (HTTP ${res.status})` };
+>>>>>>> vercel-target/main:src/services/api.ts
     }
     return { success: true, data };
   } catch (primaryErr: any) {
     console.warn(`[API Info] Primary fetch failed for ${endpoint} (${url}):`, primaryErr.message);
 
+<<<<<<< HEAD:frontend/src/services/api.ts
     const isReadonly = !options.method || options.method.toUpperCase() === "GET";
     // Fallback ONLY for GET requests to prevent duplicate database creation on POST/PUT/DELETE
     if (
@@ -96,6 +126,22 @@ export async function apiRequest<T = any>(
         const data = await parseResponseData(res);
         if (!res.ok) {
           return { success: false, error: data?.message || data?.error || `API request failed (HTTP ${res.status})` };
+=======
+    // Fallback: ONLY retry direct host port 5000 if host is a LAN IP (e.g. 192.168.x.x)
+    if (
+      typeof window !== "undefined" &&
+      window.location &&
+      /^(\d{1,3}\.){3}\d{1,3}$/.test(window.location.hostname) &&
+      !url.includes(`:${window.location.port || "5173"}`)
+    ) {
+      const fallbackUrl = `${window.location.protocol}//${window.location.hostname}:5000/api${endpoint}`;
+      try {
+        console.info(`[API Fallback] Retrying request to direct host backend: ${fallbackUrl}`);
+        const res = await fetch(fallbackUrl, { ...options, headers });
+        const data = await parseResponseData(res);
+        if (!res.ok) {
+          return { success: false, error: data.message || `API request failed (HTTP ${res.status})` };
+>>>>>>> vercel-target/main:src/services/api.ts
         }
         return { success: true, data };
       } catch (fallbackErr: any) {
@@ -170,9 +216,13 @@ export async function apiCreateRecharge(payload: {
   customerName?: string;
   customerMobile?: string;
   paymentStatus?: string;
+<<<<<<< HEAD:frontend/src/services/api.ts
   userId?: string;
 }) {
   console.log("Calling recharge API");
+=======
+}) {
+>>>>>>> vercel-target/main:src/services/api.ts
   return apiRequest<{ rechargeRequest: any }>("/recharge/create", {
     method: "POST",
     body: JSON.stringify({ paymentStatus: "Success", ...payload }),
@@ -183,12 +233,15 @@ export async function apiGetPendingRecharges() {
   return apiRequest<{ requests: any[] }>("/recharge/pending");
 }
 
+<<<<<<< HEAD:frontend/src/services/api.ts
 export async function apiGetOperatorRequests() {
   console.log("API URL:", getApiBaseUrl());
   console.log("Fetching operator data...");
   return apiRequest<{ requests: any[] }>("/operator/requests");
 }
 
+=======
+>>>>>>> vercel-target/main:src/services/api.ts
 export async function apiApproveRecharge(id: string) {
   return apiRequest(`/operator/approve/${id}`, {
     method: "POST",

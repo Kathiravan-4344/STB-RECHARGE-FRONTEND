@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
+<<<<<<< HEAD:frontend/src/pages/LoginPage.tsx
 import { useNavigate, useSearch } from "@tanstack/react-router";
+=======
+import { useNavigate } from "@tanstack/react-router";
+>>>>>>> vercel-target/main:src/pages/LoginPage.tsx
 import { Tv, Shield, Zap, ArrowRight, Lock } from "lucide-react";
 import { sendOtp, verifyOtp, useStore, isOperatorApproved, getState, syncOperatorsFromBackend } from "../services/store";
 import { cleanMobile } from "../utils/utils";
 
+<<<<<<< HEAD:frontend/src/pages/LoginPage.tsx
 function getRoleFromUrl(): "customer" | "operator" {
   if (typeof window === "undefined") return "customer";
   const fullPath = window.location.hash || window.location.search || "";
@@ -17,6 +22,11 @@ function getRoleFromUrl(): "customer" | "operator" {
 export function LoginPage() {
   const search = useSearch({ strict: false }) as { role?: string };
   const [role, setRole] = useState<"customer" | "operator">(getRoleFromUrl);
+=======
+
+export function LoginPage() {
+  const [role, setRole] = useState<"customer" | "operator">("customer");
+>>>>>>> vercel-target/main:src/pages/LoginPage.tsx
   const [step, setStep] = useState<"details" | "otp">("details");
 
   // Common & Customer state
@@ -35,6 +45,7 @@ export function LoginPage() {
   const user = useStore((s) => s.user);
 
   useEffect(() => {
+<<<<<<< HEAD:frontend/src/pages/LoginPage.tsx
     const r = search?.role || getRoleFromUrl();
     if (r === "operator" || r === "customer") {
       setRole(r);
@@ -42,6 +53,8 @@ export function LoginPage() {
   }, [search]);
 
   useEffect(() => {
+=======
+>>>>>>> vercel-target/main:src/pages/LoginPage.tsx
     if (user) {
       if (user.role === "admin") {
         navigate({ to: "/admin" });
@@ -84,7 +97,11 @@ export function LoginPage() {
   const isCustomerValid =
     name.trim().length > 0 &&
     /^\d{10}$/.test(cleanMobile(mobile)) &&
+<<<<<<< HEAD:frontend/src/pages/LoginPage.tsx
     /^[A-Za-z0-9\-\_]{4,12}$/.test(stbId.trim());
+=======
+    /^[A-Za-z0-9\-\_]{4,20}$/.test(stbId.trim());
+>>>>>>> vercel-target/main:src/pages/LoginPage.tsx
 
   const isFormValid = role === "operator" ? isOperatorValid : isCustomerValid;
 
@@ -151,8 +168,13 @@ export function LoginPage() {
         return;
       }
 
+<<<<<<< HEAD:frontend/src/pages/LoginPage.tsx
       if (!/^[A-Za-z0-9\-\_]{4,12}$/.test(stbId.trim())) {
         setErr("Enter a valid STB ID / Customer ID (4 to 12 characters)");
+=======
+      if (!/^[A-Za-z0-9\-\_]{4,20}$/.test(stbId.trim())) {
+        setErr("Enter a valid STB ID / Customer ID (4 to 20 characters)");
+>>>>>>> vercel-target/main:src/pages/LoginPage.tsx
         return;
       }
 
@@ -401,17 +423,26 @@ export function LoginPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="block text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+<<<<<<< HEAD:frontend/src/pages/LoginPage.tsx
                         STB ID / Smart Card Number *
                       </label>
                       <span
                         className={`text-xs font-mono font-bold ${
                           stbId.length >= 4 ? "text-emerald-600" : "text-amber-600"
+=======
+                        12-Digit STB ID / Smart Card Number *
+                      </label>
+                      <span
+                        className={`text-xs font-mono font-bold ${
+                          stbId.length === 12 ? "text-emerald-600" : "text-amber-600"
+>>>>>>> vercel-target/main:src/pages/LoginPage.tsx
                         }`}
                       >
                         {stbId.length}/12
                       </span>
                     </div>
                     <input
+<<<<<<< HEAD:frontend/src/pages/LoginPage.tsx
                       inputMode="text"
                       maxLength={12}
                       value={stbId}
@@ -425,6 +456,21 @@ export function LoginPage() {
                     {stbId.length > 0 && stbId.length < 4 && (
                       <p className="mt-1.5 text-xs text-amber-700 font-medium flex items-center gap-1">
                         ⚠️ Enter at least {4 - stbId.length} more character(s) to unlock OTP verification.
+=======
+                      inputMode="numeric"
+                      maxLength={12}
+                      value={stbId}
+                      onChange={(e) => {
+                        setStbId(e.target.value.replace(/\D/g, ""));
+                        setErr(null);
+                      }}
+                      placeholder="ENTER 12-DIGIT STB ID"
+                      className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-[10px] px-4 py-3 text-sm text-[#0F172A] font-mono font-semibold placeholder:font-sans placeholder:font-normal placeholder:text-[#94A3B8] outline-none transition focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/15"
+                    />
+                    {stbId.length > 0 && stbId.length < 12 && (
+                      <p className="mt-1.5 text-xs text-amber-700 font-medium flex items-center gap-1">
+                        ⚠️ Enter remaining {12 - stbId.length} digits to unlock OTP verification.
+>>>>>>> vercel-target/main:src/pages/LoginPage.tsx
                       </p>
                     )}
                   </div>
@@ -511,3 +557,7 @@ export function LoginPage() {
 }
 
 export default LoginPage;
+<<<<<<< HEAD:frontend/src/pages/LoginPage.tsx
+=======
+
+>>>>>>> vercel-target/main:src/pages/LoginPage.tsx

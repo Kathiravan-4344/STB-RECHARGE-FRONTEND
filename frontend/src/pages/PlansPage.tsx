@@ -1,7 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell } from "../components/AppShell";
+<<<<<<< HEAD:frontend/src/pages/PlansPage.tsx
 import { PLANS, useStore, selectPlan } from "../services/store";
+=======
+import { PLANS, useStore } from "../services/store";
+>>>>>>> vercel-target/main:src/pages/PlansPage.tsx
 import { Check, Star } from "lucide-react";
 
 const TABS = ["All", "Monthly", "Channels", "Add-on"] as const;
@@ -74,10 +78,14 @@ export function PlansPage() {
               </ul>
             </div>
             <button
+<<<<<<< HEAD:frontend/src/pages/PlansPage.tsx
               onClick={() => {
                 selectPlan(p);
                 navigate({ to: "/recharge/checkout", search: { plan: p.id || p._id || "m3" } });
               }}
+=======
+              onClick={() => navigate({ to: "/recharge/checkout", search: { plan: p.id } })}
+>>>>>>> vercel-target/main:src/pages/PlansPage.tsx
               className="mt-6 w-full rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] py-3 text-sm font-bold text-white shadow-md shadow-blue-500/20 transition-all duration-200 active:scale-[0.99]"
             >
               Select Plan

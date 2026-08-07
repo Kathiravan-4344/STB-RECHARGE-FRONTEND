@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "stb-recharge-api",
+=======
+  "name": "stb-recharge-frontend-api",
+>>>>>>> vercel-target/main
   "version": "1.0.0",
   "private": true,
   "dependencies": {

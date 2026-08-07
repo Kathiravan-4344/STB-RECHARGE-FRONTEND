@@ -96,9 +96,13 @@ const checkoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/recharge/checkout",
   component: () => {
+<<<<<<< HEAD:frontend/src/App.tsx
     const hash = window.location.hash || "";
     const searchPart = hash.includes("?") ? hash.split("?")[1] : window.location.search;
     const search = new URLSearchParams(searchPart);
+=======
+    const search = new URLSearchParams(window.location.search);
+>>>>>>> vercel-target/main:src/App.tsx
     return <CheckoutPage searchPlanId={search.get("plan") || undefined} />;
   },
 });
