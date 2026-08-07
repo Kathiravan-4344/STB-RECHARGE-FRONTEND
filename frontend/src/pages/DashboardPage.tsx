@@ -19,6 +19,14 @@ import {
   Headphones,
 } from "lucide-react";
 
+function getOperatorNameByMobile(mobile?: string) {
+  if (!mobile) return "PERUMAL A";
+  const clean = mobile.replace(/\D/g, "");
+  if (clean === "9080864542") return "KATHIRAVAN V";
+  if (clean === "9787312758" || clean === "9787313121") return "PERUMAL A";
+  return "PERUMAL A";
+}
+
 export function DashboardPage() {
   const user = useStore((s) => s.user);
   const stb = useStore((s) => s.stb);
@@ -44,7 +52,7 @@ export function DashboardPage() {
   const recommended = allPlans.filter((p) => p.popular || p.category === "Monthly").slice(0, 3);
   const daysLeft = stb ? Math.ceil((new Date(stb.expiry).getTime() - Date.now()) / 86400000) : 0;
 
-  // Dynamic Operator Helpline Contact Number
+  // Dynamic Operator Helpline Contact Number & Name
   const rawOpNumber =
     user?.operatorMobile ||
     user?.operatorNumber ||
@@ -57,32 +65,34 @@ export function DashboardPage() {
       ? `+91 ${cleanOpNumber.slice(0, 5)} ${cleanOpNumber.slice(5)}`
       : `+91 ${cleanOpNumber}`;
 
+  const opName = user?.operatorName || getOperatorNameByMobile(cleanOpNumber);
+
   const currentStbId = user?.stbId || stb?.id || "STB-833100124D63";
   const waMsg = encodeURIComponent(
-    `Hi Operator, I need support regarding my STB Recharge (STB ID: ${currentStbId})`
+    `Hi ${opName}, I need support regarding my STB Recharge (STB ID: ${currentStbId})`
   );
 
   return (
     <AppShell title="Customer Dashboard">
-      {/* Welcome Banner */}
-      <section className="bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+      {/* Welcome Banner - Soft Light Modern Gradient */}
+      <section className="bg-gradient-to-r from-blue-50 via-indigo-50/70 to-slate-50 border border-blue-200/80 rounded-3xl p-6 sm:p-8 text-[#0F172A] shadow-sm relative overflow-hidden">
         <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1 text-xs font-bold border border-white/20">
-            <Sparkles className="h-3.5 w-3.5 text-amber-300 fill-amber-300" />
+          <div className="inline-flex items-center gap-2 rounded-full bg-blue-100/80 px-3 py-1 text-xs font-bold text-[#2563EB] border border-blue-200">
+            <Sparkles className="h-3.5 w-3.5 text-[#2563EB] fill-[#2563EB]" />
             <span>Smart Cable TV Control Center</span>
           </div>
 
-          <h1 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight">
-            Welcome back, {formatName(user?.name || "Customer")} 👋
+          <h1 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-[#0F172A]">
+            Welcome back, <span className="text-[#2563EB]">{formatName(user?.name || "Customer")}</span> 👋
           </h1>
 
-          <p className="text-xs sm:text-sm text-blue-100 font-medium leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#64748B] font-semibold leading-relaxed">
             Manage your STB subscription, request fast recharges with local operator approval, buy accessories & log complaints.
           </p>
         </div>
 
-        {/* Decorative background circle */}
-        <div className="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-white/5 pointer-events-none" />
+        {/* Decorative background accent */}
+        <div className="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-blue-200/30 blur-2xl pointer-events-none" />
       </section>
 
       {/* Main STB Info Card */}
@@ -135,7 +145,7 @@ export function DashboardPage() {
             }
           />
           <Meta label="Account Status" value={stb?.active ? "Active Box" : "Expired / Disconnected"} accent={stb?.active ? "ok" : "warn"} />
-          <Meta label="Assigned Cable Operator" value={formattedOpNumber} />
+          <Meta label="Assigned Cable Operator" value={`${opName} (${formattedOpNumber})`} />
         </div>
       </section>
 
@@ -199,10 +209,10 @@ export function DashboardPage() {
           <a
             href={`tel:${cleanOpNumber}`}
             className="flex items-center justify-between rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] p-3 text-xs font-bold text-[#0F172A] hover:border-[#2563EB] hover:bg-blue-50/50 transition group"
-            title={`Call Operator (${formattedOpNumber})`}
+            title={`Call Operator ${opName} (${formattedOpNumber})`}
           >
             <span className="flex items-center gap-1.5">
-              <PhoneCall className="h-4 w-4 text-[#2563EB]" /> Call Operator
+              <PhoneCall className="h-4 w-4 text-[#2563EB]" /> Call {opName}
             </span>
             <span className="font-mono text-[#2563EB] font-extrabold group-hover:underline">{formattedOpNumber}</span>
           </a>
@@ -212,13 +222,13 @@ export function DashboardPage() {
             target="_blank"
             rel="noreferrer"
             className="flex items-center justify-between rounded-xl bg-emerald-50/60 border border-emerald-200 p-3 text-xs font-bold text-[#0F172A] hover:border-[#22C55E] hover:bg-emerald-100/50 transition group"
-            title={`Chat on WhatsApp with Operator (${formattedOpNumber})`}
+            title={`Chat on WhatsApp with ${opName} (${formattedOpNumber})`}
           >
             <span className="flex items-center gap-1.5 text-emerald-900">
               <MessageCircle className="h-4 w-4 text-[#22C55E] fill-emerald-100" /> WhatsApp Support
             </span>
             <span className="text-[#22C55E] font-extrabold flex items-center gap-1 group-hover:underline">
-              {formattedOpNumber} <span className="h-2 w-2 rounded-full bg-[#22C55E] animate-pulse" />
+              {opName} <span className="h-2 w-2 rounded-full bg-[#22C55E] animate-pulse" />
             </span>
           </a>
 
