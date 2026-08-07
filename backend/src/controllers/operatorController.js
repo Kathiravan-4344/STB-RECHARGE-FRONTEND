@@ -49,7 +49,6 @@ const operatorLogin = async (req, res) => {
 // @route GET /api/operator/requests
 const getPendingRequests = async (req, res) => {
   try {
-    console.log("[Backend Operator API] Fetching requests...");
     let recharges = [];
     let requests = [];
 

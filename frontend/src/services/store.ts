@@ -26,6 +26,7 @@ import {
 
 export type Plan = {
   id: string;
+  _id?: string;
   name: string;
   price: number;
   validityDays: number;
@@ -539,7 +540,7 @@ export async function syncPendingRechargesFromBackend() {
     }
     const backendRequests = Array.from(uniqueMap.values());
 
-    if (backendRequests.length > 0 || resAll.status === "fulfilled" || resPending.status === "fulfilled") {
+    if (backendRequests.length > 0 || res.success) {
       const backendTxns: Txn[] = backendRequests.map((r: any) => {
         const id = r._id || r.id;
         const planName =

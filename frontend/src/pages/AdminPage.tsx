@@ -55,6 +55,25 @@ type TabType =
   | "complaints"
   | "products";
 
+function getOperatorForRecord(
+  rec: { customerMobile?: string; stbId?: string; operatorMobile?: string },
+  operators: ApprovedOperator[]
+): ApprovedOperator | null {
+  if (!operators || operators.length === 0) return null;
+  if (rec.operatorMobile) {
+    const found = operators.find((op) => op.mobile === rec.operatorMobile);
+    if (found) return found;
+  }
+  const key = (rec.customerMobile || rec.stbId || "").trim();
+  if (!key) return operators[0];
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash << 5) - hash + key.charCodeAt(i);
+  }
+  const index = Math.abs(hash) % operators.length;
+  return operators[index] || operators[0];
+}
+
 export function AdminPage() {
   const user = useStore((s) => s.user);
   const txns = useStore((s) => s.txns);
@@ -79,6 +98,8 @@ export function AdminPage() {
 
   // Selected Operator Modal State
   const [selectedOperator, setSelectedOperator] = useState<ApprovedOperator | null>(null);
+  const [selectedOperatorFilter, setSelectedOperatorFilter] = useState<string>("all");
+  const [opModalTab, setOpModalTab] = useState<"customers" | "recharges" | "complaints" | "products">("customers");
 
   // Product Add/Edit Modal state
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -183,12 +204,17 @@ export function AdminPage() {
   });
 
   const allCustomers = Array.from(customerMap.values());
-  const filteredCustomers = allCustomers.filter(
-    (c) =>
+  const filteredCustomers = allCustomers.filter((c) => {
+    const matchSearch =
       c.mobile.includes(customerSearch) ||
       c.stbId.toLowerCase().includes(customerSearch.toLowerCase()) ||
-      c.name.toLowerCase().includes(customerSearch.toLowerCase()),
-  );
+      c.name.toLowerCase().includes(customerSearch.toLowerCase());
+    const op = getOperatorForRecord(c, approvedOperators);
+    const matchOp =
+      selectedOperatorFilter === "all" ||
+      (op && (op.id === selectedOperatorFilter || op.mobile === selectedOperatorFilter));
+    return matchSearch && matchOp;
+  });
 
   const validStatuses = ["pending", "success", "approved", "failed", "rejected"];
   const filteredTxns = txns.filter((t) => {
@@ -212,7 +238,11 @@ export function AdminPage() {
     } else {
       matchStatus = normStatus === rechargeStatusFilter.toLowerCase();
     }
-    return matchSearch && matchStatus;
+    const op = getOperatorForRecord(t, approvedOperators);
+    const matchOp =
+      selectedOperatorFilter === "all" ||
+      (op && (op.id === selectedOperatorFilter || op.mobile === selectedOperatorFilter));
+    return matchSearch && matchStatus && matchOp;
   });
 
   const filteredComplaints = complaints.filter((c) => {
@@ -223,7 +253,11 @@ export function AdminPage() {
       c.category.toLowerCase().includes(complaintSearch.toLowerCase());
     const matchStatus =
       complaintStatusFilter === "all" ? true : c.status === complaintStatusFilter;
-    return matchSearch && matchStatus;
+    const op = getOperatorForRecord(c, approvedOperators);
+    const matchOp =
+      selectedOperatorFilter === "all" ||
+      (op && (op.id === selectedOperatorFilter || op.mobile === selectedOperatorFilter));
+    return matchSearch && matchStatus && matchOp;
   });
 
   const filteredProducts = products.filter(
@@ -463,44 +497,70 @@ export function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#CBD5E1]">
-                {approvedOperators.map((op) => (
-                  <tr key={op.id} className="hover:bg-slate-50 transition">
-                    <td className="px-6 py-4 font-bold text-[#0F172A]">{op.name}</td>
-                    <td className="px-6 py-4 font-mono">{op.mobile}</td>
-                    <td className="px-6 py-4">
-                      {op.active ? (
-                        <span className="text-[#22C55E] font-bold text-xs">🟢 Active</span>
-                      ) : (
-                        <span className="text-red-600 font-bold text-xs">🔴 Inactive</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => setSelectedOperator(op)}
-                        className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1.5 text-xs font-bold text-[#2563EB] hover:bg-slate-100"
-                      >
-                        <Eye className="h-3.5 w-3.5 inline mr-1" /> View Details
-                      </button>
-                      <button
-                        onClick={() => setOperatorActive(op.id, !op.active)}
-                        className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1.5 text-xs font-bold text-[#0F172A] hover:bg-slate-100"
-                      >
-                        Toggle Status
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (window.confirm(`Are you sure you want to remove operator "${op.name}"?`)) {
-                            removeApprovedOperator(op.id);
-                            setMsg({ text: `Operator ${op.name} removed successfully.` });
-                          }
-                        }}
-                        className="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 transition"
-                      >
-                        <Trash2 className="h-3.5 w-3.5 inline mr-1" /> Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {approvedOperators.map((op) => {
+                  const opCustomerCount = allCustomers.filter(
+                    (c) => getOperatorForRecord(c, approvedOperators)?.id === op.id
+                  ).length;
+                  const opRechargeCount = txns.filter(
+                    (t) => getOperatorForRecord(t, approvedOperators)?.id === op.id
+                  ).length;
+                  const opComplaintCount = complaints.filter(
+                    (c) => getOperatorForRecord(c, approvedOperators)?.id === op.id
+                  ).length;
+
+                  return (
+                    <tr key={op.id} className="hover:bg-slate-50 transition">
+                      <td className="px-6 py-4 font-bold text-[#0F172A]">
+                        <button
+                          onClick={() => {
+                            setSelectedOperator(op);
+                            setOpModalTab("customers");
+                          }}
+                          className="flex items-center gap-2 hover:text-[#2563EB] hover:underline cursor-pointer font-bold text-left"
+                        >
+                          <Shield className="h-4 w-4 text-[#2563EB] shrink-0" />
+                          {op.name}
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 font-mono">{op.mobile}</td>
+                      <td className="px-6 py-4">
+                        {op.active ? (
+                          <span className="text-[#22C55E] font-bold text-xs">🟢 Active</span>
+                        ) : (
+                          <span className="text-red-600 font-bold text-xs">🔴 Inactive</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedOperator(op);
+                            setOpModalTab("customers");
+                          }}
+                          className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#2563EB] hover:bg-blue-100 transition flex items-center gap-1"
+                        >
+                          <Eye className="h-3.5 w-3.5" /> View ({opCustomerCount} Customers)
+                        </button>
+                        <button
+                          onClick={() => setOperatorActive(op.id, !op.active)}
+                          className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1.5 text-xs font-bold text-[#0F172A] hover:bg-slate-100"
+                        >
+                          Toggle
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to remove operator "${op.name}"?`)) {
+                              removeApprovedOperator(op.id);
+                              setMsg({ text: `Operator ${op.name} removed successfully.` });
+                            }
+                          }}
+                          className="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 transition"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -510,6 +570,53 @@ export function AdminPage() {
       {/* TAB 3: Customers */}
       {tab === "customers" && (
         <div className="space-y-6">
+          {/* Operator Filter Selector */}
+          <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider flex items-center gap-1.5">
+                <Shield className="h-4 w-4 text-[#2563EB]" /> Touch an Operator to view their specific Customers & Details
+              </span>
+              {selectedOperatorFilter !== "all" && (
+                <button
+                  onClick={() => setSelectedOperatorFilter("all")}
+                  className="text-xs font-bold text-[#2563EB] hover:underline"
+                >
+                  Show All Customers
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedOperatorFilter("all")}
+                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition border ${
+                  selectedOperatorFilter === "all"
+                    ? "bg-[#2563EB] text-white border-[#2563EB]"
+                    : "bg-slate-100 text-[#334155] border-slate-200 hover:bg-slate-200"
+                }`}
+              >
+                👥 All Operators ({allCustomers.length})
+              </button>
+              {approvedOperators.map((op) => {
+                const count = allCustomers.filter(
+                  (c) => getOperatorForRecord(c, approvedOperators)?.id === op.id
+                ).length;
+                return (
+                  <button
+                    key={op.id}
+                    onClick={() => setSelectedOperatorFilter(op.id)}
+                    className={`rounded-xl px-3 py-1.5 text-xs font-bold transition border flex items-center gap-1.5 cursor-pointer ${
+                      selectedOperatorFilter === op.id
+                        ? "bg-[#2563EB] text-white border-[#2563EB]"
+                        : "bg-blue-50 text-[#2563EB] border-blue-200 hover:bg-blue-100"
+                    }`}
+                  >
+                    <Shield className="h-3.5 w-3.5" /> {op.name} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 flex justify-between items-center gap-4 shadow-sm">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#64748B]" />
@@ -530,6 +637,7 @@ export function AdminPage() {
                   <th className="px-6 py-4">Customer Name</th>
                   <th className="px-6 py-4">Mobile</th>
                   <th className="px-6 py-4">STB ID</th>
+                  <th className="px-6 py-4">Assigned Operator</th>
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -537,11 +645,28 @@ export function AdminPage() {
                 {filteredCustomers.map((c, i) => {
                   const isBlocked =
                     blockedCustomers.includes(c.mobile) || blockedCustomers.includes(c.stbId);
+                  const assignedOp = getOperatorForRecord(c, approvedOperators);
+
                   return (
                     <tr key={i} className="hover:bg-slate-50 transition">
                       <td className="px-6 py-4 font-bold text-[#0F172A]">{c.name}</td>
                       <td className="px-6 py-4 font-mono">{c.mobile}</td>
                       <td className="px-6 py-4 font-mono">{c.stbId}</td>
+                      <td className="px-6 py-4">
+                        {assignedOp ? (
+                          <button
+                            onClick={() => {
+                              setSelectedOperator(assignedOp);
+                              setOpModalTab("customers");
+                            }}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-bold text-[#2563EB] hover:bg-blue-100 transition cursor-pointer"
+                          >
+                            <Shield className="h-3.5 w-3.5" /> {assignedOp.name}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-400">Default</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => {
@@ -791,37 +916,259 @@ export function AdminPage() {
         </div>
       )}
 
-      {/* Selected Operator Modal */}
-      {selectedOperator && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-[#CBD5E1] bg-white p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[#CBD5E1] pb-3">
-              <h3 className="font-display text-lg font-bold text-[#0F172A]">
-                Operator: {selectedOperator.name}
-              </h3>
-              <button
-                onClick={() => setSelectedOperator(null)}
-                className="text-[#64748B] hover:text-[#0F172A]"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="space-y-2 text-xs text-[#0F172A]">
-              <div>Contact: <strong>{selectedOperator.mobile}</strong></div>
-              <div>Added Date: <strong>{new Date(selectedOperator.addedAt).toLocaleString()}</strong></div>
-              <div>Status: <strong>{selectedOperator.active ? "Active" : "Inactive"}</strong></div>
-            </div>
-            <div className="pt-2 flex justify-end">
-              <button
-                onClick={() => setSelectedOperator(null)}
-                className="rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white"
-              >
-                Close
-              </button>
+      {/* Comprehensive Selected Operator Detail Modal */}
+      {selectedOperator && (() => {
+        const opCustomers = allCustomers.filter(
+          (c) => getOperatorForRecord(c, approvedOperators)?.id === selectedOperator.id
+        );
+        const opTxns = txns.filter(
+          (t) => getOperatorForRecord(t, approvedOperators)?.id === selectedOperator.id
+        );
+        const opComplaints = complaints.filter(
+          (c) => getOperatorForRecord(c, approvedOperators)?.id === selectedOperator.id
+        );
+        const opProductReqs = productRequests.filter(
+          (p) => getOperatorForRecord(p, approvedOperators)?.id === selectedOperator.id
+        );
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-4xl rounded-2xl border border-[#CBD5E1] bg-white p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-[#CBD5E1] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-[#2563EB] border border-blue-200">
+                    <Shield className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-xl font-bold text-[#0F172A] flex items-center gap-2">
+                      Operator: {selectedOperator.name}
+                      <span
+                        className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
+                          selectedOperator.active
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {selectedOperator.active ? "🟢 Active" : "🔴 Inactive"}
+                      </span>
+                    </h3>
+                    <p className="text-xs text-[#64748B] font-semibold">
+                      Contact: <strong>{selectedOperator.mobile}</strong> • Added:{" "}
+                      {new Date(selectedOperator.addedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedOperator(null)}
+                  className="rounded-xl border border-[#CBD5E1] p-2 text-[#64748B] hover:bg-slate-100 hover:text-[#0F172A]"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Operator Metrics */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-3 text-center">
+                  <div className="text-[11px] font-bold uppercase text-[#64748B]">Customers</div>
+                  <div className="mt-1 text-2xl font-extrabold text-[#2563EB]">
+                    {opCustomers.length}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 text-center">
+                  <div className="text-[11px] font-bold uppercase text-[#64748B]">Recharges</div>
+                  <div className="mt-1 text-2xl font-extrabold text-[#22C55E]">{opTxns.length}</div>
+                </div>
+                <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 text-center">
+                  <div className="text-[11px] font-bold uppercase text-[#64748B]">Complaints</div>
+                  <div className="mt-1 text-2xl font-extrabold text-amber-600">
+                    {opComplaints.length}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-purple-200 bg-purple-50/50 p-3 text-center">
+                  <div className="text-[11px] font-bold uppercase text-[#64748B]">
+                    Product Orders
+                  </div>
+                  <div className="mt-1 text-2xl font-extrabold text-purple-600">
+                    {opProductReqs.length}
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Tabs */}
+              <div className="flex gap-2 border-b border-[#CBD5E1] pb-2">
+                {[
+                  { id: "customers", label: `👥 Customers (${opCustomers.length})` },
+                  { id: "recharges", label: `💳 Recharges (${opTxns.length})` },
+                  { id: "complaints", label: `🔧 Complaints (${opComplaints.length})` },
+                  { id: "products", label: `📦 Products (${opProductReqs.length})` },
+                ].map((mt) => (
+                  <button
+                    key={mt.id}
+                    onClick={() => setOpModalTab(mt.id as any)}
+                    className={`rounded-xl px-3.5 py-2 text-xs font-bold transition cursor-pointer ${
+                      opModalTab === mt.id
+                        ? "bg-[#2563EB] text-white shadow-sm"
+                        : "bg-slate-100 text-[#334155] hover:bg-slate-200"
+                    }`}
+                  >
+                    {mt.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Modal Content */}
+              <div className="overflow-x-auto min-h-[220px]">
+                {opModalTab === "customers" && (
+                  <table className="w-full text-left text-xs text-[#0F172A]">
+                    <thead className="bg-[#F8FAFC] font-bold text-[#64748B] border-b border-[#CBD5E1]">
+                      <tr>
+                        <th className="p-3">Customer Name</th>
+                        <th className="p-3">Mobile</th>
+                        <th className="p-3">STB ID</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#CBD5E1]">
+                      {opCustomers.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="p-4 text-center text-[#64748B]">
+                            No customers assigned to this operator.
+                          </td>
+                        </tr>
+                      ) : (
+                        opCustomers.map((c, i) => (
+                          <tr key={i} className="hover:bg-slate-50">
+                            <td className="p-3 font-bold">{c.name}</td>
+                            <td className="p-3 font-mono">{c.mobile}</td>
+                            <td className="p-3 font-mono">{c.stbId}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
+
+                {opModalTab === "recharges" && (
+                  <table className="w-full text-left text-xs text-[#0F172A]">
+                    <thead className="bg-[#F8FAFC] font-bold text-[#64748B] border-b border-[#CBD5E1]">
+                      <tr>
+                        <th className="p-3">Txn ID</th>
+                        <th className="p-3">Customer</th>
+                        <th className="p-3">Pack / Plan</th>
+                        <th className="p-3">Amount</th>
+                        <th className="p-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#CBD5E1]">
+                      {opTxns.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="p-4 text-center text-[#64748B]">
+                            No recharges recorded for this operator.
+                          </td>
+                        </tr>
+                      ) : (
+                        opTxns.map((t) => (
+                          <tr key={t.id} className="hover:bg-slate-50">
+                            <td className="p-3 font-mono font-bold">{t.id}</td>
+                            <td className="p-3 font-bold">{t.customerName || "Customer"}</td>
+                            <td className="p-3">{t.planName}</td>
+                            <td className="p-3 font-mono font-bold text-[#2563EB]">₹{t.amount}</td>
+                            <td className="p-3 capitalize font-bold">
+                              {String(t.status) === "success" || String(t.status) === "approved" ? (
+                                <span className="text-[#22C55E]">🟢 Success</span>
+                              ) : t.status === "pending" ? (
+                                <span className="text-amber-600">🟡 Pending</span>
+                              ) : (
+                                <span className="text-red-600">🔴 Failed</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
+
+                {opModalTab === "complaints" && (
+                  <table className="w-full text-left text-xs text-[#0F172A]">
+                    <thead className="bg-[#F8FAFC] font-bold text-[#64748B] border-b border-[#CBD5E1]">
+                      <tr>
+                        <th className="p-3">Complaint ID</th>
+                        <th className="p-3">Customer</th>
+                        <th className="p-3">Category</th>
+                        <th className="p-3">Issue</th>
+                        <th className="p-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#CBD5E1]">
+                      {opComplaints.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="p-4 text-center text-[#64748B]">
+                            No complaints filed under this operator.
+                          </td>
+                        </tr>
+                      ) : (
+                        opComplaints.map((c) => (
+                          <tr key={c.id} className="hover:bg-slate-50">
+                            <td className="p-3 font-mono font-bold text-[#2563EB]">{c.id}</td>
+                            <td className="p-3 font-bold">{c.customerName}</td>
+                            <td className="p-3">{c.category}</td>
+                            <td className="p-3">{c.issueType}</td>
+                            <td className="p-3 font-bold">{c.status}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
+
+                {opModalTab === "products" && (
+                  <table className="w-full text-left text-xs text-[#0F172A]">
+                    <thead className="bg-[#F8FAFC] font-bold text-[#64748B] border-b border-[#CBD5E1]">
+                      <tr>
+                        <th className="p-3">Request ID</th>
+                        <th className="p-3">Customer</th>
+                        <th className="p-3">Product Name</th>
+                        <th className="p-3">Amount</th>
+                        <th className="p-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#CBD5E1]">
+                      {opProductReqs.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="p-4 text-center text-[#64748B]">
+                            No product orders under this operator.
+                          </td>
+                        </tr>
+                      ) : (
+                        opProductReqs.map((pr) => (
+                          <tr key={pr.id} className="hover:bg-slate-50">
+                            <td className="p-3 font-mono font-bold">{pr.id}</td>
+                            <td className="p-3 font-bold">{pr.customerName}</td>
+                            <td className="p-3">{pr.productName}</td>
+                            <td className="p-3 font-mono font-bold text-[#22C55E]">
+                              ₹{pr.totalAmount}
+                            </td>
+                            <td className="p-3 font-bold">{pr.status}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-[#CBD5E1] flex justify-end">
+                <button
+                  onClick={() => setSelectedOperator(null)}
+                  className="rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-2.5 text-xs font-bold text-white shadow-sm"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Add / Edit Product Modal */}
       {showAddProduct && (

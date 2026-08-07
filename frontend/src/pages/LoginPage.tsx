@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Tv, Shield, Zap, ArrowRight, Lock } from "lucide-react";
 import { sendOtp, verifyOtp, useStore, isOperatorApproved, getState, syncOperatorsFromBackend } from "../services/store";
 import { cleanMobile } from "../utils/utils";
 
+function getRoleFromUrl(): "customer" | "operator" {
+  if (typeof window === "undefined") return "customer";
+  const fullPath = window.location.hash || window.location.search || "";
+  const queryStr = fullPath.includes("?") ? fullPath.substring(fullPath.indexOf("?") + 1) : "";
+  const params = new URLSearchParams(queryStr);
+  const r = params.get("role");
+  if (r === "operator") return "operator";
+  return "customer";
+}
 
 export function LoginPage() {
-  const [role, setRole] = useState<"customer" | "operator">("customer");
+  const search = useSearch({ strict: false }) as { role?: string };
+  const [role, setRole] = useState<"customer" | "operator">(getRoleFromUrl);
   const [step, setStep] = useState<"details" | "otp">("details");
 
   // Common & Customer state
@@ -23,6 +33,13 @@ export function LoginPage() {
 
   const navigate = useNavigate();
   const user = useStore((s) => s.user);
+
+  useEffect(() => {
+    const r = search?.role || getRoleFromUrl();
+    if (r === "operator" || r === "customer") {
+      setRole(r);
+    }
+  }, [search]);
 
   useEffect(() => {
     if (user) {
@@ -67,7 +84,7 @@ export function LoginPage() {
   const isCustomerValid =
     name.trim().length > 0 &&
     /^\d{10}$/.test(cleanMobile(mobile)) &&
-    /^[A-Za-z0-9\-\_]{4,20}$/.test(stbId.trim());
+    /^[A-Za-z0-9\-\_]{4,12}$/.test(stbId.trim());
 
   const isFormValid = role === "operator" ? isOperatorValid : isCustomerValid;
 
@@ -134,8 +151,8 @@ export function LoginPage() {
         return;
       }
 
-      if (!/^[A-Za-z0-9\-\_]{4,20}$/.test(stbId.trim())) {
-        setErr("Enter a valid STB ID / Customer ID (4 to 20 characters)");
+      if (!/^[A-Za-z0-9\-\_]{4,12}$/.test(stbId.trim())) {
+        setErr("Enter a valid STB ID / Customer ID (4 to 12 characters)");
         return;
       }
 
@@ -384,30 +401,30 @@ export function LoginPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="block text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-                        12-Digit STB ID / Smart Card Number *
+                        STB ID / Smart Card Number *
                       </label>
                       <span
                         className={`text-xs font-mono font-bold ${
-                          stbId.length === 12 ? "text-emerald-600" : "text-amber-600"
+                          stbId.length >= 4 ? "text-emerald-600" : "text-amber-600"
                         }`}
                       >
                         {stbId.length}/12
                       </span>
                     </div>
                     <input
-                      inputMode="numeric"
+                      inputMode="text"
                       maxLength={12}
                       value={stbId}
                       onChange={(e) => {
-                        setStbId(e.target.value.replace(/\D/g, ""));
+                        setStbId(e.target.value.replace(/[^A-Za-z0-9\-_]/g, "").toUpperCase());
                         setErr(null);
                       }}
-                      placeholder="ENTER 12-DIGIT STB ID"
+                      placeholder="ENTER STB ID / SMART CARD NUMBER"
                       className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-[10px] px-4 py-3 text-sm text-[#0F172A] font-mono font-semibold placeholder:font-sans placeholder:font-normal placeholder:text-[#94A3B8] outline-none transition focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/15"
                     />
-                    {stbId.length > 0 && stbId.length < 12 && (
+                    {stbId.length > 0 && stbId.length < 4 && (
                       <p className="mt-1.5 text-xs text-amber-700 font-medium flex items-center gap-1">
-                        ⚠️ Enter remaining {12 - stbId.length} digits to unlock OTP verification.
+                        ⚠️ Enter at least {4 - stbId.length} more character(s) to unlock OTP verification.
                       </p>
                     )}
                   </div>
@@ -494,4 +511,3 @@ export function LoginPage() {
 }
 
 export default LoginPage;
-

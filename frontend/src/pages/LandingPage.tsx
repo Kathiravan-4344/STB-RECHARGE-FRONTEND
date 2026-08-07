@@ -21,8 +21,18 @@ import {
 } from "lucide-react";
 
 export function LandingPage() {
+  const scrollToSection = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      const yOffset = -80;
+      const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] font-sans antialiased overflow-x-hidden scroll-smooth">
       {/* HEADER NAVBAR */}
       <header className="sticky top-0 z-50 border-b border-[#CBD5E1] bg-white/95 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
@@ -34,9 +44,6 @@ export function LandingPage() {
             <div>
               <span className="font-display text-xl font-bold tracking-tight text-[#0F172A] flex items-center gap-2">
                 STB RECHARGE
-                <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[10px] uppercase font-bold text-[#2563EB] border border-blue-200">
-                  Live
-                </span>
               </span>
               <span className="text-[10px] text-[#64748B] block font-semibold -mt-0.5">
                 Operator Controlled System
@@ -44,38 +51,35 @@ export function LandingPage() {
             </div>
           </Link>
 
-          {/* Nav Links */}
-          <nav className="hidden md:flex items-center gap-8 text-xs font-bold text-[#64748B]">
-            <a href="#how-it-works" className="hover:text-[#2563EB] transition">
-              How It Works
-            </a>
-            <a href="#features" className="hover:text-[#2563EB] transition">
+          {/* Nav Links - Single Touch Smooth Scroll with Highlight Styling */}
+          <nav className="hidden md:flex items-center gap-2">
+            <button
+              onClick={scrollToSection("features")}
+              className="rounded-xl px-4 py-2 text-xs font-display font-extrabold uppercase tracking-wider text-[#334155] hover:text-[#2563EB] hover:bg-blue-50 border border-slate-200/60 hover:border-blue-300 transition-all duration-200 cursor-pointer shadow-sm hover:shadow active:scale-95"
+            >
               Features
-            </a>
-            <a href="#live-preview" className="hover:text-[#2563EB] transition">
-              Live Preview
-            </a>
-            <a href="#why-us" className="hover:text-[#2563EB] transition">
-              Why Us
-            </a>
-            <a href="#support" className="hover:text-[#2563EB] transition">
+            </button>
+            <button
+              onClick={scrollToSection("how-it-works")}
+              className="rounded-xl px-4 py-2 text-xs font-display font-extrabold uppercase tracking-wider text-[#334155] hover:text-[#2563EB] hover:bg-blue-50 border border-slate-200/60 hover:border-blue-300 transition-all duration-200 cursor-pointer shadow-sm hover:shadow active:scale-95"
+            >
+              How It Works
+            </button>
+            <button
+              onClick={scrollToSection("support")}
+              className="rounded-xl px-4 py-2 text-xs font-display font-extrabold uppercase tracking-wider text-[#334155] hover:text-[#2563EB] hover:bg-blue-50 border border-slate-200/60 hover:border-blue-300 transition-all duration-200 cursor-pointer shadow-sm hover:shadow active:scale-95"
+            >
               Support
-            </a>
+            </button>
           </nav>
 
           {/* Header Action */}
           <div className="flex items-center gap-2">
             <Link
               to="/login"
-              className="flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-xs font-bold text-[#2563EB] hover:bg-blue-100 transition-all"
-            >
-              <Shield className="h-4 w-4" /> Operator Panel
-            </Link>
-            <Link
-              to="/login"
               className="flex items-center gap-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all"
             >
-              Login / Register <ArrowRight className="h-4 w-4" />
+              Get Started <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
@@ -89,7 +93,6 @@ export function LandingPage() {
             {/* Left Copy */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-xs font-bold text-[#2563EB]">
-                <Sparkles className="h-4 w-4 text-[#2563EB]" />
                 <span>Operator-Controlled Cable TV Recharge</span>
               </div>
 
@@ -151,12 +154,12 @@ export function LandingPage() {
                         <Tv className="h-5 w-5" />
                       </div>
                       <div>
-                        <div className="font-bold text-[#0F172A] text-sm">STB-8839201948</div>
-                        <div className="text-[11px] text-[#64748B]">Kathiravan V</div>
+                        <div className="font-bold text-[#0F172A] text-sm">STB-833100124D63</div>
+                        <div className="text-[11px] font-bold text-[#64748B] uppercase">KATHIRAVAN V</div>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
-                      <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" /> Pending
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Active
                     </span>
                   </div>
 
@@ -165,10 +168,10 @@ export function LandingPage() {
                       <span className="text-[#64748B] uppercase font-bold text-[10px]">
                         Selected Pack
                       </span>
-                      <span className="font-mono text-[#2563EB] font-bold">₹349 / Mo</span>
+                      <span className="font-mono text-[#2563EB] font-bold">₹240 / Mo</span>
                     </div>
                     <div className="font-bold text-base text-[#0F172A]">
-                      Tamil Sports & HD Pack (280 Channels)
+                      BASIC TAMIL PACK HD
                     </div>
                   </div>
 
@@ -180,7 +183,7 @@ export function LandingPage() {
                       <span className="font-mono">Live Sync</span>
                     </div>
                     <p className="text-xs text-[#0F172A] font-semibold">
-                      Assigned to Local Cable Operator (Kathiravan V)
+                      Assigned to Local Cable Operator (KATHIRAVAN V)
                     </p>
                   </div>
                 </div>
@@ -190,8 +193,59 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* FEATURES SECTION */}
+      <section id="features" className="relative py-16 bg-[#F8FAFC] border-b border-[#CBD5E1]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="text-center max-w-3xl mx-auto space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">
+              Built for Convenience
+            </span>
+            <h2 className="font-display text-3xl font-extrabold text-[#0F172A] sm:text-4xl">
+              A Few Reasons Customers Love STB Recharge
+            </h2>
+            <p className="text-sm text-[#64748B] font-semibold">
+              Simple, secure, and fast recharge experience from start to finish.
+            </p>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                icon: Zap,
+                title: "Fast Activation",
+                desc: "Quick recharge requests with live operator status updates so you stay informed at every step.",
+              },
+              {
+                icon: Shield,
+                title: "Secure Verification",
+                desc: "Every request is verified by the operator system to make sure your recharge is trusted and protected.",
+              },
+              {
+                icon: Clock,
+                title: "Real-Time Tracking",
+                desc: "Track your recharge progress anytime and know exactly when your STB gets activated.",
+              },
+            ].map((feature, idx) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={idx}
+                  className="bg-white rounded-2xl border border-[#CBD5E1] p-6 shadow-sm hover:border-[#2563EB] transition"
+                >
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-[#2563EB] border border-blue-200">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-bold text-lg text-[#0F172A] mb-2">{feature.title}</h3>
+                  <p className="text-sm text-[#64748B] font-medium leading-relaxed">{feature.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* HOW IT WORKS SECTION */}
-      <section id="how-it-works" className="relative py-16 bg-white border-y border-[#CBD5E1]">
+      <section id="how-it-works" className="relative py-16 bg-white border-y border-[#CBD5E1] scroll-mt-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">
@@ -268,6 +322,38 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* SUPPORT SECTION */}
+      <section id="support" className="relative py-16 bg-[#F8FAFC] border-b border-[#CBD5E1]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="rounded-3xl border border-[#CBD5E1] bg-white p-8 shadow-sm md:p-10">
+            <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+              <div className="space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">
+                  Need Help?
+                </span>
+                <h2 className="font-display text-3xl font-extrabold text-[#0F172A] sm:text-4xl">
+                  We’re here whenever you need support
+                </h2>
+                <p className="text-sm text-[#64748B] font-semibold leading-relaxed">
+                  Contact our team for recharge help, operator approval questions, or general assistance.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2563EB] text-white">
+                    <Phone className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#0F172A]">Call / WhatsApp Support</p>
+                    <p className="text-sm text-[#2563EB] font-semibold">+91 90808 64542</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FOOTER */}
       <footer className="border-t border-[#CBD5E1] bg-white py-10 text-[#64748B] text-xs">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -281,15 +367,12 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-6 text-[#0F172A] font-bold">
-            <Link to="/login" className="hover:text-[#2563EB]">
-              Customer Login
+          <div className="flex flex-wrap gap-6 text-[#0F172A] font-display font-extrabold text-xs">
+            <Link to="/login" search={{ role: "customer" }} className="hover:text-[#2563EB] transition flex items-center gap-1.5">
+              <Users className="h-3.5 w-3.5 text-[#2563EB]" /> Customer Login
             </Link>
-            <Link to="/login" className="hover:text-[#2563EB]">
-              Operator Portal
-            </Link>
-            <Link to="/login" className="hover:text-[#2563EB]">
-              Super Admin
+            <Link to="/login" search={{ role: "operator" }} className="hover:text-[#2563EB] transition flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5 text-emerald-600" /> Operator Login
             </Link>
           </div>
 

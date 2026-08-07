@@ -268,7 +268,6 @@ const getPendingRecharges = async (req, res) => {
     }
     const requests = Array.from(uniqueMap.values());
 
-    console.log(`[Recharge API] Returned ${requests.length} recharge requests.`);
     return res.status(200).json({
       success: true,
       count: requests.length,
