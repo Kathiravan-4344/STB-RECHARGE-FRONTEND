@@ -339,15 +339,15 @@ export const INITIAL_SEED_COMPLAINTS: Complaint[] = [];
 export const INITIAL_APPROVED_OPERATORS: ApprovedOperator[] = [
   {
     id: "op-1",
-    mobile: "9080864542",
-    name: "Kathiravan V",
+    mobile: "9787312758",
+    name: "KATHIR",
     addedAt: new Date().toISOString(),
     active: true,
   },
   {
     id: "op-2",
-    mobile: "9787312758",
-    name: "KATHIR",
+    mobile: "9876543210",
+    name: "PERUMAL A",
     addedAt: new Date().toISOString(),
     active: true,
   },
@@ -392,7 +392,10 @@ function loadSavedState(): State {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      return { ...defaultState, ...parsed, ready: true };
+      const cleanOps = ((parsed.approvedOperators || INITIAL_APPROVED_OPERATORS) as ApprovedOperator[]).filter(
+        (op) => op && op.mobile !== "9080864542"
+      );
+      return { ...defaultState, ...parsed, approvedOperators: cleanOps, ready: true };
     }
   } catch (e) {
     console.error("Failed to load local state", e);

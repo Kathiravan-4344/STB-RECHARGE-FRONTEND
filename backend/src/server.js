@@ -67,16 +67,8 @@ const seedInitialData = async () => {
       console.log("[DB Seed] Default Admin (9080864542) created.");
     }
 
-    // Seed Operators
-    let op1 = await Operator.findOne({ mobileNumber: "9080864542" });
-    if (!op1) {
-      await Operator.create({
-        mobileNumber: "9080864542",
-        name: "Kathiravan V",
-        isActive: true,
-      });
-      console.log("[DB Seed] Operator 9080864542 created.");
-    }
+    // Delete any existing 9080864542 operator so Super Admin is not listed as operator
+    await Operator.deleteMany({ mobileNumber: "9080864542" });
 
     let op2 = await Operator.findOne({ mobileNumber: "9787312758" });
     if (!op2) {
