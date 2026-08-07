@@ -748,6 +748,10 @@ export function OperatorPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </>
+        )}
+
         {/* MENU 2: STB ID Mapping & Management View */}
         {activeMenu === "stb_mapping" && (
           <div className="space-y-6">
