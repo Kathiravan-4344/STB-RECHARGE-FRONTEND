@@ -336,22 +336,7 @@ export const INITIAL_SEED_PRODUCTS: Product[] = [
 
 export const INITIAL_SEED_PRODUCT_REQUESTS: ProductRequest[] = [];
 export const INITIAL_SEED_COMPLAINTS: Complaint[] = [];
-export const INITIAL_APPROVED_OPERATORS: ApprovedOperator[] = [
-  {
-    id: "op-1",
-    mobile: "9787312758",
-    name: "KATHIR",
-    addedAt: new Date().toISOString(),
-    active: true,
-  },
-  {
-    id: "op-2",
-    mobile: "9876543210",
-    name: "PERUMAL A",
-    addedAt: new Date().toISOString(),
-    active: true,
-  },
-];
+export const INITIAL_APPROVED_OPERATORS: ApprovedOperator[] = [];
 
 const defaultState: State = {
   user: null,
@@ -480,25 +465,26 @@ export async function syncOperatorsFromBackend() {
   try {
     const res = await apiGetOperators();
     if (res.success && res.data?.operators) {
-      const fetched: ApprovedOperator[] = res.data.operators.map((op: any) => ({
-        id: op._id || op.id || "op-" + op.mobileNumber,
-        mobile: op.mobileNumber || op.mobile,
-        name: op.name || "Operator",
-        addedAt: op.createdAt || op.addedAt || new Date().toISOString(),
-        active: op.isActive !== undefined ? op.isActive : true,
-      }));
-      
+      const fetched: ApprovedOperator[] = res.data.operators
+        .map((op: any) => ({
+          id: op._id || op.id || "op-" + (op.mobileNumber || op.mobile),
+          mobile: op.mobileNumber || op.mobile,
+          name: op.name || "Operator",
+          addedAt: op.createdAt || op.addedAt || new Date().toISOString(),
+          active: op.isActive !== undefined ? op.isActive : true,
+        }))
+        .filter((op: ApprovedOperator) => op.mobile && op.mobile !== "9080864542");
+
       const mergedMap = new Map<string, ApprovedOperator>();
-      INITIAL_APPROVED_OPERATORS.forEach((op) => {
-        mergedMap.set(cleanContact(op.mobile), op);
-      });
-      state.approvedOperators.forEach((op) => {
-        mergedMap.set(cleanContact(op.mobile), op);
-      });
       fetched.forEach((op) => {
         const key = cleanContact(op.mobile);
-        const existing = mergedMap.get(key);
-        mergedMap.set(key, { ...(existing || {}), ...op });
+        if (key) mergedMap.set(key, op);
+      });
+      state.approvedOperators.forEach((op) => {
+        const key = cleanContact(op.mobile);
+        if (key && !mergedMap.has(key) && key !== "9080864542") {
+          mergedMap.set(key, op);
+        }
       });
 
       setState({ approvedOperators: Array.from(mergedMap.values()) });
@@ -1292,8 +1278,19 @@ export async function setOperatorActive(id: string, active: boolean) {
 }
 
 export async function removeApprovedOperator(id: string) {
-  setState({ approvedOperators: state.approvedOperators.filter((o) => o.id !== id) });
-  apiDeleteOperator(id);
+  const target = state.approvedOperators.find((o) => o.id === id || o.mobile === id);
+  const targetMobile = target ? target.mobile : id;
+  const updated = state.approvedOperators.filter(
+    (o) => o.id !== id && o.mobile !== id && cleanContact(o.mobile) !== cleanContact(targetMobile)
+  );
+  setState({ approvedOperators: updated });
+  try {
+    if (targetMobile) {
+      await apiDeleteOperator(targetMobile);
+    }
+  } catch (e) {
+    console.warn("Failed to delete operator on backend", e);
+  }
 }
 
 export async function blockCustomer(identifier: string) {
