@@ -800,6 +800,11 @@ export async function syncAccountFromBackend(mobileNumber?: string) {
         feedback: c.feedback,
       }));
 
+      // Guard: Do not restore user if logged out or if target user does not match current state
+      if (!state.user || (state.user.mobile !== targetMobile && state.user.mobile !== uData.mobileNumber)) {
+        return;
+      }
+
       if (updatedUser.role === "customer") {
         setState({
           user: updatedUser,
@@ -962,25 +967,30 @@ export async function verifyOtp(
 
 
 export async function logout() {
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem("stb_recharge_jwt_token");
-      sessionStorage.clear();
-    } catch (e) {
-      console.warn("Storage clear error on logout", e);
-    }
-  }
   state = {
     ...defaultState,
     user: null,
     stb: null,
     pending: null,
     txns: [],
+    stbMappings: [],
+    productRequests: [],
+    complaints: [],
     appliedCoupon: null,
     ready: true,
   };
-  emit();
+
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem("stb_recharge_jwt_token");
+      sessionStorage.clear();
+      saveState(true);
+    } catch (e) {
+      console.warn("Storage clear error on logout", e);
+    }
+  }
+  listeners.forEach((l) => l());
 }
 
 // STB management
