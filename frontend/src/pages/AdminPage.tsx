@@ -55,7 +55,6 @@ type TabType =
   | "complaints"
   | "products";
 
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
 function getOperatorForRecord(
   rec: { customerMobile?: string; stbId?: string; operatorMobile?: string },
   operators: ApprovedOperator[]
@@ -75,8 +74,6 @@ function getOperatorForRecord(
   return operators[index] || operators[0];
 }
 
-=======
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
 export function AdminPage() {
   const user = useStore((s) => s.user);
   const txns = useStore((s) => s.txns);
@@ -101,11 +98,8 @@ export function AdminPage() {
 
   // Selected Operator Modal State
   const [selectedOperator, setSelectedOperator] = useState<ApprovedOperator | null>(null);
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
   const [selectedOperatorFilter, setSelectedOperatorFilter] = useState<string>("all");
   const [opModalTab, setOpModalTab] = useState<"customers" | "recharges" | "complaints" | "products">("customers");
-=======
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
 
   // Product Add/Edit Modal state
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -166,7 +160,6 @@ export function AdminPage() {
 
   // Derived Metrics
   const totalRechargeAmount = txns
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
     .filter((t) => t.status && ["success", "approved"].includes(String(t.status).toLowerCase()))
     .reduce((sum, t) => sum + t.amount, 0);
 
@@ -176,13 +169,6 @@ export function AdminPage() {
   const pendingComplaintsCount = complaints.filter(
     (c) => c.status && String(c.status).toLowerCase() === "pending",
   ).length;
-=======
-    .filter((t) => t.status === "success")
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const pendingRechargesCount = txns.filter((t) => t.status === "pending").length;
-  const pendingComplaintsCount = complaints.filter((c) => c.status === "Pending").length;
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
 
   // Aggregate Customer list from all records
   const customerMap = new Map<string, { mobile: string; name: string; stbId: string }>();
@@ -218,7 +204,6 @@ export function AdminPage() {
   });
 
   const allCustomers = Array.from(customerMap.values());
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
   const filteredCustomers = allCustomers.filter((c) => {
     const matchSearch =
       c.mobile.includes(customerSearch) ||
@@ -235,22 +220,11 @@ export function AdminPage() {
   const filteredTxns = txns.filter((t) => {
     if (!t) return false;
     const normStatus = t.status ? String(t.status).toLowerCase() : "";
-=======
-  const filteredCustomers = allCustomers.filter(
-    (c) =>
-      c.mobile.includes(customerSearch) ||
-      c.stbId.toLowerCase().includes(customerSearch.toLowerCase()) ||
-      c.name.toLowerCase().includes(customerSearch.toLowerCase()),
-  );
-
-  const filteredTxns = txns.filter((t) => {
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
     const matchSearch =
       t.id.toLowerCase().includes(rechargeSearch.toLowerCase()) ||
       (t.customerName && t.customerName.toLowerCase().includes(rechargeSearch.toLowerCase())) ||
       (t.stbId && t.stbId.toLowerCase().includes(rechargeSearch.toLowerCase())) ||
       (t.customerMobile && t.customerMobile.includes(rechargeSearch));
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
 
     let matchStatus = false;
     if (rechargeStatusFilter === "all") {
@@ -269,10 +243,6 @@ export function AdminPage() {
       selectedOperatorFilter === "all" ||
       (op && (op.id === selectedOperatorFilter || op.mobile === selectedOperatorFilter));
     return matchSearch && matchStatus && matchOp;
-=======
-    const matchStatus = rechargeStatusFilter === "all" ? true : t.status === rechargeStatusFilter;
-    return matchSearch && matchStatus;
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
   });
 
   const filteredComplaints = complaints.filter((c) => {
@@ -283,15 +253,11 @@ export function AdminPage() {
       c.category.toLowerCase().includes(complaintSearch.toLowerCase());
     const matchStatus =
       complaintStatusFilter === "all" ? true : c.status === complaintStatusFilter;
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
     const op = getOperatorForRecord(c, approvedOperators);
     const matchOp =
       selectedOperatorFilter === "all" ||
       (op && (op.id === selectedOperatorFilter || op.mobile === selectedOperatorFilter));
     return matchSearch && matchStatus && matchOp;
-=======
-    return matchSearch && matchStatus;
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
   });
 
   const filteredProducts = products.filter(
@@ -531,7 +497,6 @@ export function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#CBD5E1]">
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
                 {approvedOperators.map((op) => {
                   const opCustomerCount = allCustomers.filter(
                     (c) => getOperatorForRecord(c, approvedOperators)?.id === op.id
@@ -596,46 +561,6 @@ export function AdminPage() {
                     </tr>
                   );
                 })}
-=======
-                {approvedOperators.map((op) => (
-                  <tr key={op.id} className="hover:bg-slate-50 transition">
-                    <td className="px-6 py-4 font-bold text-[#0F172A]">{op.name}</td>
-                    <td className="px-6 py-4 font-mono">{op.mobile}</td>
-                    <td className="px-6 py-4">
-                      {op.active ? (
-                        <span className="text-[#22C55E] font-bold text-xs">🟢 Active</span>
-                      ) : (
-                        <span className="text-red-600 font-bold text-xs">🔴 Inactive</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => setSelectedOperator(op)}
-                        className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1.5 text-xs font-bold text-[#2563EB] hover:bg-slate-100"
-                      >
-                        <Eye className="h-3.5 w-3.5 inline mr-1" /> View Details
-                      </button>
-                      <button
-                        onClick={() => setOperatorActive(op.id, !op.active)}
-                        className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1.5 text-xs font-bold text-[#0F172A] hover:bg-slate-100"
-                      >
-                        Toggle Status
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (window.confirm(`Are you sure you want to remove operator "${op.name}"?`)) {
-                            removeApprovedOperator(op.id);
-                            setMsg({ text: `Operator ${op.name} removed successfully.` });
-                          }
-                        }}
-                        className="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 transition"
-                      >
-                        <Trash2 className="h-3.5 w-3.5 inline mr-1" /> Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
               </tbody>
             </table>
           </div>
@@ -645,7 +570,6 @@ export function AdminPage() {
       {/* TAB 3: Customers */}
       {tab === "customers" && (
         <div className="space-y-6">
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
           {/* Operator Filter Selector */}
           <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 space-y-3 shadow-sm">
             <div className="flex items-center justify-between">
@@ -693,8 +617,6 @@ export function AdminPage() {
             </div>
           </div>
 
-=======
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
           <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 flex justify-between items-center gap-4 shadow-sm">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#64748B]" />
@@ -715,10 +637,7 @@ export function AdminPage() {
                   <th className="px-6 py-4">Customer Name</th>
                   <th className="px-6 py-4">Mobile</th>
                   <th className="px-6 py-4">STB ID</th>
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
                   <th className="px-6 py-4">Assigned Operator</th>
-=======
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -726,17 +645,13 @@ export function AdminPage() {
                 {filteredCustomers.map((c, i) => {
                   const isBlocked =
                     blockedCustomers.includes(c.mobile) || blockedCustomers.includes(c.stbId);
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
                   const assignedOp = getOperatorForRecord(c, approvedOperators);
 
-=======
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
                   return (
                     <tr key={i} className="hover:bg-slate-50 transition">
                       <td className="px-6 py-4 font-bold text-[#0F172A]">{c.name}</td>
                       <td className="px-6 py-4 font-mono">{c.mobile}</td>
                       <td className="px-6 py-4 font-mono">{c.stbId}</td>
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
                       <td className="px-6 py-4">
                         {assignedOp ? (
                           <button
@@ -752,8 +667,6 @@ export function AdminPage() {
                           <span className="text-xs text-slate-400">Default</span>
                         )}
                       </td>
-=======
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => {
@@ -1003,7 +916,6 @@ export function AdminPage() {
         </div>
       )}
 
-<<<<<<< HEAD:frontend/src/pages/AdminPage.tsx
       {/* Comprehensive Selected Operator Detail Modal */}
       {selectedOperator && (() => {
         const opCustomers = allCustomers.filter(
@@ -1257,39 +1169,6 @@ export function AdminPage() {
           </div>
         );
       })()}
-=======
-      {/* Selected Operator Modal */}
-      {selectedOperator && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-[#CBD5E1] bg-white p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[#CBD5E1] pb-3">
-              <h3 className="font-display text-lg font-bold text-[#0F172A]">
-                Operator: {selectedOperator.name}
-              </h3>
-              <button
-                onClick={() => setSelectedOperator(null)}
-                className="text-[#64748B] hover:text-[#0F172A]"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="space-y-2 text-xs text-[#0F172A]">
-              <div>Contact: <strong>{selectedOperator.mobile}</strong></div>
-              <div>Added Date: <strong>{new Date(selectedOperator.addedAt).toLocaleString()}</strong></div>
-              <div>Status: <strong>{selectedOperator.active ? "Active" : "Inactive"}</strong></div>
-            </div>
-            <div className="pt-2 flex justify-end">
-              <button
-                onClick={() => setSelectedOperator(null)}
-                className="rounded-xl bg-[#2563EB] px-4 py-2 text-xs font-bold text-white"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
->>>>>>> vercel-target/main:src/pages/AdminPage.tsx
 
       {/* Add / Edit Product Modal */}
       {showAddProduct && (

@@ -1,7 +1,3 @@
-<<<<<<< HEAD:frontend/src/services/lovable-error-reporting.ts
-<<<<<<<< HEAD:frontend/src/services/lovable-error-reporting.ts
-=======
->>>>>>> vercel-target/main:src/services/lovable-error-reporting.ts
 type LovableErrorOptions = {
   mechanism?: "manual" | "onerror" | "unhandledrejection" | "react_error_boundary";
   handled?: boolean;
@@ -55,9 +51,3 @@ export function reportLovableError(error: unknown, context: Record<string, unkno
     filename: window.location.pathname,
   });
 }
-<<<<<<< HEAD:frontend/src/services/lovable-error-reporting.ts
-========
-export * from "../services/lovable-error-reporting";
->>>>>>>> vercel-target/main:src/lib/lovable-error-reporting.ts
-=======
->>>>>>> vercel-target/main:src/services/lovable-error-reporting.ts

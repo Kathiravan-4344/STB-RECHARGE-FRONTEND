@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 
 export function LandingPage() {
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
   const scrollToSection = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     const el = document.getElementById(id);
@@ -34,10 +33,6 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] font-sans antialiased overflow-x-hidden scroll-smooth">
-=======
-  return (
-    <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] font-sans antialiased overflow-x-hidden">
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
       {/* HEADER NAVBAR */}
       <header className="sticky top-0 z-50 border-b border-[#CBD5E1] bg-white/95 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
@@ -49,12 +44,6 @@ export function LandingPage() {
             <div>
               <span className="font-display text-xl font-bold tracking-tight text-[#0F172A] flex items-center gap-2">
                 STB RECHARGE
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
-=======
-                <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[10px] uppercase font-bold text-[#2563EB] border border-blue-200">
-                  Live
-                </span>
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
               </span>
               <span className="text-[10px] text-[#64748B] block font-semibold -mt-0.5">
                 Operator Controlled System
@@ -62,7 +51,6 @@ export function LandingPage() {
             </div>
           </Link>
 
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
           {/* Nav Links - Single Touch Smooth Scroll with Highlight Styling */}
           <nav className="hidden md:flex items-center gap-2">
             <button
@@ -83,46 +71,15 @@ export function LandingPage() {
             >
               Support
             </button>
-=======
-          {/* Nav Links */}
-          <nav className="hidden md:flex items-center gap-8 text-xs font-bold text-[#64748B]">
-            <a href="#how-it-works" className="hover:text-[#2563EB] transition">
-              How It Works
-            </a>
-            <a href="#features" className="hover:text-[#2563EB] transition">
-              Features
-            </a>
-            <a href="#live-preview" className="hover:text-[#2563EB] transition">
-              Live Preview
-            </a>
-            <a href="#why-us" className="hover:text-[#2563EB] transition">
-              Why Us
-            </a>
-            <a href="#support" className="hover:text-[#2563EB] transition">
-              Support
-            </a>
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
           </nav>
 
           {/* Header Action */}
           <div className="flex items-center gap-2">
             <Link
               to="/login"
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
               className="flex items-center gap-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all"
             >
               Get Started <ArrowRight className="h-4 w-4" />
-=======
-              className="flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-xs font-bold text-[#2563EB] hover:bg-blue-100 transition-all"
-            >
-              <Shield className="h-4 w-4" /> Operator Panel
-            </Link>
-            <Link
-              to="/login"
-              className="flex items-center gap-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all"
-            >
-              Login / Register <ArrowRight className="h-4 w-4" />
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
             </Link>
           </div>
         </div>
@@ -136,10 +93,6 @@ export function LandingPage() {
             {/* Left Copy */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-xs font-bold text-[#2563EB]">
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
-=======
-                <Sparkles className="h-4 w-4 text-[#2563EB]" />
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
                 <span>Operator-Controlled Cable TV Recharge</span>
               </div>
 
@@ -201,21 +154,12 @@ export function LandingPage() {
                         <Tv className="h-5 w-5" />
                       </div>
                       <div>
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
                         <div className="font-bold text-[#0F172A] text-sm">STB-833100124D63</div>
                         <div className="text-[11px] font-bold text-[#64748B] uppercase">KATHIRAVAN V</div>
                       </div>
                     </div>
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
                       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Active
-=======
-                        <div className="font-bold text-[#0F172A] text-sm">STB-8839201948</div>
-                        <div className="text-[11px] text-[#64748B]">Kathiravan V</div>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
-                      <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" /> Pending
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
                     </span>
                   </div>
 
@@ -224,17 +168,10 @@ export function LandingPage() {
                       <span className="text-[#64748B] uppercase font-bold text-[10px]">
                         Selected Pack
                       </span>
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
                       <span className="font-mono text-[#2563EB] font-bold">₹240 / Mo</span>
                     </div>
                     <div className="font-bold text-base text-[#0F172A]">
                       BASIC TAMIL PACK HD
-=======
-                      <span className="font-mono text-[#2563EB] font-bold">₹349 / Mo</span>
-                    </div>
-                    <div className="font-bold text-base text-[#0F172A]">
-                      Tamil Sports & HD Pack (280 Channels)
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
                     </div>
                   </div>
 
@@ -246,11 +183,7 @@ export function LandingPage() {
                       <span className="font-mono">Live Sync</span>
                     </div>
                     <p className="text-xs text-[#0F172A] font-semibold">
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
                       Assigned to Local Cable Operator (KATHIRAVAN V)
-=======
-                      Assigned to Local Cable Operator (Kathiravan V)
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
                     </p>
                   </div>
                 </div>
@@ -260,7 +193,6 @@ export function LandingPage() {
         </div>
       </section>
 
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
       {/* FEATURES SECTION */}
       <section id="features" className="relative py-16 bg-[#F8FAFC] border-b border-[#CBD5E1]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -314,10 +246,6 @@ export function LandingPage() {
 
       {/* HOW IT WORKS SECTION */}
       <section id="how-it-works" className="relative py-16 bg-white border-y border-[#CBD5E1] scroll-mt-24">
-=======
-      {/* HOW IT WORKS SECTION */}
-      <section id="how-it-works" className="relative py-16 bg-white border-y border-[#CBD5E1]">
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">
@@ -394,7 +322,6 @@ export function LandingPage() {
         </div>
       </section>
 
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
       {/* SUPPORT SECTION */}
       <section id="support" className="relative py-16 bg-[#F8FAFC] border-b border-[#CBD5E1]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -427,8 +354,6 @@ export function LandingPage() {
         </div>
       </section>
 
-=======
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
       {/* FOOTER */}
       <footer className="border-t border-[#CBD5E1] bg-white py-10 text-[#64748B] text-xs">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -442,24 +367,12 @@ export function LandingPage() {
             </div>
           </div>
 
-<<<<<<< HEAD:frontend/src/pages/LandingPage.tsx
           <div className="flex flex-wrap gap-6 text-[#0F172A] font-display font-extrabold text-xs">
             <Link to="/login" search={{ role: "customer" }} className="hover:text-[#2563EB] transition flex items-center gap-1.5">
               <Users className="h-3.5 w-3.5 text-[#2563EB]" /> Customer Login
             </Link>
             <Link to="/login" search={{ role: "operator" }} className="hover:text-[#2563EB] transition flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-emerald-600" /> Operator Login
-=======
-          <div className="flex flex-wrap gap-6 text-[#0F172A] font-bold">
-            <Link to="/login" className="hover:text-[#2563EB]">
-              Customer Login
-            </Link>
-            <Link to="/login" className="hover:text-[#2563EB]">
-              Operator Portal
-            </Link>
-            <Link to="/login" className="hover:text-[#2563EB]">
-              Super Admin
->>>>>>> vercel-target/main:src/pages/LandingPage.tsx
             </Link>
           </div>
 

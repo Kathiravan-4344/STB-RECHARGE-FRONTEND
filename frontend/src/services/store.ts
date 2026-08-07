@@ -8,10 +8,7 @@ import {
   apiGetOperators,
   apiCreateRecharge,
   apiGetPendingRecharges,
-<<<<<<< HEAD:frontend/src/services/store.ts
   apiGetOperatorRequests,
-=======
->>>>>>> vercel-target/main:src/services/store.ts
   apiApproveRecharge,
   apiRejectRecharge,
   apiGetRechargeStatus,
@@ -29,10 +26,7 @@ import {
 
 export type Plan = {
   id: string;
-<<<<<<< HEAD:frontend/src/services/store.ts
   _id?: string;
-=======
->>>>>>> vercel-target/main:src/services/store.ts
   name: string;
   price: number;
   validityDays: number;
@@ -156,11 +150,8 @@ export type State = {
   productRequests: ProductRequest[];
   complaints: Complaint[];
   appliedCoupon: string | null;
-<<<<<<< HEAD:frontend/src/services/store.ts
   selectedPlanId: string | null;
   selectedPlanObject?: any;
-=======
->>>>>>> vercel-target/main:src/services/store.ts
   approvedOperators: ApprovedOperator[];
   blockedCustomers: string[];
   ready: boolean;
@@ -373,17 +364,13 @@ const defaultState: State = {
   productRequests: INITIAL_SEED_PRODUCT_REQUESTS,
   complaints: INITIAL_SEED_COMPLAINTS,
   appliedCoupon: null,
-<<<<<<< HEAD:frontend/src/services/store.ts
   selectedPlanId: null,
   selectedPlanObject: null,
-=======
->>>>>>> vercel-target/main:src/services/store.ts
   approvedOperators: INITIAL_APPROVED_OPERATORS,
   blockedCustomers: [],
   ready: true,
 };
 
-<<<<<<< HEAD:frontend/src/services/store.ts
 export function selectPlan(planOrId: any) {
   if (typeof planOrId === "object" && planOrId !== null) {
     const id = planOrId.id || planOrId._id || (planOrId.price === 300 ? "m3" : planOrId.price === 240 ? "m2" : "m1");
@@ -393,8 +380,6 @@ export function selectPlan(planOrId: any) {
   }
 }
 
-=======
->>>>>>> vercel-target/main:src/services/store.ts
 let state: State = defaultState;
 const listeners = new Set<() => void>();
 
@@ -522,7 +507,6 @@ export async function syncOperatorsFromBackend() {
 
 export async function syncPendingRechargesFromBackend() {
   try {
-<<<<<<< HEAD:frontend/src/services/store.ts
     // Single API endpoint query to avoid duplicate data fetching
     const res = await apiGetOperatorRequests();
 
@@ -588,58 +572,6 @@ export async function syncPendingRechargesFromBackend() {
           r.stbId ||
           (typeof r.userId === "object" ? r.userId?.stbId : null) ||
           "";
-=======
-    // 1. Auto-retry unsynced local pending transactions
-    const unsynced = state.txns.filter(
-      (t) => t.status === "pending" && !t.syncedToBackend && !t.id.match(/^[0-9a-fA-F]{24}$/)
-    );
-
-    for (const t of unsynced) {
-      try {
-        const res = await apiCreateRecharge({
-          stbId: t.stbId || "1234567890",
-          planName: t.planName,
-          amount: t.amount,
-          customerName: t.customerName,
-          customerMobile: t.customerMobile,
-          paymentStatus: "Success",
-        });
-
-        const backendId =
-          res.data?.rechargeRequest?._id ||
-          (res.data as any)?.data?.rechargeRequest?._id ||
-          (res.data as any)?.rechargeRequest?.id;
-
-        if (res.success && backendId) {
-          const updatedTxns = state.txns.map((item) =>
-            item.id === t.id ? { ...item, id: backendId, syncedToBackend: true } : item
-          );
-          const currentPending = state.pending;
-          const isPendingMatch = currentPending?.txnId === t.id;
-          setState({
-            txns: updatedTxns,
-            pending: isPendingMatch && currentPending ? { ...currentPending, txnId: backendId } : state.pending,
-          });
-        }
-      } catch (retryErr) {
-        console.warn("[Auto-Retry Recharge Warning]", retryErr);
-      }
-    }
-
-    // 2. Fetch latest recharges from backend MongoDB
-    const res = await apiGetPendingRecharges();
-    const backendRequests = res.data?.requests || (res.data as any)?.data?.requests;
-    if (res.success && Array.isArray(backendRequests)) {
-      const backendTxns: Txn[] = backendRequests.map((r: any) => {
-        const id = r._id || r.id;
-        const planName = r.planId?.name || r.planName || "STB Recharge";
-        const amount = r.amount || r.planId?.price || 0;
-        const status = r.status === "Approved" ? "success" : r.status === "Rejected" ? "failed" : "pending";
-        const date = r.requestTime || r.createdAt || new Date().toISOString();
-        const customerName = r.customerName || r.userId?.name || "Customer";
-        const customerMobile = r.customerMobile || r.userId?.mobileNumber || "";
-        const stbId = r.stbId || r.userId?.stbId || "";
->>>>>>> vercel-target/main:src/services/store.ts
         return {
           id,
           planName,
@@ -656,11 +588,7 @@ export async function syncPendingRechargesFromBackend() {
       });
 
       const recentLocalPending = state.txns.filter(
-<<<<<<< HEAD:frontend/src/services/store.ts
         (t) => (t.status || "").toLowerCase() === "pending" && !t.syncedToBackend && !backendTxns.some((b) => b.id === t.id)
-=======
-        (t) => t.status === "pending" && !t.syncedToBackend && !backendTxns.some((b) => b.id === t.id)
->>>>>>> vercel-target/main:src/services/store.ts
       );
 
       const mergedTxns = [...recentLocalPending, ...backendTxns].sort(
@@ -670,15 +598,9 @@ export async function syncPendingRechargesFromBackend() {
       let currentPending = state.pending;
       if (currentPending) {
         const match = mergedTxns.find((t) => t.id === currentPending?.txnId);
-<<<<<<< HEAD:frontend/src/services/store.ts
         if (match && (match.status || "").toLowerCase() !== "pending") {
           currentPending = null;
           if (((match.status || "").toLowerCase() === "success" || (match.status || "").toLowerCase() === "approved") && state.stb) {
-=======
-        if (match && match.status !== "pending") {
-          currentPending = null;
-          if (match.status === "success" && state.stb) {
->>>>>>> vercel-target/main:src/services/store.ts
             state = {
               ...state,
               stb: {
@@ -692,11 +614,7 @@ export async function syncPendingRechargesFromBackend() {
         }
       }
 
-<<<<<<< HEAD:frontend/src/services/store.ts
       setState({ txns: [...mergedTxns], pending: currentPending });
-=======
-      setState({ txns: mergedTxns, pending: currentPending });
->>>>>>> vercel-target/main:src/services/store.ts
     }
   } catch (e) {
     console.warn("Failed to sync pending recharges from backend", e);
@@ -1034,7 +952,6 @@ export async function verifyOtp(
 
 
 export async function logout() {
-<<<<<<< HEAD:frontend/src/services/store.ts
   if (typeof window !== "undefined") {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -1054,9 +971,6 @@ export async function logout() {
     ready: true,
   };
   emit();
-=======
-  setState({ user: null, stb: null, pending: null, appliedCoupon: null, ready: true });
->>>>>>> vercel-target/main:src/services/store.ts
 }
 
 // STB management
@@ -1080,12 +994,8 @@ export async function startPayment(
   const user = state.user;
   const stb = state.stb;
 
-<<<<<<< HEAD:frontend/src/services/store.ts
   const rawStbId = customDetails?.stbId || stb?.id || user?.stbId || "1234567890";
   const targetStbId = rawStbId.trim().toUpperCase();
-=======
-  const targetStbId = customDetails?.stbId || stb?.id || user?.stbId || "1234567890";
->>>>>>> vercel-target/main:src/services/store.ts
   const targetCustomerName = customDetails?.customerName || user?.name || "Customer";
   const targetCustomerMobile = customDetails?.customerMobile || user?.mobile || "";
 
@@ -1101,11 +1011,7 @@ export async function startPayment(
     customerMobile: targetCustomerMobile,
     stbId: targetStbId,
     startedAt: now,
-<<<<<<< HEAD:frontend/src/services/store.ts
     syncedToBackend: true, // Prevent concurrent auto-retry loop duplicate creation
-=======
-    syncedToBackend: false,
->>>>>>> vercel-target/main:src/services/store.ts
   };
 
   setState({
@@ -1115,10 +1021,7 @@ export async function startPayment(
 
   try {
     const res = await apiCreateRecharge({
-<<<<<<< HEAD:frontend/src/services/store.ts
       userId: user?.id,
-=======
->>>>>>> vercel-target/main:src/services/store.ts
       stbId: targetStbId,
       planId,
       planName,
@@ -1137,11 +1040,7 @@ export async function startPayment(
       const currentPending = state.pending;
       const isPendingMatch = currentPending?.txnId === localTxnId;
       const updatedTxns = state.txns.map((t) =>
-<<<<<<< HEAD:frontend/src/services/store.ts
         t.id === localTxnId ? { ...t, id: backendId, stbId: targetStbId, syncedToBackend: true } : t,
-=======
-        t.id === localTxnId ? { ...t, id: backendId, syncedToBackend: true } : t,
->>>>>>> vercel-target/main:src/services/store.ts
       );
       setState({
         txns: updatedTxns,

@@ -8,7 +8,6 @@ const COUPONS: Record<string, number> = { STB50: 50, NEW10: 10, WELCOME: 25 };
 
 export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
   const allPlans = useStore((s) => (s.plans.length ? s.plans : PLANS));
-<<<<<<< HEAD:frontend/src/pages/CheckoutPage.tsx
   const selectedPlanId = useStore((s) => s.selectedPlanId);
   const selectedPlanObject = useStore((s) => s.selectedPlanObject);
 
@@ -60,12 +59,6 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
     return allPlans.find((p) => p.price === 300) || PLANS[2] || allPlans[0];
   }, [allPlans, activePlanId, selectedPlanObject]);
 
-=======
-  const plan = useMemo(
-    () => allPlans.find((p) => p.id === searchPlanId) ?? allPlans[1] ?? allPlans[0],
-    [allPlans, searchPlanId],
-  );
->>>>>>> vercel-target/main:src/pages/CheckoutPage.tsx
   const user = useStore((s) => s.user);
   const stb = useStore((s) => s.stb);
   const appliedCoupon = useStore((s) => s.appliedCoupon);
@@ -84,26 +77,16 @@ export function CheckoutPage({ searchPlanId }: { searchPlanId?: string }) {
   }
 
   function pay() {
-<<<<<<< HEAD:frontend/src/pages/CheckoutPage.tsx
     if (processing) return;
     setProcessing(true);
     setTimeout(() => {
       startPayment(plan.id || plan.name, total, plan.name, {
-=======
-    setProcessing(true);
-    setTimeout(() => {
-      startPayment(plan.id, total, plan.name, {
->>>>>>> vercel-target/main:src/pages/CheckoutPage.tsx
         stbId: stb?.id || user?.stbId,
         customerName: user?.name || stb?.customerName,
         customerMobile: user?.mobile,
       });
       navigate({ to: "/recharge/pending" });
-<<<<<<< HEAD:frontend/src/pages/CheckoutPage.tsx
     }, 1000);
-=======
-    }, 1200);
->>>>>>> vercel-target/main:src/pages/CheckoutPage.tsx
   }
 
   return (

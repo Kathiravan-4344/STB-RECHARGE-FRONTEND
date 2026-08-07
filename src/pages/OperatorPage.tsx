@@ -194,14 +194,11 @@ export function OperatorPage() {
   }, []);
 
   useEffect(() => {
-<<<<<<< HEAD:frontend/src/pages/OperatorPage.tsx
     console.log("Updated requests:", txns);
     console.log("Statuses:", txns.map((t) => t.status));
   }, [txns]);
 
   useEffect(() => {
-=======
->>>>>>> vercel-target/main:src/pages/OperatorPage.tsx
     if (!user) {
       navigate({ to: "/login" });
       return;
@@ -235,15 +232,6 @@ export function OperatorPage() {
     );
   }
 
-<<<<<<< HEAD:frontend/src/pages/OperatorPage.tsx
-=======
-
-  // Summary counts
-  const totalCount = txns.length;
-  const pendingCount = txns.filter((t) => t.status === "pending").length;
-  const approvedCount = txns.filter((t) => t.status === "success").length;
-  const failedCount = txns.filter((t) => t.status === "failed").length;
->>>>>>> vercel-target/main:src/pages/OperatorPage.tsx
 
   // Summary counts with case-insensitive & multi-state filtering
   const validPendingStatuses = ["pending"];
@@ -270,7 +258,6 @@ export function OperatorPage() {
     return cs === "pending" || cs === "assigned" || cs === "in progress";
   }).length;
 
-<<<<<<< HEAD:frontend/src/pages/OperatorPage.tsx
   // Filtered transactions with safe Array.isArray check and case-insensitive multi-state filtering
   const safeTxns = Array.isArray(txns) ? txns : [];
   const validStatuses = ["pending", "success", "approved", "failed", "rejected"];
@@ -290,10 +277,6 @@ export function OperatorPage() {
       matchesStatus = normStatus === "failed" || normStatus === "rejected";
     }
 
-=======
-  // Filtered transactions
-  const filteredTxns = txns.filter((t) => {
->>>>>>> vercel-target/main:src/pages/OperatorPage.tsx
     const q = searchTerm.trim().toLowerCase();
     const matchesSearch =
       !q ||
@@ -302,11 +285,7 @@ export function OperatorPage() {
       (t.customerName && String(t.customerName).toLowerCase().includes(q)) ||
       (t.planName && String(t.planName).toLowerCase().includes(q)) ||
       (t.id && String(t.id).toLowerCase().includes(q));
-<<<<<<< HEAD:frontend/src/pages/OperatorPage.tsx
 
-=======
-    const matchesStatus = statusFilter === "all" ? true : t.status === statusFilter;
->>>>>>> vercel-target/main:src/pages/OperatorPage.tsx
     return matchesSearch && matchesStatus;
   });
 
@@ -636,21 +615,9 @@ export function OperatorPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#CBD5E1]">
-<<<<<<< HEAD:frontend/src/pages/OperatorPage.tsx
                     {Array.isArray(filteredTxns) && filteredTxns.length > 0 ? (
                       filteredTxns.map((t, index) => (
                         <tr key={(t as any)._id || t.id || index} className="hover:bg-slate-50 transition">
-=======
-                    {filteredTxns.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-[#64748B] font-medium">
-                          No recharge transactions found.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredTxns.map((t) => (
-                        <tr key={t.id} className="hover:bg-slate-50 transition">
->>>>>>> vercel-target/main:src/pages/OperatorPage.tsx
                           <td className="px-6 py-4 font-mono font-bold text-[#0F172A]">{t.id}</td>
                           <td className="px-6 py-4">
                             <div className="font-bold text-[#0F172A]">
@@ -665,30 +632,18 @@ export function OperatorPage() {
                             ₹{t.amount}
                           </td>
                           <td className="px-6 py-4">
-<<<<<<< HEAD:frontend/src/pages/OperatorPage.tsx
                             {String(t.status || "").toLowerCase() === "pending" && (
-=======
-                            {t.status === "pending" && (
->>>>>>> vercel-target/main:src/pages/OperatorPage.tsx
                               <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
                                 <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />{" "}
                                 Pending Approval
                               </span>
                             )}
-<<<<<<< HEAD:frontend/src/pages/OperatorPage.tsx
                             {(String(t.status || "").toLowerCase() === "success" || String(t.status || "").toLowerCase() === "approved") && (
-=======
-                            {t.status === "success" && (
->>>>>>> vercel-target/main:src/pages/OperatorPage.tsx
                               <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
                                 <CheckCircle2 className="h-3.5 w-3.5 text-[#22C55E]" /> Approved
                               </span>
                             )}
-<<<<<<< HEAD:frontend/src/pages/OperatorPage.tsx
                             {(String(t.status || "").toLowerCase() === "failed" || String(t.status || "").toLowerCase() === "rejected") && (
-=======
-                            {t.status === "failed" && (
->>>>>>> vercel-target/main:src/pages/OperatorPage.tsx
                               <span className="inline-flex items-center gap-1 rounded-full border border-red-300 bg-red-100 px-3 py-1 text-xs font-bold text-red-800">
                                 <XCircle className="h-3.5 w-3.5" /> Rejected
                               </span>
