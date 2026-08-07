@@ -14,12 +14,16 @@ import {
   syncProductRequestsFromBackend,
   syncComplaintsFromBackend,
   syncOperatorsFromBackend,
+  syncStbMappingsFromBackend,
+  addStbMapping,
+  deleteStbMappingAction,
   isOperatorApproved,
   type ProductRequest,
   type Product,
   type ProductRequestStatus,
   type Complaint,
   type ComplaintStatus,
+  type StbMapping,
 } from "../services/store";
 
 
@@ -128,12 +132,24 @@ export function OperatorPage() {
   const products = useStore((s) => s.products);
   const productRequests = useStore((s) => s.productRequests);
   const complaints = useStore((s) => s.complaints);
+  const stbMappings = useStore((s) => s.stbMappings);
   const navigate = useNavigate();
 
-  // Navigation Menu Tabs: "txns" | "product_requests" | "stock" | "complaints"
+  // Navigation Menu Tabs: "txns" | "stb_mapping" | "product_requests" | "stock" | "complaints"
   const [activeMenu, setActiveMenu] = useState<
-    "txns" | "product_requests" | "stock" | "complaints"
+    "txns" | "stb_mapping" | "product_requests" | "stock" | "complaints"
   >("txns");
+
+  // STB ID Mapping State
+  const [stbSearchTerm, setStbSearchTerm] = useState("");
+  const [showAddStbModal, setShowAddStbModal] = useState(false);
+  const [newStbId, setNewStbId] = useState("");
+  const [newCustName, setNewCustName] = useState("");
+  const [newCustMobile, setNewCustMobile] = useState("");
+  const [newCustPlan, setNewCustPlan] = useState("Basic Tamil Pack Monthly Rs 220");
+  const [newCustExpiry, setNewCustExpiry] = useState("");
+  const [stbSubmitting, setStbSubmitting] = useState(false);
+  const [stbErr, setStbErr] = useState<string | null>(null);
 
   // Search & filter state for txns
   const [searchTerm, setSearchTerm] = useState("");
@@ -179,19 +195,22 @@ export function OperatorPage() {
   }, []);
 
   useEffect(() => {
-    syncPendingRechargesFromBackend();
+    const op = user?.mobile || user?.operatorNumber || "";
+    syncPendingRechargesFromBackend(op);
     syncProductRequestsFromBackend();
     syncComplaintsFromBackend();
     syncOperatorsFromBackend();
+    if (op) syncStbMappingsFromBackend(op);
 
     const interval = setInterval(() => {
-      syncPendingRechargesFromBackend();
+      syncPendingRechargesFromBackend(op);
       syncProductRequestsFromBackend();
       syncComplaintsFromBackend();
+      if (op) syncStbMappingsFromBackend(op);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     console.log("Updated requests:", txns);
@@ -351,6 +370,43 @@ export function OperatorPage() {
     setNewProdDesc("");
   }
 
+  async function handleAddStbSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setStbErr(null);
+    if (!newStbId.trim()) {
+      setStbErr("Please enter STB ID");
+      return;
+    }
+    setStbSubmitting(true);
+    const res = await addStbMapping({
+      stbId: newStbId.trim(),
+      operatorMobile: user?.mobile || "",
+      operatorName: user?.name || "Operator",
+      customerName: newCustName.trim() || "Customer",
+      customerMobile: newCustMobile.trim(),
+      currentPlan: newCustPlan.trim() || "Basic Tamil Pack Monthly Rs 220",
+      expiryDate: newCustExpiry ? new Date(newCustExpiry).toISOString() : undefined,
+    });
+    setStbSubmitting(false);
+
+    if (res.success) {
+      setShowAddStbModal(false);
+      setNewStbId("");
+      setNewCustName("");
+      setNewCustMobile("");
+      setNewCustPlan("Basic Tamil Pack Monthly Rs 220");
+      setNewCustExpiry("");
+    } else {
+      setStbErr(res.message || "Failed to map STB ID");
+    }
+  }
+
+  function handleDeleteStbMapping(id: string) {
+    if (confirm("Are you sure you want to unmap/delete this STB ID?")) {
+      deleteStbMappingAction(id, user?.mobile);
+    }
+  }
+
   function handleScheduleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!schedulingReq) return;
@@ -429,7 +485,7 @@ export function OperatorPage() {
             <button
               onClick={() => {
                 logout();
-                navigate({ to: "/" });
+                navigate({ to: "/login" });
               }}
               className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100"
             >
@@ -466,6 +522,17 @@ export function OperatorPage() {
               }`}
             >
               <Zap className="h-4 w-4" /> Recharge Txns ({pendingCount})
+            </button>
+
+            <button
+              onClick={() => setActiveMenu("stb_mapping")}
+              className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out whitespace-nowrap ${
+                activeMenu === "stb_mapping"
+                  ? "bg-[#2563EB] text-white shadow-md shadow-blue-500/20"
+                  : "bg-[#E2E8F0] text-[#334155] hover:bg-slate-300/70 hover:text-[#0F172A]"
+              }`}
+            >
+              <Tv className="h-4 w-4" /> STB ID Mapping ({stbMappings.length})
             </button>
 
             <button
@@ -685,7 +752,136 @@ export function OperatorPage() {
           </>
         )}
 
-        {/* MENU 2: Product & Service Requests View */}
+        {/* MENU 2: STB ID Mapping & Management View */}
+        {activeMenu === "stb_mapping" && (
+          <div className="space-y-6">
+            {/* Header & Add Button */}
+            <div className="bg-white rounded-2xl border border-[#CBD5E1] p-5 shadow-sm flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-extrabold text-[#0F172A] flex items-center gap-2">
+                  <Tv className="h-5 w-5 text-[#2563EB]" /> STB ID Mapping & Management
+                </h2>
+                <p className="text-xs text-[#64748B] mt-1 font-medium">
+                  Map and approve STB IDs for your operator account. Only approved STB IDs can be recharged by customers.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowAddStbModal(true)}
+                className="flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition shrink-0"
+              >
+                <Plus className="h-4 w-4" /> Map / Add New STB ID
+              </button>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-sm">
+              <div className="relative">
+                <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#64748B]" />
+                <input
+                  type="text"
+                  value={stbSearchTerm}
+                  onChange={(e) => setStbSearchTerm(e.target.value)}
+                  placeholder="Search STB ID, Customer Name, Mobile Number, or Plan..."
+                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl py-2 pl-10 pr-4 text-xs sm:text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none focus:border-[#2563EB]"
+                />
+              </div>
+            </div>
+
+            {/* STB Mappings Table */}
+            <div className="bg-white rounded-2xl border border-[#CBD5E1] shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b border-[#CBD5E1] bg-[#F8FAFC] text-xs uppercase text-[#64748B] font-bold">
+                    <tr>
+                      <th className="px-6 py-4">STB ID</th>
+                      <th className="px-6 py-4">Customer Name & Mobile</th>
+                      <th className="px-6 py-4">Current Plan</th>
+                      <th className="px-6 py-4">Expiry Date</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#CBD5E1]">
+                    {stbMappings.filter((m) => {
+                      const q = stbSearchTerm.trim().toLowerCase();
+                      return (
+                        !q ||
+                        (m.stbId && m.stbId.toLowerCase().includes(q)) ||
+                        (m.customerName && m.customerName.toLowerCase().includes(q)) ||
+                        (m.customerMobile && m.customerMobile.includes(q)) ||
+                        (m.currentPlan && m.currentPlan.toLowerCase().includes(q))
+                      );
+                    }).length > 0 ? (
+                      stbMappings
+                        .filter((m) => {
+                          const q = stbSearchTerm.trim().toLowerCase();
+                          return (
+                            !q ||
+                            (m.stbId && m.stbId.toLowerCase().includes(q)) ||
+                            (m.customerName && m.customerName.toLowerCase().includes(q)) ||
+                            (m.customerMobile && m.customerMobile.includes(q)) ||
+                            (m.currentPlan && m.currentPlan.toLowerCase().includes(q))
+                          );
+                        })
+                        .map((m) => (
+                          <tr key={m.id || m._id} className="hover:bg-slate-50 transition">
+                            <td className="px-6 py-4 font-mono font-extrabold text-[#2563EB] text-sm">
+                              {m.stbId}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="font-bold text-[#0F172A]">
+                                {m.customerName || "Customer"}
+                              </div>
+                              <div className="text-xs font-medium text-[#64748B]">
+                                {m.customerMobile ? `+91 ${m.customerMobile}` : "No Mobile Added"}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 font-semibold text-[#0F172A]">
+                              {m.currentPlan || "Basic Tamil Pack Monthly Rs 220"}
+                            </td>
+                            <td className="px-6 py-4 text-xs font-mono font-bold text-[#64748B]">
+                              {m.expiryDate
+                                ? new Date(m.expiryDate).toLocaleDateString()
+                                : "N/A"}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
+                                <span className="h-2 w-2 rounded-full bg-[#22C55E]" /> Approved & Active
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <button
+                                onClick={() => handleDeleteStbMapping(m.id || m._id || "")}
+                                className="rounded-xl border border-red-200 bg-red-50 p-2 text-xs font-bold text-red-600 hover:bg-red-100 transition"
+                                title="Unmap STB ID"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-[#64748B] font-medium">
+                          <p className="text-[#64748B]">No mapped STB IDs found for your operator account.</p>
+                          <button
+                            onClick={() => setShowAddStbModal(true)}
+                            className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#2563EB] hover:underline"
+                          >
+                            + Map your first STB ID
+                          </button>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MENU 3: Product & Service Requests View */}
         {activeMenu === "product_requests" && (
           <div className="space-y-6">
             <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-sm">
@@ -1472,6 +1668,117 @@ export function OperatorPage() {
                   className="rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-2 text-xs font-bold text-white shadow-sm"
                 >
                   Add Product
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Map / Add New STB ID */}
+      {showAddStbModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[#CBD5E1] bg-white p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#CBD5E1] pb-3">
+              <h3 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+                <Tv className="h-5 w-5 text-[#2563EB]" /> Map / Add New STB ID
+              </h3>
+              <button
+                onClick={() => {
+                  setShowAddStbModal(false);
+                  setStbErr(null);
+                }}
+                className="rounded-lg p-1 text-[#64748B] hover:text-[#0F172A]"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {stbErr && (
+              <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs font-bold text-red-700">
+                ⚠️ {stbErr}
+              </div>
+            )}
+
+            <form onSubmit={handleAddStbSubmit} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-[#64748B] mb-1">
+                  STB ID / Customer Box ID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. STB100200"
+                  value={newStbId}
+                  onChange={(e) => setNewStbId(e.target.value.toUpperCase())}
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm font-mono font-bold text-[#0F172A] outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#64748B] mb-1">Customer Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Karthik R"
+                  value={newCustName}
+                  onChange={(e) => setNewCustName(e.target.value)}
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#64748B] mb-1">Customer Mobile Number</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 9876543210"
+                  value={newCustMobile}
+                  onChange={(e) => setNewCustMobile(e.target.value)}
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#64748B] mb-1">Current Pack / Plan</label>
+                <select
+                  value={newCustPlan}
+                  onChange={(e) => setNewCustPlan(e.target.value)}
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
+                >
+                  <option value="Basic Tamil Pack Monthly Rs 220">Basic Tamil Pack Monthly Rs 220</option>
+                  <option value="Basic Tamil Silver Pack Monthly Rs 240">Basic Tamil Silver Pack Monthly Rs 240</option>
+                  <option value="Basic Tamil HD Packs Rs 300">Basic Tamil HD Packs Rs 300</option>
+                  <option value="Sports Pack Rs 49">Sports Pack Rs 49</option>
+                  <option value="HD Movies Pack Rs 79">HD Movies Pack Rs 79</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#64748B] mb-1">Expiry Date (Optional)</label>
+                <input
+                  type="date"
+                  value={newCustExpiry}
+                  onChange={(e) => setNewCustExpiry(e.target.value)}
+                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddStbModal(false);
+                    setStbErr(null);
+                  }}
+                  className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-[#0F172A]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={stbSubmitting}
+                  className="rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50"
+                >
+                  {stbSubmitting ? "Mapping..." : "Map STB ID"}
                 </button>
               </div>
             </form>

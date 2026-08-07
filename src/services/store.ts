@@ -20,6 +20,10 @@ import {
   apiUpdateComplaintStatus,
   apiVerifyOtp,
   apiGetUserProfile,
+  apiValidateStb,
+  apiMapStb,
+  apiGetOperatorStbs,
+  apiDeleteStbMapping,
 } from "./api";
 
 
@@ -139,6 +143,21 @@ export type User = {
   role: "operator" | "customer" | "admin";
 };
 
+export type StbMapping = {
+  id: string;
+  _id?: string;
+  stbId: string;
+  operatorMobile: string;
+  operatorName?: string;
+  customerName?: string;
+  customerMobile?: string;
+  currentPlan?: string;
+  expiryDate?: string;
+  isApproved?: boolean;
+  status?: string;
+  createdAt?: string;
+};
+
 export type State = {
   user: User | null;
   stb: STB | null;
@@ -149,6 +168,7 @@ export type State = {
   products: Product[];
   productRequests: ProductRequest[];
   complaints: Complaint[];
+  stbMappings: StbMapping[];
   appliedCoupon: string | null;
   selectedPlanId: string | null;
   selectedPlanObject?: any;
@@ -348,6 +368,7 @@ const defaultState: State = {
   products: INITIAL_SEED_PRODUCTS,
   productRequests: INITIAL_SEED_PRODUCT_REQUESTS,
   complaints: INITIAL_SEED_COMPLAINTS,
+  stbMappings: [],
   appliedCoupon: null,
   selectedPlanId: null,
   selectedPlanObject: null,
@@ -461,226 +482,6 @@ export function useStore<T>(selector: (s: State) => T): T {
 // Booting and session
 let booted = false;
 
-export async function syncOperatorsFromBackend() {
-  try {
-    const res = await apiGetOperators();
-    if (res.success && res.data?.operators) {
-      const fetched: ApprovedOperator[] = res.data.operators
-        .map((op: any) => ({
-          id: op._id || op.id || "op-" + (op.mobileNumber || op.mobile),
-          mobile: op.mobileNumber || op.mobile,
-          name: op.name || "Operator",
-          addedAt: op.createdAt || op.addedAt || new Date().toISOString(),
-          active: op.isActive !== undefined ? op.isActive : true,
-        }))
-        .filter((op: ApprovedOperator) => op.mobile && op.mobile !== "9080864542");
-
-      const mergedMap = new Map<string, ApprovedOperator>();
-      fetched.forEach((op) => {
-        const key = cleanContact(op.mobile);
-        if (key) mergedMap.set(key, op);
-      });
-      state.approvedOperators.forEach((op) => {
-        const key = cleanContact(op.mobile);
-        if (key && !mergedMap.has(key) && key !== "9080864542") {
-          mergedMap.set(key, op);
-        }
-      });
-
-      setState({ approvedOperators: Array.from(mergedMap.values()) });
-    }
-  } catch (e) {
-    console.warn("Failed to sync operators from backend", e);
-  }
-}
-
-export async function syncPendingRechargesFromBackend() {
-  try {
-    // Single API endpoint query to avoid duplicate data fetching
-    const res = await apiGetOperatorRequests();
-
-    let rawList: any[] = [];
-    if (res.success && Array.isArray(res.data?.requests)) {
-      rawList = res.data.requests;
-    } else if (Array.isArray(res.data)) {
-      rawList = res.data;
-    } else if (Array.isArray(res)) {
-      rawList = res;
-    }
-
-    // Deduplicate by ID and Content Signature
-    const uniqueMap = new Map<string, any>();
-    const seenSignatures = new Set<string>();
-
-    for (const item of rawList) {
-      const idKey = String(item._id || item.id || "");
-      const stb = String(item.stbId || "").trim().toUpperCase();
-      const mobile = String(item.customerMobile || (typeof item.userId === "object" ? item.userId?.mobileNumber : "") || "").trim();
-      const amount = Number(item.amount) || 0;
-      const status = String(item.status || "Pending").trim();
-      const timeMin = Math.floor(new Date(item.createdAt || item.requestTime || Date.now()).getTime() / 60000);
-
-      const signature = `${stb}_${mobile}_${amount}_${status}_${timeMin}`;
-
-      if (idKey && !uniqueMap.has(idKey) && !seenSignatures.has(signature)) {
-        uniqueMap.set(idKey, item);
-        seenSignatures.add(signature);
-      }
-    }
-    const backendRequests = Array.from(uniqueMap.values());
-
-    if (backendRequests.length > 0 || res.success) {
-      const backendTxns: Txn[] = backendRequests.map((r: any) => {
-        const id = r._id || r.id;
-        const planName =
-          (typeof r.planId === "object" ? r.planId?.name : null) ||
-          r.planName ||
-          (typeof r.plan === "object" ? r.plan?.name : null) ||
-          "STB Recharge";
-        const amount =
-          r.amount ||
-          (typeof r.planId === "object" ? r.planId?.price : null) ||
-          0;
-        const rawStatus = String(r.status || "").toLowerCase();
-        const status =
-          rawStatus === "approved" || rawStatus === "success"
-            ? "success"
-            : rawStatus === "rejected" || rawStatus === "failed"
-              ? "failed"
-              : "pending";
-        const date = r.requestTime || r.createdAt || new Date().toISOString();
-        const customerName =
-          (typeof r.userId === "object" ? r.userId?.name : null) ||
-          r.customerName ||
-          "Customer";
-        const customerMobile =
-          (typeof r.userId === "object" ? r.userId?.mobileNumber : null) ||
-          r.customerMobile ||
-          "";
-        const stbId =
-          r.stbId ||
-          (typeof r.userId === "object" ? r.userId?.stbId : null) ||
-          "";
-        return {
-          id,
-          planName,
-          amount,
-          date,
-          status,
-          approvedAt: r.approvedTime,
-          customerName,
-          customerMobile,
-          stbId,
-          startedAt: new Date(date).getTime(),
-          syncedToBackend: true,
-        };
-      });
-
-      const recentLocalPending = state.txns.filter(
-        (t) => (t.status || "").toLowerCase() === "pending" && !t.syncedToBackend && !backendTxns.some((b) => b.id === t.id)
-      );
-
-      const mergedTxns = [...recentLocalPending, ...backendTxns].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      );
-
-      let currentPending = state.pending;
-      if (currentPending) {
-        const match = mergedTxns.find((t) => t.id === currentPending?.txnId);
-        if (match && (match.status || "").toLowerCase() !== "pending") {
-          currentPending = null;
-          if (((match.status || "").toLowerCase() === "success" || (match.status || "").toLowerCase() === "approved") && state.stb) {
-            state = {
-              ...state,
-              stb: {
-                ...state.stb,
-                currentPlan: match.planName,
-                expiry: new Date(Date.now() + 30 * 86400000).toISOString(),
-                active: true,
-              },
-            };
-          }
-        }
-      }
-
-      setState({ txns: [...mergedTxns], pending: currentPending });
-    }
-  } catch (e) {
-    console.warn("Failed to sync pending recharges from backend", e);
-  }
-}
-
-export async function syncProductRequestsFromBackend() {
-  try {
-    const res = await apiGetProductRequests();
-    if (res.success && res.data?.requests) {
-      const backendReqs: ProductRequest[] = res.data.requests.map((r: any) => ({
-        id: r._id || r.id,
-        stbId: r.stbId || "STB-UNKNOWN",
-        customerName: r.customerName || "Customer",
-        customerMobile: r.customerMobile || "",
-        productId: r.productId,
-        productName: r.productName,
-        category: r.category || "accessory",
-        quantity: r.quantity || 1,
-        unitPrice: r.unitPrice || 0,
-        totalAmount: r.totalAmount || 0,
-        description: r.description || "",
-        imageUrl: r.imageUrl || "",
-        status: r.status || "Pending",
-        createdAt: r.createdAt || new Date().toISOString(),
-        technicianName: r.technicianName,
-        technicianMobile: r.technicianMobile,
-        scheduledDate: r.scheduledDate,
-        operatorNote: r.operatorNote,
-      }));
-
-      const merged = backendReqs.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-      setState({ productRequests: merged });
-    }
-  } catch (e) {
-    console.warn("Failed to sync product requests from backend", e);
-  }
-}
-
-export async function syncComplaintsFromBackend() {
-  try {
-    const res = await apiGetComplaints();
-    if (res.success && res.data?.complaints) {
-      const backendCmps: Complaint[] = res.data.complaints.map((c: any) => ({
-        id: c._id || c.id,
-        stbId: c.stbId || "STB-UNKNOWN",
-        customerName: c.customerName || "Customer",
-        customerMobile: c.customerMobile || "",
-        category: c.category || "General Issues",
-        issueType: c.issueType || "",
-        description: c.description || "",
-        mediaUrl: c.mediaUrl || "",
-        preferredTime: c.preferredTime || "Anytime",
-        status: c.status || "Pending",
-        createdAt: c.createdAt || new Date().toISOString(),
-        technicianName: c.technicianName,
-        technicianMobile: c.technicianMobile,
-        assignedAt: c.assignedAt,
-        expectedArrival: c.expectedArrival,
-        resolvedAt: c.resolvedAt,
-        rating: c.rating,
-        feedback: c.feedback,
-      }));
-
-      const merged = backendCmps.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-      setState({ complaints: merged });
-    }
-  } catch (e) {
-    console.warn("Failed to sync complaints from backend", e);
-  }
-}
-
-
 export async function syncAccountFromBackend(mobileNumber?: string) {
   const targetMobile = mobileNumber || state.user?.mobile;
   if (!targetMobile) return;
@@ -778,6 +579,11 @@ export async function syncAccountFromBackend(mobileNumber?: string) {
         rating: c.rating,
         feedback: c.feedback,
       }));
+
+      // Guard: Do not restore user if logged out or if target user does not match current state
+      if (!state.user || (state.user.mobile !== targetMobile && state.user.mobile !== uData.mobileNumber)) {
+        return;
+      }
 
       if (updatedUser.role === "customer") {
         setState({
@@ -941,25 +747,30 @@ export async function verifyOtp(
 
 
 export async function logout() {
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem("stb_recharge_jwt_token");
-      sessionStorage.clear();
-    } catch (e) {
-      console.warn("Storage clear error on logout", e);
-    }
-  }
   state = {
     ...defaultState,
     user: null,
     stb: null,
     pending: null,
     txns: [],
+    stbMappings: [],
+    productRequests: [],
+    complaints: [],
     appliedCoupon: null,
     ready: true,
   };
-  emit();
+
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem("stb_recharge_jwt_token");
+      sessionStorage.clear();
+      saveState(true);
+    } catch (e) {
+      console.warn("Storage clear error on logout", e);
+    }
+  }
+  listeners.forEach((l) => l());
 }
 
 // STB management
@@ -1340,3 +1151,166 @@ export function formatName(name?: string) {
   if (!name) return "Customer";
   return name.trim();
 }
+
+// Backend Synchronization Functions
+export async function syncPendingRechargesFromBackend(operatorMobile?: string) {
+  try {
+    const op = operatorMobile || state.user?.mobile || state.user?.operatorNumber;
+    const res = await apiGetOperatorRequests(op);
+    if (res.success && Array.isArray(res.data?.requests)) {
+      const backendTxns: Txn[] = res.data.requests.map((r: any) => ({
+        id: r._id || r.id || "TXN-" + Date.now(),
+        planName: r.planId?.name || r.planName || "Recharge Pack",
+        amount: r.amount || 240,
+        date: r.requestTime || r.createdAt || new Date().toISOString(),
+        status: (r.status || "Pending").toLowerCase() as any,
+        customerName: r.customerName || (typeof r.userId === "object" ? r.userId?.name : "Customer"),
+        customerMobile: r.customerMobile || (typeof r.userId === "object" ? r.userId?.mobileNumber : ""),
+        stbId: r.stbId || (typeof r.userId === "object" ? r.userId?.stbId : "1234567890"),
+        syncedToBackend: true,
+      }));
+      setState({ txns: backendTxns });
+    }
+  } catch (err) {
+    console.warn("Failed to sync recharges from backend", err);
+  }
+}
+
+export async function syncProductRequestsFromBackend() {
+  try {
+    const res = await apiGetProductRequests();
+    if (res.success && Array.isArray(res.data?.requests)) {
+      const reqs: ProductRequest[] = res.data.requests.map((r: any) => ({
+        id: r._id || r.id,
+        stbId: r.stbId,
+        customerName: r.customerName,
+        customerMobile: r.customerMobile,
+        productId: r.productId,
+        productName: r.productName,
+        category: r.category || "accessory",
+        quantity: r.quantity || 1,
+        unitPrice: r.unitPrice || 0,
+        totalAmount: r.totalAmount || 0,
+        description: r.description || "",
+        status: r.status || "Pending",
+        createdAt: r.createdAt || new Date().toISOString(),
+        technicianName: r.technicianName,
+        technicianMobile: r.technicianMobile,
+        scheduledDate: r.scheduledDate,
+      }));
+      setState({ productRequests: reqs });
+    }
+  } catch (err) {
+    console.warn("Failed to sync product requests from backend", err);
+  }
+}
+
+export async function syncComplaintsFromBackend() {
+  try {
+    const res = await apiGetComplaints();
+    if (res.success && Array.isArray(res.data?.complaints)) {
+      const cmps: Complaint[] = res.data.complaints.map((c: any) => ({
+        id: c._id || c.id,
+        stbId: c.stbId,
+        customerName: c.customerName,
+        customerMobile: c.customerMobile,
+        category: c.category,
+        issueType: c.issueType,
+        description: c.description,
+        mediaUrl: c.mediaUrl,
+        preferredTime: c.preferredTime,
+        status: c.status || "Pending",
+        createdAt: c.createdAt || new Date().toISOString(),
+        technicianName: c.technicianName,
+        technicianMobile: c.technicianMobile,
+        assignedAt: c.assignedAt,
+        expectedArrival: c.expectedArrival,
+        resolvedAt: c.resolvedAt,
+        rating: c.rating,
+        feedback: c.feedback,
+      }));
+      setState({ complaints: cmps });
+    }
+  } catch (err) {
+    console.warn("Failed to sync complaints from backend", err);
+  }
+}
+
+export async function syncOperatorsFromBackend() {
+  try {
+    const res = await apiGetOperators();
+    if (res.success && Array.isArray(res.data?.operators)) {
+      const ops: ApprovedOperator[] = res.data.operators.map((o: any) => ({
+        id: o._id || o.id,
+        mobile: o.mobileNumber || o.mobile,
+        name: o.name || "Operator",
+        addedAt: o.createdAt || new Date().toISOString(),
+        active: o.isActive !== false,
+      }));
+      setState({ approvedOperators: ops });
+    }
+  } catch (err) {
+    console.warn("Failed to sync operators from backend", err);
+  }
+}
+
+export async function syncStbMappingsFromBackend(operatorMobile?: string) {
+  try {
+    const op = operatorMobile || state.user?.mobile || state.user?.operatorNumber;
+    if (!op) return;
+    const res = await apiGetOperatorStbs(op);
+    if (res.success && Array.isArray(res.data?.mappings)) {
+      const mappings: StbMapping[] = res.data.mappings.map((m: any) => ({
+        id: m._id || m.id,
+        _id: m._id,
+        stbId: m.stbId,
+        operatorMobile: m.operatorMobile,
+        operatorName: m.operatorName,
+        customerName: m.customerName,
+        customerMobile: m.customerMobile,
+        currentPlan: m.currentPlan,
+        expiryDate: m.expiryDate,
+        isApproved: m.isApproved !== false,
+        status: m.status || "Approved",
+        createdAt: m.createdAt,
+      }));
+      setState({ stbMappings: mappings });
+    }
+  } catch (err) {
+    console.warn("Failed to sync STB mappings from backend", err);
+  }
+}
+
+export async function addStbMapping(payload: {
+  stbId: string;
+  operatorMobile: string;
+  operatorName?: string;
+  customerName?: string;
+  customerMobile?: string;
+  currentPlan?: string;
+  expiryDate?: string;
+}): Promise<{ success: boolean; message?: string }> {
+  try {
+    const res = await apiMapStb(payload);
+    if (res.success && res.data?.mapping) {
+      await syncStbMappingsFromBackend(payload.operatorMobile);
+      return { success: true };
+    }
+    return { success: false, message: res.error || "Failed to map STB ID" };
+  } catch (err: any) {
+    return { success: false, message: err.message || "Failed to map STB ID" };
+  }
+}
+
+export async function deleteStbMappingAction(id: string, operatorMobile?: string) {
+  try {
+    const res = await apiDeleteStbMapping(id);
+    if (res.success) {
+      const op = operatorMobile || state.user?.mobile || state.user?.operatorNumber;
+      if (op) syncStbMappingsFromBackend(op);
+    }
+  } catch (err) {
+    console.warn("Failed to delete STB mapping", err);
+  }
+}
+

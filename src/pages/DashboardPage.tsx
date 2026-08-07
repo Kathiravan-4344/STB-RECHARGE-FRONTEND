@@ -27,7 +27,7 @@ export function DashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) navigate({ to: "/" });
+    if (!user) navigate({ to: "/login" });
   }, [user, navigate]);
 
   useEffect(() => {
