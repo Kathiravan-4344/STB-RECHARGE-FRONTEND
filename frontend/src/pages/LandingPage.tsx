@@ -327,21 +327,21 @@ export function LandingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="rounded-3xl border border-[#CBD5E1] bg-white p-8 shadow-sm md:p-10">
             <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-              <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 border border-blue-300 px-5 py-2 text-sm sm:text-base font-black uppercase tracking-widest text-[#2563EB]">
-                  👑 ADMIN
+              <div className="space-y-3.5">
+                <div className="inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] px-6 py-2.5 text-base sm:text-lg font-black uppercase tracking-widest text-white shadow-md shadow-blue-500/20">
+                  👑 ADMIN PORTAL
                 </div>
-                <h2 className="font-display text-4xl sm:text-6xl font-black tracking-tight text-[#0F172A]">
-                  KATHIRAVAN V
-                </h2>
-                <div className="space-y-1.5 pt-1">
-                  <p className="text-base font-bold text-[#1E293B]">
-                    Master Administrator & System Operations Lead
-                  </p>
-                  <p className="text-sm text-[#64748B] font-semibold leading-relaxed">
-                    Overseeing instant STB pack activations, operator approvals, signal management, and priority support.
-                  </p>
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <h3 className="font-display text-2xl sm:text-3xl font-black tracking-widest text-[#0F172A] uppercase border-l-4 border-[#2563EB] pl-3.5 py-0.5">
+                    KATHIRAVAN V
+                  </h3>
+                  <span className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-extrabold text-[#2563EB] tracking-wide">
+                    Super Admin
+                  </span>
                 </div>
+                <p className="text-xs sm:text-sm text-[#475569] font-medium leading-relaxed pt-1">
+                  Master Administrator & System Operations Lead. Overseeing instant STB pack activations, operator approvals, signal management, and priority support.
+                </p>
               </div>
               <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 lg:justify-self-end w-full max-w-xs">
                 {/* CALL LINK */}
