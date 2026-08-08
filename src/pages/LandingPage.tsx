@@ -328,7 +328,7 @@ export function LandingPage() {
           <div className="rounded-3xl border border-[#CBD5E1] bg-white p-8 shadow-sm md:p-10">
             <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
               <div className="space-y-3.5">
-                <div className="inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] px-6 py-2.5 text-base sm:text-lg font-black uppercase tracking-widest text-white shadow-md shadow-blue-500/20">
+                <div className="inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-sky-400 to-sky-600 px-6 py-2.5 text-base sm:text-lg font-black uppercase tracking-widest text-white shadow-md shadow-sky-400/30">
                   👑 ADMIN PORTAL
                 </div>
                 <div className="flex flex-wrap items-center gap-3 pt-1">
