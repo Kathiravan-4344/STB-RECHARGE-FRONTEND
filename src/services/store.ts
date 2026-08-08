@@ -1158,18 +1158,57 @@ export async function syncPendingRechargesFromBackend(operatorMobile?: string) {
     const op = operatorMobile || state.user?.mobile || state.user?.operatorNumber;
     const res = await apiGetOperatorRequests(op);
     if (res.success && Array.isArray(res.data?.requests)) {
-      const backendTxns: Txn[] = res.data.requests.map((r: any) => ({
-        id: r._id || r.id || "TXN-" + Date.now(),
-        planName: r.planId?.name || r.planName || "Recharge Pack",
-        amount: r.amount || 240,
-        date: r.requestTime || r.createdAt || new Date().toISOString(),
-        status: (r.status || "Pending").toLowerCase() as any,
-        customerName: r.customerName || (typeof r.userId === "object" ? r.userId?.name : "Customer"),
-        customerMobile: r.customerMobile || (typeof r.userId === "object" ? r.userId?.mobileNumber : ""),
-        stbId: r.stbId || (typeof r.userId === "object" ? r.userId?.stbId : "1234567890"),
-        syncedToBackend: true,
-      }));
-      setState({ txns: backendTxns });
+      const backendTxns: Txn[] = res.data.requests.map((r: any) => {
+        const rawStatus = (r.status || "Pending").trim().toLowerCase();
+        let normalizedStatus: "pending" | "success" | "failed" = "pending";
+        if (rawStatus === "approved" || rawStatus === "success" || rawStatus === "completed") {
+          normalizedStatus = "success";
+        } else if (rawStatus === "rejected" || rawStatus === "failed") {
+          normalizedStatus = "failed";
+        }
+
+        return {
+          id: r._id || r.id || "TXN-" + Date.now(),
+          planName: r.planId?.name || r.planName || "Recharge Pack",
+          amount: r.amount || 240,
+          date: r.requestTime || r.createdAt || new Date().toISOString(),
+          status: normalizedStatus,
+          customerName: r.customerName || (typeof r.userId === "object" ? r.userId?.name : "Customer"),
+          customerMobile: r.customerMobile || (typeof r.userId === "object" ? r.userId?.mobileNumber : ""),
+          stbId: r.stbId || (typeof r.userId === "object" ? r.userId?.stbId : "1234567890"),
+          syncedToBackend: true,
+        };
+      });
+
+      const currentPending = state.pending;
+      let newPending = currentPending;
+      if (currentPending) {
+        const matchingTxn = backendTxns.find(
+          (t) => t.id === currentPending.txnId || t.stbId === currentPending.stbId
+        );
+        if (matchingTxn && (matchingTxn.status === "success" || matchingTxn.status === "failed")) {
+          newPending = null;
+        }
+      }
+
+      let newStb = state.stb;
+      const approvedTxnForUser = backendTxns.find(
+        (t) => (t.stbId === state.stb?.stbId || t.customerMobile === state.user?.mobile) && t.status === "success"
+      );
+      if (approvedTxnForUser && newStb) {
+        newStb = {
+          ...newStb,
+          currentPlan: approvedTxnForUser.planName,
+          expiry: new Date(Date.now() + 30 * 86400000).toISOString(),
+          active: true,
+        };
+      }
+
+      setState({
+        txns: backendTxns,
+        pending: newPending,
+        stb: newStb,
+      });
     }
   } catch (err) {
     console.warn("Failed to sync recharges from backend", err);
