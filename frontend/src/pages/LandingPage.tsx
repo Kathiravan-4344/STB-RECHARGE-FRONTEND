@@ -328,38 +328,33 @@ export function LandingPage() {
           <div className="rounded-3xl border border-[#CBD5E1] bg-white p-8 shadow-sm md:p-10">
             <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
               <div className="space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">
-                  ADMIN
-                </span>
-                <h2 className="font-display text-3xl font-extrabold text-[#0F172A] sm:text-4xl">
+                <div className="inline-flex items-center gap-2 rounded-full bg-blue-100/90 border border-blue-300 px-4 py-1.5 text-xs sm:text-sm font-extrabold uppercase tracking-widest text-[#2563EB]">
+                  👑 ADMIN
+                </div>
+                <h2 className="font-display text-4xl sm:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0F172A] via-[#1E3A8A] to-[#2563EB] drop-shadow-sm">
                   KATHIRAVAN V
                 </h2>
-                <a
-                  href="https://wa.me/919080864542"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block rounded-xl bg-blue-50 border border-blue-200 px-3.5 py-2 hover:bg-blue-100 transition-colors cursor-pointer"
-                >
-                  <p className="text-sm font-extrabold text-[#2563EB] tracking-wide">
-                    CONTACT/WHATSAPP: 9080864542
+                <div className="space-y-1.5 pt-1">
+                  <p className="text-base font-bold text-[#1E293B]">
+                    Master Administrator & System Operations Lead
                   </p>
-                </a>
-                <p className="text-sm text-[#64748B] font-semibold leading-relaxed">
-                  Contact admin for recharge help, operator approval questions, or general assistance.
-                </p>
+                  <p className="text-sm text-[#64748B] font-semibold leading-relaxed">
+                    Overseeing instant STB pack activations, operator approvals, signal management, and priority support.
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-col sm:flex-row lg:flex-col gap-3">
+              <div className="flex flex-col sm:flex-row lg:flex-col gap-3.5">
                 {/* CALL LINK */}
                 <a
                   href="tel:9080864542"
-                  className="flex items-center gap-3.5 rounded-2xl border border-blue-200 bg-blue-50/80 p-4 transition-all duration-200 hover:bg-blue-100 hover:shadow-md cursor-pointer group"
+                  className="flex items-center gap-4 rounded-2xl border border-blue-200 bg-blue-50/80 p-4 transition-all duration-200 hover:bg-blue-100 hover:shadow-md cursor-pointer group"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] text-white shadow-sm group-hover:scale-105 transition-transform">
-                    <Phone className="h-5 w-5" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] text-white shadow-sm group-hover:scale-105 transition-transform">
+                    <Phone className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#64748B]">Click to Call</p>
-                    <p className="text-base font-bold text-[#0F172A]">Call: 9080864542</p>
+                    <p className="text-xs font-extrabold uppercase tracking-wider text-[#64748B]">Click to Call Admin</p>
+                    <p className="text-lg font-extrabold text-[#0F172A]">Call: 9080864542</p>
                   </div>
                 </a>
 
@@ -368,14 +363,14 @@ export function LandingPage() {
                   href="https://wa.me/919080864542"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3.5 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 transition-all duration-200 hover:bg-emerald-100 hover:shadow-md cursor-pointer group"
+                  className="flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 transition-all duration-200 hover:bg-emerald-100 hover:shadow-md cursor-pointer group"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm group-hover:scale-105 transition-transform">
-                    <MessageCircle className="h-5 w-5" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm group-hover:scale-105 transition-transform">
+                    <MessageCircle className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Click for WhatsApp</p>
-                    <p className="text-base font-bold text-[#0F172A]">WhatsApp: 9080864542</p>
+                    <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">Click for WhatsApp Chat</p>
+                    <p className="text-lg font-extrabold text-[#0F172A]">WhatsApp: 9080864542</p>
                   </div>
                 </a>
               </div>
