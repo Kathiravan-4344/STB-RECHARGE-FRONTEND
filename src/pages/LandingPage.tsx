@@ -329,7 +329,7 @@ export function LandingPage() {
             <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
               <div className="space-y-3.5">
                 <div className="inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-sky-400 to-sky-600 px-6 py-2.5 text-base sm:text-lg font-black uppercase tracking-widest text-white shadow-md shadow-sky-400/30">
-                  👑 ADMIN PORTAL
+                  👑 ADMIN
                 </div>
                 <div className="flex flex-wrap items-center gap-3 pt-1">
                   <h3 className="font-display text-2xl sm:text-3xl font-black tracking-widest text-[#0F172A] uppercase border-l-4 border-[#2563EB] pl-3.5 py-0.5">
