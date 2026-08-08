@@ -363,10 +363,12 @@ export function LandingPage() {
                   href="https://wa.me/919080864542"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-2.5 transition-all duration-200 hover:bg-emerald-100 hover:shadow-sm cursor-pointer group"
+                  className="flex items-center gap-3 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 transition-all duration-200 hover:bg-emerald-100 hover:shadow-md cursor-pointer group"
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm group-hover:scale-105 transition-transform">
-                    <MessageCircle className="h-4 w-4" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#25D366] text-white shadow-sm group-hover:scale-105 transition-transform">
+                    <svg className="h-5 w-5 fill-current text-white" viewBox="0 0 24 24">
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.705 1.754zm6.097-4.471l.375.222c1.472.873 3.156 1.335 4.877 1.336 5.158 0 9.356-4.198 9.358-9.356.001-2.5-1.026-4.848-2.791-6.613-1.765-1.765-4.114-2.792-6.613-2.793-5.157 0-9.355 4.198-9.357 9.356-.001 1.777.472 3.511 1.37 5.048l.243.413-1.01 3.687 3.774-.99zm11.385-6.84c-.088-.147-.324-.235-.677-.412s-2.091-1.03-2.414-1.148c-.323-.118-.559-.177-.795.176-.236.353-.912 1.148-1.118 1.384-.206.235-.412.265-.765.088s-1.493-.55-2.844-1.754c-1.052-.938-1.763-2.097-1.97-2.45-.206-.353-.022-.544.154-.72.159-.159.353-.412.53-.618.176-.206.235-.353.353-.588.118-.235.059-.441-.03-.618s-.795-1.913-1.089-2.619c-.286-.688-.577-.595-.795-.606-.206-.01-.442-.01-.677-.01s-.618.088-.942.441c-.324.353-1.236 1.207-1.236 2.943s1.265 3.413 1.442 3.649c.176.236 2.489 3.799 6.03 5.328 3.541 1.53 3.541 1.019 4.188.957.647-.06 2.09-.854 2.384-1.677.294-.824.294-1.53.206-1.677z"/>
+                    </svg>
                   </div>
                   <div>
                     <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">Click for WhatsApp</p>
