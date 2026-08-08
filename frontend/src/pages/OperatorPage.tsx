@@ -146,8 +146,6 @@ export function OperatorPage() {
   const [newStbId, setNewStbId] = useState("");
   const [newCustName, setNewCustName] = useState("");
   const [newCustMobile, setNewCustMobile] = useState("");
-  const [newCustPlan, setNewCustPlan] = useState("Basic Tamil Pack Monthly Rs 220");
-  const [newCustExpiry, setNewCustExpiry] = useState("");
   const [stbSubmitting, setStbSubmitting] = useState(false);
   const [stbErr, setStbErr] = useState<string | null>(null);
 
@@ -384,8 +382,6 @@ export function OperatorPage() {
       operatorName: user?.name || "Operator",
       customerName: newCustName.trim() || "Customer",
       customerMobile: newCustMobile.trim(),
-      currentPlan: newCustPlan.trim() || "Basic Tamil Pack Monthly Rs 220",
-      expiryDate: newCustExpiry ? new Date(newCustExpiry).toISOString() : undefined,
     });
     setStbSubmitting(false);
 
@@ -394,8 +390,6 @@ export function OperatorPage() {
       setNewStbId("");
       setNewCustName("");
       setNewCustMobile("");
-      setNewCustPlan("Basic Tamil Pack Monthly Rs 220");
-      setNewCustExpiry("");
     } else {
       setStbErr(res.message || "Failed to map STB ID");
     }
@@ -1733,31 +1727,6 @@ export function OperatorPage() {
                   placeholder="e.g. 9876543210"
                   value={newCustMobile}
                   onChange={(e) => setNewCustMobile(e.target.value)}
-                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#64748B] mb-1">Current Pack / Plan</label>
-                <select
-                  value={newCustPlan}
-                  onChange={(e) => setNewCustPlan(e.target.value)}
-                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
-                >
-                  <option value="Basic Tamil Pack Monthly Rs 220">Basic Tamil Pack Monthly Rs 220</option>
-                  <option value="Basic Tamil Silver Pack Monthly Rs 240">Basic Tamil Silver Pack Monthly Rs 240</option>
-                  <option value="Basic Tamil HD Packs Rs 300">Basic Tamil HD Packs Rs 300</option>
-                  <option value="Sports Pack Rs 49">Sports Pack Rs 49</option>
-                  <option value="HD Movies Pack Rs 79">HD Movies Pack Rs 79</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#64748B] mb-1">Expiry Date (Optional)</label>
-                <input
-                  type="date"
-                  value={newCustExpiry}
-                  onChange={(e) => setNewCustExpiry(e.target.value)}
                   className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2.5 text-sm text-[#0F172A] outline-none focus:border-[#2563EB]"
                 />
               </div>
