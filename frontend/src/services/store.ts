@@ -1204,8 +1204,23 @@ export async function syncPendingRechargesFromBackend(operatorMobile?: string) {
         };
       }
 
+      // Merge local txns with backend txns so no request is ever lost
+      const existingTxns = state.txns || [];
+      const mergedMap = new Map<string, Txn>();
+
+      backendTxns.forEach((t) => mergedMap.set(t.id, t));
+      existingTxns.forEach((t) => {
+        if (!mergedMap.has(t.id)) {
+          mergedMap.set(t.id, t);
+        }
+      });
+
+      const finalTxns = Array.from(mergedMap.values()).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
       setState({
-        txns: backendTxns,
+        txns: finalTxns,
         pending: newPending,
         stb: newStb,
       });

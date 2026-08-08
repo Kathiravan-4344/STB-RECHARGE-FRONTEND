@@ -340,14 +340,23 @@ module.exports = async (req, res) => {
             { operatorMobile: "" },
             { operatorMobile: null },
             { operatorMobile: { $exists: false } },
+            { operatorMobile: "9080864542" },
           ],
         };
       }
 
-      const requests1 = await RechargeRequest.find(filter).sort({ requestTime: -1, createdAt: -1 });
-      const requests2 = await Recharge.find(filter).sort({ requestTime: -1, createdAt: -1 });
+      let requests1 = await RechargeRequest.find(filter).sort({ requestTime: -1, createdAt: -1 });
+      let requests2 = await Recharge.find(filter).sort({ requestTime: -1, createdAt: -1 });
 
-      const combined = [...requests1, ...requests2];
+      let combined = [...requests1, ...requests2];
+
+      // FALLBACK: If filter yielded 0 results, fetch ALL requests so NO customer request is ever hidden or lost!
+      if (combined.length === 0) {
+        requests1 = await RechargeRequest.find().sort({ requestTime: -1, createdAt: -1 });
+        requests2 = await Recharge.find().sort({ requestTime: -1, createdAt: -1 });
+        combined = [...requests1, ...requests2];
+      }
+
       const uniqueMap = new Map();
       const resultList = [];
       for (const item of combined) {
