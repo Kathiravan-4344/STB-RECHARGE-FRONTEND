@@ -131,6 +131,20 @@ const operatorSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const productCatalogSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
+    category: { type: String, default: "accessory" },
+    price: { type: Number, default: 0 },
+    availableStock: { type: Number, default: 0 },
+    soldQuantity: { type: Number, default: 0 },
+    description: { type: String, default: "" },
+    iconName: { type: String, default: "Box" },
+  },
+  { timestamps: true }
+);
+
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 const StbMapping = mongoose.models.StbMapping || mongoose.model("StbMapping", stbMappingSchema);
 const RechargeRequest = mongoose.models.RechargeRequest || mongoose.model("RechargeRequest", rechargeSchema);
@@ -138,6 +152,7 @@ const Recharge = mongoose.models.Recharge || mongoose.model("Recharge", recharge
 const Complaint = mongoose.models.Complaint || mongoose.model("Complaint", complaintSchema);
 const ProductRequest = mongoose.models.ProductRequest || mongoose.model("ProductRequest", productRequestSchema);
 const Operator = mongoose.models.Operator || mongoose.model("Operator", operatorSchema);
+const ProductCatalog = mongoose.models.ProductCatalog || mongoose.model("ProductCatalog", productCatalogSchema);
 
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -554,6 +569,63 @@ module.exports = async (req, res) => {
         await op.save();
       }
       return res.status(200).json({ success: true, operator: op });
+    }
+
+    // Products: Get List
+    if (req.method === "GET" && routeString.includes("products") && !routeString.includes("product-request")) {
+      let products = await ProductCatalog.find().sort({ createdAt: 1 });
+      if (products.length === 0) {
+        const seedItems = [
+          { id: "prod-1", name: "HD Set Top Box Remote", category: "accessory", price: 250, availableStock: 45, soldQuantity: 120, description: "Universal STB Remote compatible with all HD models", iconName: "Tv" },
+          { id: "prod-2", name: "4K Ultra HD HDMI Cable 1.5m", category: "accessory", price: 150, availableStock: 60, soldQuantity: 85, description: "High speed 4K Gold Plated Shielded HDMI Cable", iconName: "Zap" },
+          { id: "prod-3", name: "Dish Antenna LNB Receiver", category: "accessory", price: 350, availableStock: 30, soldQuantity: 42, description: "Universal Ku-Band Single LNB for High Signal Reception", iconName: "Radio" },
+          { id: "prod-4", name: "Coaxial Cable 15m with F-Connectors", category: "accessory", price: 200, availableStock: 50, soldQuantity: 65, description: "Heavy Duty Shielded RG6 Coaxial Cable with brass connectors", iconName: "Cable" },
+          { id: "prod-5", name: "12V 2A STB Power Adapter", category: "accessory", price: 220, availableStock: 40, soldQuantity: 90, description: "Surge Protected Power Supply Adapter for HD STB", iconName: "Plug" },
+          { id: "prod-6", name: "STB Wall Mounting Bracket Stand", category: "accessory", price: 180, availableStock: 35, soldQuantity: 55, description: "Heavy Duty Metal Wall Mount Stand with cable slots", iconName: "Box" },
+          { id: "prod-7", name: "AV 3-RCA Audio Video Cable", category: "accessory", price: 120, availableStock: 45, soldQuantity: 38, description: "Premium RCA Cable for Standard Definition STB connection", iconName: "Sliders" },
+          { id: "prod-8", name: "Universal Learning Smart Remote", category: "accessory", price: 390, availableStock: 25, soldQuantity: 74, description: "Dual TV + STB Smart Remote with button learning mode", iconName: "Tv" },
+          { id: "prod-9", name: "Dish Antenna Signal Alignment Service", category: "service", price: 299, availableStock: 100, soldQuantity: 110, description: "Technician Home Visit for Dish Alignment & Cable Signal Tuning", iconName: "Wrench" },
+          { id: "prod-10", name: "4K Smart Hybrid STB Hardware Upgrade", category: "service", price: 999, availableStock: 15, soldQuantity: 28, description: "Upgrade old STB to 4K Smart Android Hybrid Box with OTT Apps", iconName: "Sparkles" }
+        ];
+        try {
+          await ProductCatalog.insertMany(seedItems);
+          products = await ProductCatalog.find().sort({ createdAt: 1 });
+        } catch (seedErr) {
+          console.warn("[Product Seed Error]", seedErr.message);
+        }
+      }
+      return res.status(200).json({ success: true, count: products.length, products });
+    }
+
+    // Products: Upsert (Save/Update in MongoDB)
+    if (req.method === "POST" && routeString.includes("products/upsert")) {
+      const prod = body;
+      if (!prod || !prod.id) {
+        return res.status(400).json({ success: false, message: "Product ID and details required" });
+      }
+      const updatedProd = await ProductCatalog.findOneAndUpdate(
+        { id: prod.id },
+        {
+          name: prod.name,
+          category: prod.category || "accessory",
+          price: Number(prod.price) || 0,
+          availableStock: Number(prod.availableStock) || 0,
+          soldQuantity: Number(prod.soldQuantity) || 0,
+          description: prod.description || "",
+          iconName: prod.iconName || "Box",
+        },
+        { upsert: true, new: true }
+      );
+      return res.status(200).json({ success: true, product: updatedProd });
+    }
+
+    // Products: Delete from MongoDB
+    if ((req.method === "POST" || req.method === "DELETE") && routeString.includes("products/delete")) {
+      const prodId = body.id || reqUrl.split("/").pop();
+      if (prodId) {
+        await ProductCatalog.deleteOne({ id: prodId });
+      }
+      return res.status(200).json({ success: true, message: "Product deleted from MongoDB" });
     }
 
     // Default Fallback

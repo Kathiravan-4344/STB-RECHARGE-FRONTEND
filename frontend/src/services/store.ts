@@ -23,7 +23,9 @@ import {
   apiValidateStb,
   apiMapStb,
   apiGetOperatorStbs,
-  apiDeleteStbMapping,
+  apiGetProducts,
+  apiUpsertProduct,
+  apiDeleteProduct,
 } from "./api";
 
 
@@ -620,6 +622,7 @@ export async function initStore() {
   }
 
   syncOperatorsFromBackend();
+  syncProductsFromBackend();
   syncPendingRechargesFromBackend();
   syncProductRequestsFromBackend();
   syncComplaintsFromBackend();
@@ -629,6 +632,8 @@ export async function initStore() {
       if (state.user?.mobile) {
         syncAccountFromBackend(state.user.mobile);
       }
+      syncOperatorsFromBackend();
+      syncProductsFromBackend();
       syncPendingRechargesFromBackend();
       syncProductRequestsFromBackend();
       syncComplaintsFromBackend();
@@ -1121,10 +1126,12 @@ export async function unblockCustomer(identifier: string) {
 export async function upsertProduct(prod: Partial<Product> & { id: string; name: string }) {
   const exists = state.products.find((p) => p.id === prod.id);
   let updated: Product[];
+  let targetP: Product;
   if (exists) {
-    updated = state.products.map((p) => (p.id === prod.id ? { ...p, ...prod } : p));
+    targetP = { ...exists, ...prod };
+    updated = state.products.map((p) => (p.id === prod.id ? targetP : p));
   } else {
-    const newP: Product = {
+    targetP = {
       id: prod.id,
       name: prod.name,
       category: prod.category || "accessory",
@@ -1134,13 +1141,15 @@ export async function upsertProduct(prod: Partial<Product> & { id: string; name:
       description: prod.description,
       iconName: prod.iconName,
     };
-    updated = [...state.products, newP];
+    updated = [...state.products, targetP];
   }
   setState({ products: updated });
+  await apiUpsertProduct(targetP);
 }
 
 export async function removeProduct(id: string) {
   setState({ products: state.products.filter((p) => p.id !== id) });
+  await apiDeleteProduct(id);
 }
 
 export async function resetAllData() {
@@ -1305,6 +1314,27 @@ export async function syncOperatorsFromBackend() {
     }
   } catch (err) {
     console.warn("Failed to sync operators from backend", err);
+  }
+}
+
+export async function syncProductsFromBackend() {
+  try {
+    const res = await apiGetProducts();
+    if (res.success && Array.isArray(res.data?.products) && res.data.products.length > 0) {
+      const prods: Product[] = res.data.products.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        category: p.category || "accessory",
+        price: p.price || 0,
+        availableStock: p.availableStock || 0,
+        soldQuantity: p.soldQuantity || 0,
+        description: p.description || "",
+        iconName: p.iconName || "Box",
+      }));
+      setState({ products: prods });
+    }
+  } catch (err) {
+    console.warn("Failed to sync products from backend", err);
   }
 }
 

@@ -265,6 +265,20 @@ export async function apiGetProducts() {
   return apiRequest<{ products: any[] }>("/products");
 }
 
+export async function apiUpsertProduct(prod: any) {
+  return apiRequest<{ product: any }>("/products/upsert", {
+    method: "POST",
+    body: JSON.stringify(prod),
+  });
+}
+
+export async function apiDeleteProduct(id: string) {
+  return apiRequest("/products/delete", {
+    method: "POST",
+    body: JSON.stringify({ id }),
+  });
+}
+
 // Product Requests API Calls
 export async function apiCreateProductRequest(payload: any) {
   return apiRequest<{ productRequest: any }>("/product-request/create", {
