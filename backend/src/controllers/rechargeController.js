@@ -162,12 +162,26 @@ const createRechargeRequest = async (req, res) => {
       }
     }
 
-    // 3. Look up STB Mapping to route to the specific Operator
+    // 3. Look up STB Mapping or Operator to route to the specific Operator
     let mappedOperatorMobile = req.body.operatorMobile || "";
     if (!mappedOperatorMobile && cleanStbId && cleanStbId !== "STB-UNKNOWN") {
-      const stbMapping = await StbMapping.findOne({ stbId: cleanStbId });
+      const stbMapping = await StbMapping.findOne({
+        stbId: { $regex: new RegExp("^" + cleanStbId + "$", "i") },
+      });
       if (stbMapping && stbMapping.operatorMobile) {
-        mappedOperatorMobile = stbMapping.operatorMobile;
+        mappedOperatorMobile = stbMapping.operatorMobile.trim();
+      }
+    }
+    if (!mappedOperatorMobile && cleanMobile) {
+      const stbMappingByMob = await StbMapping.findOne({ customerMobile: cleanMobile });
+      if (stbMappingByMob && stbMappingByMob.operatorMobile) {
+        mappedOperatorMobile = stbMappingByMob.operatorMobile.trim();
+      }
+    }
+    if (!mappedOperatorMobile) {
+      const firstOp = await Operator.findOne({ isActive: true });
+      if (firstOp && firstOp.mobileNumber) {
+        mappedOperatorMobile = firstOp.mobileNumber.trim();
       }
     }
 
@@ -188,7 +202,19 @@ const createRechargeRequest = async (req, res) => {
     console.log("Saving new single recharge:", newRecharge._id);
     try {
       await newRecharge.save();
-      console.log("Saved successfully:", newRecharge._id);
+      await RechargeRequest.create({
+        userId: user?._id || userId || undefined,
+        stbId: newRecharge.stbId,
+        customerName: newRecharge.customerName,
+        customerMobile: newRecharge.customerMobile,
+        operatorMobile: mappedOperatorMobile,
+        planId: plan?._id || planId || undefined,
+        amount: cleanAmount,
+        paymentStatus: "Success",
+        status: "Pending",
+        requestTime: new Date(),
+      }).catch(() => {});
+      console.log("Saved successfully to both collections:", newRecharge._id);
     } catch (saveErr) {
       console.log("ERROR saving recharge:", saveErr);
       return res.status(500).json({ error: saveErr.message });

@@ -280,9 +280,17 @@ module.exports = async (req, res) => {
       const mob = customerMobile ? String(customerMobile).trim() : "9" + Date.now().toString().slice(-9);
 
       let opMob = operatorMobile ? String(operatorMobile).trim() : "";
+      if (!opMob && cleanStb) {
+        const mapping = await StbMapping.findOne({ stbId: { $regex: new RegExp("^" + cleanStb + "$", "i") } });
+        if (mapping && mapping.operatorMobile) opMob = mapping.operatorMobile.trim();
+      }
+      if (!opMob && mob) {
+        const mappingByMob = await StbMapping.findOne({ customerMobile: mob });
+        if (mappingByMob && mappingByMob.operatorMobile) opMob = mappingByMob.operatorMobile.trim();
+      }
       if (!opMob) {
-        const mapping = await StbMapping.findOne({ stbId: cleanStb });
-        if (mapping) opMob = mapping.operatorMobile;
+        const firstOp = await Operator.findOne({ isActive: true });
+        if (firstOp && firstOp.mobileNumber) opMob = firstOp.mobileNumber.trim();
       }
 
       let user = await User.findOne({ mobileNumber: mob });
@@ -310,7 +318,7 @@ module.exports = async (req, res) => {
       const request = await RechargeRequest.create(newReqData);
       await Recharge.create(newReqData).catch(() => {});
 
-      console.log("[MongoDB Saved Recharge Request]", request._id, cleanStb);
+      console.log("[MongoDB Saved Recharge Request]", request._id, cleanStb, "opMob:", opMob);
 
       return res.status(201).json({ success: true, rechargeRequest: request });
     }
@@ -329,6 +337,9 @@ module.exports = async (req, res) => {
             { operatorMobile: opMobile },
             { stbId: { $in: mappedRegex } },
             { stbId: { $in: mappedStbs } },
+            { operatorMobile: "" },
+            { operatorMobile: null },
+            { operatorMobile: { $exists: false } },
           ],
         };
       }

@@ -61,10 +61,15 @@ const getPendingRequests = async (req, res) => {
       if (cleanOpMobile && cleanOpMobile !== "9080864542") {
         // Find STBs owned by this operator
         const mappedStbs = await StbMapping.find({ operatorMobile: cleanOpMobile }).distinct("stbId");
+        const mappedRegex = mappedStbs.map((s) => new RegExp("^" + s + "$", "i"));
         filter = {
           $or: [
             { operatorMobile: cleanOpMobile },
+            { stbId: { $in: mappedRegex } },
             { stbId: { $in: mappedStbs } },
+            { operatorMobile: "" },
+            { operatorMobile: null },
+            { operatorMobile: { $exists: false } },
           ],
         };
       }
