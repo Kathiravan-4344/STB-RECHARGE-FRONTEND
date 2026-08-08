@@ -162,7 +162,7 @@ export type State = {
   user: User | null;
   stb: STB | null;
   autoRecharge: { enabled: boolean; planId?: string };
-  pending: { txnId: string; planName: string; amount: number; startedAt: number } | null;
+  pending: { txnId: string; planName: string; amount: number; startedAt: number; stbId?: string; customerMobile?: string } | null;
   txns: Txn[];
   plans: Plan[];
   products: Product[];
@@ -586,9 +586,26 @@ export async function syncAccountFromBackend(mobileNumber?: string) {
       }
 
       if (updatedUser.role === "customer") {
+        const currentPending = state.pending;
+        let newPending = currentPending;
+
+        if (currentPending) {
+          const userMobileClean = cleanMobile(updatedUser.mobile);
+          const approvedOrRejected = userTxns.find(
+            (t) =>
+              (t.id === currentPending.txnId ||
+                (userMobileClean && cleanMobile(t.customerMobile || "") === userMobileClean)) &&
+              (t.status === "success" || t.status === "failed")
+          );
+          if (approvedOrRejected) {
+            newPending = null;
+          }
+        }
+
         setState({
           user: updatedUser,
           stb: updatedStb,
+          pending: newPending,
           txns: userTxns,
           productRequests: userProdReqs,
           complaints: userComplaints,
@@ -799,7 +816,7 @@ export async function startPayment(
   const targetCustomerName = customDetails?.customerName || user?.name || "Customer";
   const targetCustomerMobile = customDetails?.customerMobile || user?.mobile || "";
 
-  const pending = { txnId: localTxnId, planName, amount, startedAt: now };
+  const pending = { txnId: localTxnId, planName, amount, startedAt: now, stbId: targetStbId, customerMobile: targetCustomerMobile };
 
   const newTxn: Txn = {
     id: localTxnId,
@@ -844,7 +861,7 @@ export async function startPayment(
       );
       setState({
         txns: updatedTxns,
-        pending: isPendingMatch && currentPending ? { ...currentPending, txnId: backendId } : state.pending,
+        pending: isPendingMatch && currentPending ? { ...currentPending, txnId: backendId, stbId: targetStbId, customerMobile: targetCustomerMobile } : state.pending,
       });
     } else {
       console.warn("apiCreateRecharge info:", res.error || "Backend request queued");
@@ -1155,7 +1172,8 @@ export function formatName(name?: string) {
 // Backend Synchronization Functions
 export async function syncPendingRechargesFromBackend(operatorMobile?: string) {
   try {
-    const op = operatorMobile || state.user?.mobile || state.user?.operatorNumber;
+    const isCustomer = state.user?.role === "customer";
+    const op = operatorMobile || (isCustomer ? undefined : state.user?.mobile || state.user?.operatorNumber);
     const res = await apiGetOperatorRequests(op);
     if (res.success && Array.isArray(res.data?.requests)) {
       const backendTxns: Txn[] = res.data.requests.map((r: any) => {
@@ -1183,18 +1201,35 @@ export async function syncPendingRechargesFromBackend(operatorMobile?: string) {
       const currentPending = state.pending;
       let newPending = currentPending;
       if (currentPending) {
-        const matchingTxn = backendTxns.find(
-          (t) => t.id === currentPending.txnId || t.stbId === currentPending.stbId
-        );
+        const pTxnId = currentPending.txnId;
+        const pStbId = (currentPending.stbId || state.stb?.id || state.user?.stbId || "").trim().toUpperCase();
+        const pMobile = cleanMobile(currentPending.customerMobile || state.user?.mobile || "");
+
+        const matchingTxn = backendTxns.find((t) => {
+          if (t.id === pTxnId) return true;
+          const tStb = (t.stbId || "").trim().toUpperCase();
+          if (pStb && tStb === pStb && t.status !== "pending") return true;
+          const tMobile = cleanMobile(t.customerMobile || "");
+          if (pMobile && tMobile && pMobile === tMobile && t.status !== "pending") return true;
+          return false;
+        });
+
         if (matchingTxn && (matchingTxn.status === "success" || matchingTxn.status === "failed")) {
           newPending = null;
         }
       }
 
       let newStb = state.stb;
-      const approvedTxnForUser = backendTxns.find(
-        (t) => (t.stbId === state.stb?.stbId || t.customerMobile === state.user?.mobile) && t.status === "success"
-      );
+      const userStbId = (state.stb?.id || state.user?.stbId || "").trim().toUpperCase();
+      const userMobileDigits = cleanMobile(state.user?.mobile || "");
+
+      const approvedTxnForUser = backendTxns.find((t) => {
+        if (t.status !== "success") return false;
+        const tStb = (t.stbId || "").trim().toUpperCase();
+        const tMobileDigits = cleanMobile(t.customerMobile || "");
+        return (userStbId && tStb === userStbId) || (userMobileDigits && tMobileDigits && userMobileDigits === tMobileDigits);
+      });
+
       if (approvedTxnForUser && newStb) {
         newStb = {
           ...newStb,

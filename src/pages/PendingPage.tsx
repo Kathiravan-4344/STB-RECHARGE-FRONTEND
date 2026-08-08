@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppShell } from "../components/AppShell";
 import { useStore, approveTxn, rejectTxn, syncPendingRechargesFromBackend } from "../services/store";
+import { apiGetRechargeStatus } from "../services/api";
 import { useCountdown } from "../hooks/useCountdown";
 import { Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
@@ -16,12 +17,33 @@ export function PendingPage() {
   const cd = useCountdown(pending?.startedAt ?? 0, FORTY_FIVE_MIN);
 
   useEffect(() => {
-    syncPendingRechargesFromBackend();
-    const interval = setInterval(() => {
-      syncPendingRechargesFromBackend();
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+    let active = true;
+
+    async function checkStatus() {
+      await syncPendingRechargesFromBackend();
+
+      if (pending?.txnId) {
+        try {
+          const res = await apiGetRechargeStatus(pending.txnId);
+          if (res.success && res.data?.status && active) {
+            const st = String(res.data.status).toLowerCase();
+            if (st === "approved" || st === "success" || st === "completed") {
+              approveTxn(pending.txnId);
+            } else if (st === "rejected" || st === "failed") {
+              rejectTxn(pending.txnId);
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 2000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [pending?.txnId]);
 
   useEffect(() => {
     if (!pending) {

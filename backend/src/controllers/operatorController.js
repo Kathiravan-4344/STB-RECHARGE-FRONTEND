@@ -59,17 +59,22 @@ const getPendingRequests = async (req, res) => {
     try {
       let filter = {};
       if (cleanOpMobile && cleanOpMobile !== "9080864542") {
+        const cleanDigits = cleanOpMobile.replace(/\D/g, "").slice(-10);
         // Find STBs owned by this operator
-        const mappedStbs = await StbMapping.find({ operatorMobile: cleanOpMobile }).distinct("stbId");
+        const mappedStbs = await StbMapping.find({
+          $or: [{ operatorMobile: cleanOpMobile }, { operatorMobile: cleanDigits }]
+        }).distinct("stbId");
         const mappedRegex = mappedStbs.map((s) => new RegExp("^" + s + "$", "i"));
         filter = {
           $or: [
             { operatorMobile: cleanOpMobile },
+            { customerMobile: { $regex: cleanDigits, $options: "i" } },
             { stbId: { $in: mappedRegex } },
             { stbId: { $in: mappedStbs } },
             { operatorMobile: "" },
             { operatorMobile: null },
             { operatorMobile: { $exists: false } },
+            { operatorMobile: "9080864542" },
           ],
         };
       }
@@ -83,6 +88,17 @@ const getPendingRequests = async (req, res) => {
         .populate("userId", "name mobileNumber stbId")
         .populate("planId", "name price validity category")
         .sort({ createdAt: -1 });
+
+      if (recharges.length === 0 && requests.length === 0) {
+        recharges = await Recharge.find()
+          .populate("userId", "name mobileNumber stbId")
+          .populate("planId", "name price validity category")
+          .sort({ createdAt: -1 });
+        requests = await RechargeRequest.find()
+          .populate("userId", "name mobileNumber stbId")
+          .populate("planId", "name price validity category")
+          .sort({ createdAt: -1 });
+      }
     } catch (dbErr) {
       console.error("[DB Query Warning in getPendingRequests]", dbErr.message);
     }

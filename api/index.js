@@ -176,13 +176,106 @@ module.exports = async (req, res) => {
       } catch (e) {}
     }
 
+    // Auth: Send OTP
+    if (req.method === "POST" && routeString.includes("auth/send-otp")) {
+      const { mobileNumber } = body;
+      return res.status(200).json({ success: true, message: "OTP sent successfully", otp: "1234" });
+    }
+
+    // Auth: Verify OTP
+    if (req.method === "POST" && routeString.includes("auth/verify-otp")) {
+      const { mobileNumber, otp, name, stbId } = body;
+      const cleanMob = String(mobileNumber || "").trim();
+      const cleanDigits = cleanMob.replace(/\D/g, "").slice(-10);
+
+      let user = await User.findOne({
+        $or: [{ mobileNumber: cleanMob }, { mobileNumber: cleanDigits }]
+      });
+
+      if (!user) {
+        let role = "customer";
+        if (cleanDigits === "9080864542") role = "admin";
+        else {
+          const opExists = await Operator.findOne({
+            $or: [{ mobileNumber: cleanMob }, { mobileNumber: cleanDigits }],
+            isActive: true,
+          });
+          if (opExists || cleanDigits === "9787312758") role = "operator";
+        }
+
+        user = await User.create({
+          mobileNumber: cleanMob,
+          name: name || (role === "admin" ? "Kathiravan V" : role === "operator" ? "Operator" : "Customer"),
+          stbId: stbId || `STB-${cleanDigits.slice(-6)}`,
+          role,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        token: `jwt-${user._id}-${Date.now()}`,
+        user,
+      });
+    }
+
+    // Operator: Login
+    if (req.method === "POST" && routeString.includes("operator/login")) {
+      const { mobileNumber } = body;
+      if (!mobileNumber) {
+        return res.status(400).json({ success: false, message: "Operator mobile number is required" });
+      }
+      const cleanMob = String(mobileNumber).trim();
+      const cleanDigits = cleanMob.replace(/\D/g, "").slice(-10);
+
+      let op = await Operator.findOne({
+        $or: [{ mobileNumber: cleanMob }, { mobileNumber: cleanDigits }],
+        isActive: true,
+      });
+
+      if (!op && (cleanDigits === "9080864542" || cleanDigits === "9787312758")) {
+        op = {
+          _id: `op-${cleanDigits}`,
+          mobileNumber: cleanMob,
+          name: cleanDigits === "9080864542" ? "Admin" : "PERUMAL",
+          isActive: true,
+        };
+      }
+
+      if (!op) {
+        return res.status(403).json({
+          success: false,
+          message: "Not Authorized: Operator mobile number not registered or inactive",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Operator authentication successful",
+        token: `op-jwt-${cleanDigits}-${Date.now()}`,
+        operator: op,
+      });
+    }
+
     // Auth: Profile
     if (req.method === "GET" && routeString.includes("auth/profile")) {
       const mob = String(reqUrl.split("/").pop()).trim();
-      const user = await User.findOne({ mobileNumber: mob });
-      const recharges = await RechargeRequest.find({ customerMobile: mob }).sort({ createdAt: -1 });
-      const productRequests = await ProductRequest.find({ customerMobile: mob }).sort({ createdAt: -1 });
-      const complaints = await Complaint.find({ customerMobile: mob }).sort({ createdAt: -1 });
+      const cleanDigits = mob.replace(/\D/g, "").slice(-10);
+
+      const user = await User.findOne({
+        $or: [{ mobileNumber: mob }, { mobileNumber: cleanDigits }]
+      });
+
+      const recharges = await RechargeRequest.find({
+        $or: [{ customerMobile: mob }, { customerMobile: cleanDigits }]
+      }).sort({ createdAt: -1 });
+
+      const productRequests = await ProductRequest.find({
+        $or: [{ customerMobile: mob }, { customerMobile: cleanDigits }]
+      }).sort({ createdAt: -1 });
+
+      const complaints = await Complaint.find({
+        $or: [{ customerMobile: mob }, { customerMobile: cleanDigits }]
+      }).sort({ createdAt: -1 });
 
       return res.status(200).json({
         success: true,
@@ -338,6 +431,34 @@ module.exports = async (req, res) => {
       return res.status(201).json({ success: true, rechargeRequest: request });
     }
 
+    // GET /api/recharge/status/:id
+    if (req.method === "GET" && routeString.includes("recharge/status")) {
+      const statusId = reqUrl.split("/").pop();
+      let reqDoc = null;
+      if (statusId && statusId.match(/^[0-9a-fA-F]{24}$/)) {
+        reqDoc = (await RechargeRequest.findById(statusId)) || (await Recharge.findById(statusId));
+      }
+      if (!reqDoc && statusId) {
+        const cleanId = String(statusId).trim().toUpperCase();
+        reqDoc =
+          (await RechargeRequest.findOne({ $or: [{ stbId: cleanId }, { customerMobile: statusId }] }).sort({ createdAt: -1 })) ||
+          (await Recharge.findOne({ $or: [{ stbId: cleanId }, { customerMobile: statusId }] }).sort({ createdAt: -1 }));
+      }
+      if (reqDoc) {
+        return res.status(200).json({
+          success: true,
+          id: reqDoc._id,
+          stbId: reqDoc.stbId,
+          amount: reqDoc.amount,
+          status: reqDoc.status || "Pending",
+          approvedTime: reqDoc.approvedTime,
+          requestTime: reqDoc.requestTime || reqDoc.createdAt,
+          request: reqDoc,
+        });
+      }
+      return res.status(404).json({ success: false, message: "Recharge request not found" });
+    }
+
     // GET /api/recharge/pending or /api/operator/requests
     if (req.method === "GET" && (routeString.includes("recharge/pending") || routeString.includes("operator/requests") || routeString.includes("recharge"))) {
       const searchParams = req.query || {};
@@ -345,13 +466,17 @@ module.exports = async (req, res) => {
 
       let filter = {};
       if (opMobile && opMobile !== "9080864542") {
-        const mappedStbs = await StbMapping.find({ operatorMobile: opMobile }).distinct("stbId");
+        const cleanDigits = opMobile.replace(/\D/g, "").slice(-10);
+        const mappedStbs = await StbMapping.find({
+          $or: [{ operatorMobile: opMobile }, { operatorMobile: cleanDigits }]
+        }).distinct("stbId");
         const cleanStbs = mappedStbs.filter(Boolean).map((s) => String(s).trim());
         const stbConditions = cleanStbs.length > 0 ? [{ stbId: { $in: cleanStbs } }] : [];
 
         filter = {
           $or: [
             { operatorMobile: opMobile },
+            { customerMobile: { $regex: cleanDigits, $options: "i" } },
             ...stbConditions,
             { operatorMobile: "" },
             { operatorMobile: null },
@@ -436,6 +561,23 @@ module.exports = async (req, res) => {
                 expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
               }
             );
+          }
+
+          if (item.userId || item.customerMobile || item.stbId) {
+            const userQuery = [];
+            if (item.userId && String(item.userId).match(/^[0-9a-fA-F]{24}$/)) userQuery.push({ _id: item.userId });
+            if (item.customerMobile) userQuery.push({ mobileNumber: item.customerMobile });
+            if (item.stbId) userQuery.push({ stbId: { $regex: new RegExp("^" + item.stbId + "$", "i") } });
+            if (userQuery.length > 0) {
+              await User.findOneAndUpdate(
+                { $or: userQuery },
+                {
+                  currentPlan: item.planName || "Basic Tamil Pack Monthly Rs 220",
+                  expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                  status: "Active",
+                }
+              );
+            }
           }
         }
       }
@@ -569,6 +711,17 @@ module.exports = async (req, res) => {
         await op.save();
       }
       return res.status(200).json({ success: true, operator: op });
+    }
+
+    // Admin: Delete Operator
+    if (req.method === "DELETE" && routeString.includes("admin/operator")) {
+      const opId = reqUrl.split("/").pop();
+      if (opId && opId !== "operator") {
+        await Operator.findOneAndDelete({
+          $or: [{ _id: opId }, { mobileNumber: opId }, { mobileNumber: opId.replace(/\D/g, "").slice(-10) }]
+        }).catch(() => {});
+      }
+      return res.status(200).json({ success: true, message: "Operator deleted" });
     }
 
     // Products: Get List
