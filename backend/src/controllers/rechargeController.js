@@ -185,8 +185,8 @@ const createRechargeRequest = async (req, res) => {
       }
     }
 
-    // 4. Construct & Save new Recharge document
-    const newRecharge = new Recharge({
+    // 4. Construct & Save new RechargeRequest document (stored in rechargerequests collection)
+    const newRecharge = new RechargeRequest({
       userId: user?._id || userId || undefined,
       stbId: cleanStbId !== "STB-UNKNOWN" ? cleanStbId : user?.stbId || stbId || "1234567890",
       customerName: cleanName !== "Customer" ? cleanName : user?.name || "Customer",
@@ -199,24 +199,12 @@ const createRechargeRequest = async (req, res) => {
       requestTime: new Date(),
     });
 
-    console.log("Saving new single recharge:", newRecharge._id);
+    console.log("Saving new recharge request to rechargerequests collection:", newRecharge._id);
     try {
       await newRecharge.save();
-      await RechargeRequest.create({
-        userId: user?._id || userId || undefined,
-        stbId: newRecharge.stbId,
-        customerName: newRecharge.customerName,
-        customerMobile: newRecharge.customerMobile,
-        operatorMobile: mappedOperatorMobile,
-        planId: plan?._id || planId || undefined,
-        amount: cleanAmount,
-        paymentStatus: "Success",
-        status: "Pending",
-        requestTime: new Date(),
-      }).catch(() => {});
-      console.log("Saved successfully to both collections:", newRecharge._id);
+      console.log("Saved successfully to rechargerequests:", newRecharge._id);
     } catch (saveErr) {
-      console.log("ERROR saving recharge:", saveErr);
+      console.log("ERROR saving recharge request:", saveErr);
       return res.status(500).json({ error: saveErr.message });
     }
 

@@ -273,7 +273,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, message: "Deleted" });
     }
 
-    // POST /api/recharge/create (Create Recharge Request)
+    // Step 1: Customer submits recharge -> Save to rechargerequests collection only
     if (req.method === "POST" && (routeString.includes("recharge/create") || routeString.includes("recharge"))) {
       const { stbId, planName, amount, customerName, customerMobile, operatorMobile } = body;
       const cleanStb = (stbId || "1234567890").trim().toUpperCase();
@@ -315,10 +315,10 @@ module.exports = async (req, res) => {
         requestTime: new Date(),
       };
 
+      // STORE IN rechargerequests COLLECTION ONLY ON CUSTOMER SUBMISSION
       const request = await RechargeRequest.create(newReqData);
-      await Recharge.create(newReqData).catch(() => {});
 
-      console.log("[MongoDB Saved Recharge Request]", request._id, cleanStb, "opMob:", opMob);
+      console.log("[MongoDB Saved to rechargerequests]", request._id, cleanStb, "opMob:", opMob);
 
       return res.status(201).json({ success: true, rechargeRequest: request });
     }
@@ -361,22 +361,58 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, count: resultList.length, requests: resultList });
     }
 
-    // Approve Recharge
+    // Step 2: Operator Accept/Approve -> Update rechargerequests AND store in recharges collection!
     if (req.method === "POST" && routeString.includes("approve")) {
       const reqId = body.id || reqUrl.split("/").pop();
       if (reqId && reqId.match(/^[0-9a-fA-F]{24}$/)) {
-        await RechargeRequest.findByIdAndUpdate(reqId, { status: "Approved", approvedTime: new Date() });
-        await Recharge.findByIdAndUpdate(reqId, { status: "Approved", approvedTime: new Date() }).catch(() => {});
+        // 1. Update status in rechargerequests collection
+        const updatedReq = await RechargeRequest.findByIdAndUpdate(
+          reqId,
+          { status: "Approved", approvedTime: new Date() },
+          { new: true }
+        );
+
+        // 2. STORE IN recharges COLLECTION UPON OPERATOR ACCEPTANCE!
+        const item = updatedReq || (await RechargeRequest.findById(reqId)) || (await Recharge.findById(reqId));
+        if (item) {
+          await Recharge.findOneAndUpdate(
+            { _id: item._id },
+            {
+              userId: item.userId,
+              stbId: item.stbId,
+              customerName: item.customerName,
+              customerMobile: item.customerMobile,
+              operatorMobile: item.operatorMobile,
+              planName: item.planName,
+              amount: item.amount,
+              paymentStatus: "Success",
+              status: "Approved",
+              requestTime: item.requestTime || new Date(),
+              approvedTime: new Date(),
+            },
+            { upsert: true, new: true }
+          );
+
+          if (item.stbId) {
+            await StbMapping.findOneAndUpdate(
+              { stbId: { $regex: new RegExp("^" + item.stbId + "$", "i") } },
+              {
+                currentPlan: item.planName || "Basic Tamil Pack Monthly Rs 220",
+                expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+              }
+            );
+          }
+        }
       }
-      return res.status(200).json({ success: true, message: "Recharge approved" });
+      return res.status(200).json({ success: true, message: "Recharge approved and stored in recharges collection" });
     }
 
-    // Reject Recharge
+    // Step 3: Operator Reject -> Update status to Rejected
     if (req.method === "POST" && routeString.includes("reject")) {
       const reqId = body.id || reqUrl.split("/").pop();
       if (reqId && reqId.match(/^[0-9a-fA-F]{24}$/)) {
         await RechargeRequest.findByIdAndUpdate(reqId, { status: "Rejected" });
-        await Recharge.findByIdAndUpdate(reqId, { status: "Rejected" }).catch(() => {});
+        await Recharge.findByIdAndUpdate(reqId, { status: "Rejected", paymentStatus: "Failed" }).catch(() => {});
       }
       return res.status(200).json({ success: true, message: "Recharge rejected" });
     }
